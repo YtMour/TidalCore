@@ -1,0 +1,21 @@
+server:
+  port: "8080"
+  mode: "debug"  # debug, release, test
+  timezone: "Asia/Shanghai"
+  allowed_origins:
+    - "http://localhost:3000"
+    - "http://127.0.0.1:3000"
+
+database:
+  host: "localhost"
+  port: "3306"
+  user: "root"
+  password: "your_password"
+  dbname: "tidalcore"
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 3600  # seconds
+
+jwt:
+  secret: "your-jwt-secret-key-change-in-production-at-least-32-chars"
+  expire_hour: 168  # 7 days
