@@ -10,6 +10,7 @@ backend/.env
 # --- 前端 (Vue/Vite) ---
 frontend/node_modules/
 frontend/dist/
+frontend/.vscode
 frontend/.local
 frontend/.eslintcache
 frontend/npm-debug.log*
