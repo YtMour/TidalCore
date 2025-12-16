@@ -6,17 +6,23 @@ const props = defineProps<{
   days?: number
 }>()
 
+interface DayData {
+  date: string
+  count: number
+  level: number
+}
+
 const weeks = computed(() => {
-  const result: { date: string; count: number; level: number }[][] = []
+  const result: DayData[][] = []
   const today = new Date()
   const daysCount = props.days || 365
 
-  let currentWeek: { date: string; count: number; level: number }[] = []
+  let currentWeek: DayData[] = []
 
   for (let i = daysCount - 1; i >= 0; i--) {
     const date = new Date(today)
     date.setDate(date.getDate() - i)
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = date.toISOString().split('T')[0] as string
     const count = props.data[dateStr] || 0
 
     currentWeek.push({

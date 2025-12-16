@@ -1,17 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { login as apiLogin, register as apiRegister, getProfile } from '@/api/auth'
-import type { LoginRequest, RegisterRequest } from '@/api/auth'
+import type { LoginRequest, RegisterRequest, UserInfo } from '@/api/auth'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
-  const user = ref<{
-    id: number
-    username: string
-    streak: number
-    max_streak: number
-    total_checkin: number
-  } | null>(null)
+  const user = ref<UserInfo | null>(null)
 
   const isLoggedIn = computed(() => !!token.value)
 
@@ -35,7 +29,7 @@ export const useUserStore = defineStore('user', () => {
     if (!token.value) return
     try {
       const res = await getProfile()
-      user.value = res as typeof user.value
+      user.value = res
     } catch {
       logout()
     }

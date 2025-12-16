@@ -26,8 +26,10 @@ async function loadData() {
 
     const heatmap: Record<string, number> = {}
     checkins.forEach(c => {
-      const date = c.checked_at.split('T')[0]
-      heatmap[date] = (heatmap[date] || 0) + 1
+      const datePart = c.checked_at.split('T')[0]
+      if (datePart) {
+        heatmap[datePart] = (heatmap[datePart] || 0) + 1
+      }
     })
     heatmapData.value = heatmap
     recentHistory.value = history

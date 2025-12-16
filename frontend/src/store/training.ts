@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 
 export type TrainingPhase = 'idle' | 'contract' | 'hold' | 'relax'
 
@@ -97,7 +97,8 @@ export const useTrainingStore = defineStore('training', () => {
       }
       phase.value = 'contract'
     } else {
-      phase.value = phases[currentIndex + 1]
+      const nextIdx = currentIndex + 1
+      phase.value = phases[nextIdx] as TrainingPhase
     }
 
     countdown.value = getPhaseTime(phase.value)

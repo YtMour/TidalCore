@@ -1,0 +1,72 @@
+version: '3.8'
+
+# TidalCore 宝塔面板部署配置
+# 将整个项目上传到服务器，在项目根目录运行: docker-compose up -d --build
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: tidalcore-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: tidalcore_root_123  # 请修改为强密码
+      MYSQL_DATABASE: tidalcore
+      MYSQL_USER: tidalcore
+      MYSQL_PASSWORD: tidalcore_123            # 请修改为强密码
+      TZ: Asia/Shanghai
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    networks:
+      - tidalcore-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Go 后端 API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tidalcore-backend
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Shanghai
+      # 数据库配置 (覆盖配置文件)
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: tidalcore
+      DB_PASSWORD: tidalcore_123               # 与上面 MYSQL_PASSWORD 一致
+      DB_NAME: tidalcore
+      # JWT 配置
+      JWT_SECRET: your-jwt-secret-change-this  # 请修改为随机字符串
+      # CORS 允许的域名
+      ALLOWED_ORIGINS: https://yourdomain.com  # 请修改为你的域名
+    ports:
+      - "127.0.0.1:8080:8080"  # 只监听本地，宝塔反向代理访问
+    networks:
+      - tidalcore-net
+
+  # Vue 前端 (Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tidalcore-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:3000:80"  # 只监听本地，宝塔反向代理访问
+    networks:
+      - tidalcore-net
+
+networks:
+  tidalcore-net:
+    driver: bridge

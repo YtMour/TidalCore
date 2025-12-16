@@ -12,14 +12,15 @@ import (
 )
 
 func main() {
-	configPath := flag.String("config", "config.yaml", "path to config file")
+	configPath := flag.String("config", "", "path to config file (optional, can use env vars)")
 	flag.Parse()
 
-	// 加载配置
-	if err := config.Load(*configPath); err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
+	// 加载配置 (支持配置文件或环境变量)
+	config.Load(*configPath)
 	cfg := config.Get()
+
+	log.Printf("Starting TidalCore Backend...")
+	log.Printf("Database: %s@%s:%s/%s", cfg.Database.User, cfg.Database.Host, cfg.Database.Port, cfg.Database.DBName)
 
 	// 初始化数据库
 	if err := database.Init(&cfg.Database); err != nil {
@@ -31,6 +32,7 @@ func main() {
 	if err := autoMigrate(); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
+	log.Printf("Database migration completed")
 
 	// 启动服务器
 	r := api.SetupRouter(cfg.Server.Mode)

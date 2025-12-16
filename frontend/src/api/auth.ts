@@ -10,15 +10,17 @@ export interface RegisterRequest {
   password: string
 }
 
+export interface UserInfo {
+  id: number
+  username: string
+  streak: number
+  max_streak: number
+  total_checkin: number
+}
+
 export interface AuthResponse {
   token: string
-  user: {
-    id: number
-    username: string
-    streak: number
-    max_streak: number
-    total_checkin: number
-  }
+  user: UserInfo
 }
 
 export function login(data: LoginRequest): Promise<AuthResponse> {
@@ -29,6 +31,6 @@ export function register(data: RegisterRequest): Promise<AuthResponse> {
   return request.post('/auth/register', data)
 }
 
-export function getProfile() {
+export function getProfile(): Promise<UserInfo> {
   return request.get('/user/profile')
 }
