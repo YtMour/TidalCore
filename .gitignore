@@ -1,0 +1,25 @@
+# --- 后端 (Golang) ---
+backend/bin/
+backend/*.exe
+backend/*.test
+backend/vendor/
+# 排除敏感配置文件（建议提供一个 config.example.yaml 供参考）
+backend/config.yaml
+backend/.env
+
+# --- 前端 (Vue/Vite) ---
+frontend/node_modules/
+frontend/dist/
+frontend/.local
+frontend/.eslintcache
+frontend/npm-debug.log*
+
+# --- 系统与编辑器 ---
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.bak
+
+# --- 数据库临时文件 ---
+docker/mysql_data/
