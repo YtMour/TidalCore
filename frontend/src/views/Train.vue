@@ -5,7 +5,7 @@ import Timer from '@/components/Timer.vue'
 import { useTrainingStore } from '@/store/training'
 import { useUserStore } from '@/store/user'
 import { checkin } from '@/api/checkin'
-import { Setting, Clock, Aim, TrendCharts, Lightning, WarningFilled, StarFilled, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
+import { Setting, Clock, Aim, TrendCharts, WarningFilled, StarFilled, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
 import confetti from 'canvas-confetti'
 
 const trainingStore = useTrainingStore()
@@ -100,10 +100,11 @@ function updateSetting(key: string, value: number) {
           <div class="header-glow"></div>
         </div>
 
-        <el-tag type="primary" effect="plain" round class="train-badge">
-          <el-icon><Lightning /></el-icon>
-          专业训练
-        </el-tag>
+        <div class="train-eyebrow">
+          <span class="eyebrow-line"></span>
+          <span class="eyebrow-text">专业训练</span>
+          <span class="eyebrow-line"></span>
+        </div>
 
         <h1 class="train-title">
           <span class="gradient-text">潮汐训练器</span>
@@ -396,14 +397,33 @@ function updateSetting(key: string, value: number) {
   filter: blur(60px);
 }
 
-.train-badge {
-  margin-bottom: 16px;
-  background: rgba(139, 92, 246, 0.1) !important;
-  border-color: rgba(139, 92, 246, 0.2) !important;
+.train-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
-.train-badge .el-icon {
-  margin-right: 6px;
+.train-eyebrow .eyebrow-line {
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #8b5cf6);
+}
+
+.train-eyebrow .eyebrow-line:last-child {
+  background: linear-gradient(90deg, #8b5cf6, transparent);
+}
+
+.train-eyebrow .eyebrow-text {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  background: linear-gradient(135deg, #a78bfa, #c4b5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .train-title {

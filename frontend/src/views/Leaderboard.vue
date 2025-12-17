@@ -43,10 +43,11 @@ const top3Users = computed(() => users.value.slice(0, 3))
           <el-icon :size="48" color="#fff"><Trophy /></el-icon>
         </div>
 
-        <el-tag type="warning" effect="plain" round class="header-badge">
-          <el-icon><Medal /></el-icon>
-          荣耀榜单
-        </el-tag>
+        <div class="header-eyebrow">
+          <span class="eyebrow-line"></span>
+          <span class="eyebrow-text">荣耀榜单</span>
+          <span class="eyebrow-line"></span>
+        </div>
 
         <h1 class="header-title">
           <span class="gradient-text-gold">毅力排行榜</span>
@@ -235,15 +236,33 @@ const top3Users = computed(() => users.value.slice(0, 3))
   50% { transform: translateY(-10px); }
 }
 
-.header-badge {
-  margin-bottom: 16px;
-  background: rgba(245, 158, 11, 0.1) !important;
-  border-color: rgba(245, 158, 11, 0.2) !important;
-  color: #fcd34d !important;
+.header-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
-.header-badge .el-icon {
-  margin-right: 6px;
+.header-eyebrow .eyebrow-line {
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #f59e0b);
+}
+
+.header-eyebrow .eyebrow-line:last-child {
+  background: linear-gradient(90deg, #f59e0b, transparent);
+}
+
+.header-eyebrow .eyebrow-text {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  background: linear-gradient(135deg, #fcd34d, #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .header-title {

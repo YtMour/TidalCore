@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import { useUserStore } from '@/store/user'
 import type { FormInstance, FormRules } from 'element-plus'
-import { User, Lock, UserFilled, Select, DataLine, Trophy } from '@element-plus/icons-vue'
+import { User, Lock, UserFilled } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -82,10 +82,19 @@ async function handleSubmit() {
             <p class="register-subtitle">开始你的健康训练之旅</p>
           </div>
 
-          <div class="register-benefits">
-            <el-tag type="success" effect="plain" round><el-icon><Select /></el-icon> 记录进度</el-tag>
-            <el-tag type="success" effect="plain" round><el-icon><DataLine /></el-icon> 数据统计</el-tag>
-            <el-tag type="success" effect="plain" round><el-icon><Trophy /></el-icon> 排行榜</el-tag>
+          <div class="register-perks">
+            <div class="perk-item">
+              <span class="perk-icon">✓</span>
+              <span>记录进度</span>
+            </div>
+            <div class="perk-item">
+              <span class="perk-icon">✓</span>
+              <span>数据统计</span>
+            </div>
+            <div class="perk-item">
+              <span class="perk-icon">✓</span>
+              <span>排行榜</span>
+            </div>
           </div>
 
           <el-form ref="formRef" :model="form" :rules="rules" label-position="top" size="large" @submit.prevent="handleSubmit">
@@ -228,20 +237,29 @@ async function handleSubmit() {
   margin: 0;
 }
 
-.register-benefits {
+.register-perks {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 20px;
+  margin-bottom: 28px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(20, 184, 166, 0.04));
+  border: 1px solid rgba(16, 185, 129, 0.12);
 }
 
-.register-benefits .el-tag {
+.perk-item {
   display: flex;
   align-items: center;
-  gap: 4px;
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.2);
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.perk-icon {
+  color: #10b981;
+  font-weight: 700;
+  font-size: 11px;
 }
 
 .register-error {

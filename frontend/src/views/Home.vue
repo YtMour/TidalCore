@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Heatmap from '@/components/Heatmap.vue'
 import { getGlobalHeatmap } from '@/api/checkin'
-import { Timer, Pointer, Trophy, Lock, Lightning, StarFilled, Star, User } from '@element-plus/icons-vue'
+import { Timer, Pointer, Trophy, Lock, Lightning, StarFilled, User } from '@element-plus/icons-vue'
 
 const heatmapData = ref<Record<string, number>>()
 const loading = ref(true)
@@ -207,10 +207,11 @@ onMounted(async () => {
       <!-- Features Section -->
       <section class="features-section" :class="{ mounted }">
         <div class="section-header">
-          <el-tag type="primary" effect="plain" round class="section-tag">
-            <el-icon><Star /></el-icon>
-            核心功能
-          </el-tag>
+          <div class="section-eyebrow">
+            <span class="eyebrow-line"></span>
+            <span class="eyebrow-text">核心功能</span>
+            <span class="eyebrow-line"></span>
+          </div>
           <h2 class="section-title">为什么选择 TidalCore</h2>
           <p class="section-subtitle">简单、专注、有效的训练体验，帮助你养成健康习惯</p>
         </div>
@@ -235,10 +236,11 @@ onMounted(async () => {
       <!-- How It Works Section -->
       <section class="howto-section" :class="{ mounted }">
         <div class="section-header">
-          <el-tag type="danger" effect="plain" round class="section-tag">
-            <el-icon><Lightning /></el-icon>
-            快速上手
-          </el-tag>
+          <div class="section-eyebrow section-eyebrow-pink">
+            <span class="eyebrow-line"></span>
+            <span class="eyebrow-text">快速上手</span>
+            <span class="eyebrow-line"></span>
+          </div>
           <h2 class="section-title">三步开始训练</h2>
           <p class="section-subtitle">无需复杂设置，立即开始你的健康之旅</p>
         </div>
@@ -763,14 +765,48 @@ export default {
   margin-bottom: 64px;
 }
 
-.section-tag {
-  margin-bottom: 16px;
-  background: rgba(139, 92, 246, 0.1) !important;
-  border-color: rgba(139, 92, 246, 0.2) !important;
+.section-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
-.section-tag .el-icon {
-  margin-right: 6px;
+.section-eyebrow .eyebrow-line {
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #8b5cf6);
+}
+
+.section-eyebrow .eyebrow-line:last-child {
+  background: linear-gradient(90deg, #8b5cf6, transparent);
+}
+
+.section-eyebrow .eyebrow-text {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  background: linear-gradient(135deg, #a78bfa, #c4b5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-eyebrow-pink .eyebrow-line {
+  background: linear-gradient(90deg, transparent, #ec4899);
+}
+
+.section-eyebrow-pink .eyebrow-line:last-child {
+  background: linear-gradient(90deg, #ec4899, transparent);
+}
+
+.section-eyebrow-pink .eyebrow-text {
+  background: linear-gradient(135deg, #f472b6, #fda4af);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .section-title {

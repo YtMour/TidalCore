@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import { useUserStore } from '@/store/user'
 import type { FormInstance, FormRules } from 'element-plus'
-import { User, Lock, Timer, Star } from '@element-plus/icons-vue'
+import { User, Lock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -91,10 +91,21 @@ async function handleSubmit() {
             </el-form-item>
           </el-form>
 
-          <div class="login-features">
-            <el-tag effect="plain" round><el-icon><Lock /></el-icon> 安全加密</el-tag>
-            <el-tag effect="plain" round><el-icon><Timer /></el-icon> 快速登录</el-tag>
-            <el-tag effect="plain" round><el-icon><Star /></el-icon> 个性化记录</el-tag>
+          <div class="login-trust">
+            <div class="trust-item">
+              <span class="trust-icon">🔐</span>
+              <span>安全加密</span>
+            </div>
+            <span class="trust-divider"></span>
+            <div class="trust-item">
+              <span class="trust-icon">⚡</span>
+              <span>快速登录</span>
+            </div>
+            <span class="trust-divider"></span>
+            <div class="trust-item">
+              <span class="trust-icon">📊</span>
+              <span>个性记录</span>
+            </div>
           </div>
 
           <el-divider />
@@ -227,20 +238,34 @@ async function handleSubmit() {
   opacity: 0.9;
 }
 
-.login-features {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 24px;
-}
-
-.login-features .el-tag {
+.login-trust {
   display: flex;
   align-items: center;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.06), rgba(236, 72, 153, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.trust-icon {
+  font-size: 14px;
+}
+
+.trust-divider {
+  width: 1px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .login-footer {
