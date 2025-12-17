@@ -39,16 +39,6 @@ function formatDateKey(date: Date): string {
 // 标准化后的数据
 const normalizedData = computed(() => normalizeDataKeys(props.data || {}))
 
-// 计算总打卡次数
-const totalCheckins = computed(() => {
-  return Object.values(normalizedData.value).reduce((sum, count) => sum + count, 0)
-})
-
-// 计算活跃天数
-const activeDays = computed(() => {
-  return Object.values(normalizedData.value).filter(count => count > 0).length
-})
-
 // 生成热力图网格数据
 const weeks = computed(() => {
   const result: DayData[][] = []
@@ -141,8 +131,13 @@ function updateTooltipPosition(event: MouseEvent) {
 
   const showAbove = y > 80
 
+  // 限制 tooltip 在容器内，增加边距防止溢出
+  const tooltipWidth = 140
+  const minX = tooltipWidth / 2 + 10
+  const maxX = rect.width - tooltipWidth / 2 - 10
+
   tooltipPosition.value = {
-    x: Math.max(70, Math.min(x, rect.width - 70)),
+    x: Math.max(minX, Math.min(x, maxX)),
     y: showAbove ? y - 8 : y + 24,
     showAbove
   }
@@ -173,23 +168,13 @@ const monthPositions = computed(() => {
 
   return positions
 })
+
+// 计算总周数用于布局
+const totalWeeks = computed(() => weeks.value.length)
 </script>
 
 <template>
   <div ref="containerRef" class="heatmap-wrap">
-    <!-- 统计信息 -->
-    <div class="hm-stats">
-      <div class="stat-item">
-        <span class="stat-value">{{ totalCheckins }}</span>
-        <span class="stat-label">次打卡</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-item">
-        <span class="stat-value">{{ activeDays }}</span>
-        <span class="stat-label">天活跃</span>
-      </div>
-    </div>
-
     <!-- 热力图主体 -->
     <div class="hm-main">
       <!-- 月份标签行 -->
@@ -200,7 +185,7 @@ const monthPositions = computed(() => {
             v-for="(m, idx) in monthPositions"
             :key="idx"
             class="month-label"
-            :style="{ left: `${m.weekIndex * 11}px` }"
+            :style="{ left: `calc(${(m.weekIndex / totalWeeks) * 100}%)` }"
           >{{ m.month }}</span>
         </div>
       </div>
@@ -274,132 +259,93 @@ const monthPositions = computed(() => {
 <style scoped>
 .heatmap-wrap {
   position: relative;
-}
-
-/* 统计信息 */
-.hm-stats {
-  display: inline-flex;
-  align-items: center;
-  gap: 16px;
-  padding: 10px 18px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.04));
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-
-.stat-item {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.stat-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: #10b981;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.stat-divider {
-  width: 1px;
-  height: 24px;
-  background: rgba(255, 255, 255, 0.1);
+  overflow: visible;
 }
 
 /* 热力图主体 */
 .hm-main {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  overflow: hidden;
 }
 
 /* 月份行 */
 .month-row {
   display: flex;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .weekday-placeholder {
-  width: 22px;
+  width: 24px;
   flex-shrink: 0;
 }
 
 .month-track {
   position: relative;
-  height: 16px;
+  height: 18px;
   flex: 1;
 }
 
 .month-label {
   position: absolute;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
   white-space: nowrap;
+  transform: translateX(0);
 }
 
 /* 网格区域 */
 .grid-area {
   display: flex;
+  width: 100%;
 }
 
 .weekday-col {
   display: flex;
   flex-direction: column;
-  width: 22px;
+  width: 24px;
   flex-shrink: 0;
+  gap: 3px;
 }
 
 .weekday-col span {
-  height: 10px;
-  line-height: 10px;
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.35);
+  height: 14px;
+  line-height: 14px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
   text-align: right;
-  padding-right: 4px;
+  padding-right: 6px;
 }
 
-/* 网格容器 */
+/* 网格容器 - 使用flex自动填充 */
 .grid-box {
   display: flex;
-  flex-wrap: nowrap;
-  gap: 2px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-
-.grid-box::-webkit-scrollbar {
-  height: 3px;
-}
-
-.grid-box::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.grid-box::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  flex: 1;
+  gap: 3px;
+  justify-content: space-between;
 }
 
 .week {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  flex: 1;
+  max-width: 14px;
 }
 
 .cell {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 14px;
+  max-height: 14px;
+  border-radius: 3px;
   cursor: pointer;
   transition: transform 0.1s, box-shadow 0.1s;
 }
 
 .cell:hover {
-  transform: scale(1.5);
+  transform: scale(1.4);
   z-index: 10;
+  position: relative;
 }
 
 /* 等级颜色 */
@@ -501,24 +447,23 @@ const monthPositions = computed(() => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .lg-text {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.35);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .lg-items {
   display: flex;
-  gap: 3px;
+  gap: 4px;
 }
 
 .lg-box {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
 }
 </style>

@@ -199,6 +199,18 @@ onMounted(async () => {
                 </div>
               </div>
               <div class="header-right">
+                <!-- 统计信息 -->
+                <div class="hm-stats" v-if="heatmapData">
+                  <div class="stat-item">
+                    <span class="stat-value">{{ Object.values(heatmapData || {}).reduce((sum, count) => sum + count, 0) }}</span>
+                    <span class="stat-label">次打卡</span>
+                  </div>
+                  <div class="stat-divider"></div>
+                  <div class="stat-item">
+                    <span class="stat-value">{{ Object.values(heatmapData || {}).filter(count => count > 0).length }}</span>
+                    <span class="stat-label">天活跃</span>
+                  </div>
+                </div>
                 <span class="live-indicator">
                   <span class="live-dot"></span>
                   实时
@@ -741,6 +753,41 @@ export default {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 16px;
+}
+
+/* 热力图统计信息 */
+.hm-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.04));
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+}
+
+.hm-stats .stat-item {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.hm-stats .stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.hm-stats .stat-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.hm-stats .stat-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .live-indicator {
