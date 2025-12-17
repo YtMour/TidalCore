@@ -504,45 +504,4 @@ onUnmounted(() => {
   color: #fff;
 }
 
-/* Light Mode Support */
-:global(html.light) .stop-btn {
-  background: rgba(15, 23, 42, 0.04);
-  border-color: rgba(15, 23, 42, 0.1);
-}
-
-:global(html.light) .stop-btn:hover {
-  background: rgba(15, 23, 42, 0.08);
-  border-color: rgba(15, 23, 42, 0.15);
-}
-
-:global(html.light) .stop-btn .btn-icon {
-  color: rgba(15, 23, 42, 0.8);
-}
-
-:global(html.light) .stop-btn .btn-text {
-  color: #0f172a;
-}
-
-:global(html.light) .reset-btn {
-  background: rgba(15, 23, 42, 0.03);
-  border-color: rgba(15, 23, 42, 0.08);
-}
-
-:global(html.light) .reset-btn:hover {
-  background: rgba(15, 23, 42, 0.08);
-  border-color: rgba(15, 23, 42, 0.12);
-}
-
-:global(html.light) .reset-btn .reset-icon {
-  color: rgba(15, 23, 42, 0.6);
-}
-
-:global(html.light) .reset-btn:hover .reset-icon {
-  color: #0f172a;
-}
-
-:global(html.light) .progress-track {
-  border-color: rgba(15, 23, 42, 0.08);
-  background: rgba(15, 23, 42, 0.06) !important;
-}
 </style>

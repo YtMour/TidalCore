@@ -597,4 +597,5 @@ const top3Users = computed(() => users.value.slice(0, 3))
 .cta-btn:hover .arrow-icon {
   transform: translateX(4px);
 }
+
 </style>

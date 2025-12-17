@@ -1,20 +1,16 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
-import { useThemeStore } from '@/store/theme'
 import { useScrollLock } from '@vueuse/core'
-import { HomeFilled, Timer, Trophy, User, SwitchButton, Fold, Expand, Sunny, Moon } from '@element-plus/icons-vue'
+import { HomeFilled, Timer, Trophy, User, SwitchButton, Fold, Expand } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
-const themeStore = useThemeStore()
 const route = useRoute()
 
 const mobileMenuOpen = ref(false)
 const scrollLock = useScrollLock(document.body)
 const scrolled = ref(false)
-
-const isDark = computed(() => themeStore.mode === 'dark')
 
 onMounted(() => {
   const handleScroll = () => {
@@ -37,10 +33,6 @@ function handleLogout() {
   mobileMenuOpen.value = false
 }
 
-function toggleTheme() {
-  themeStore.toggle()
-}
-
 const navLinks = [
   { to: '/', label: '首页', icon: HomeFilled },
   { to: '/train', label: '训练', icon: Timer },
@@ -49,7 +41,7 @@ const navLinks = [
 </script>
 
 <template>
-  <div class="main-layout" :class="{ 'light-mode': !isDark }">
+  <div class="main-layout">
     <!-- Animated Background -->
     <div class="animated-bg"></div>
     <div class="particles-bg"></div>
@@ -80,14 +72,6 @@ const navLinks = [
 
         <!-- Desktop User Menu -->
         <div class="desktop-user">
-          <!-- Theme Toggle -->
-          <button @click="toggleTheme" class="theme-toggle" :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
-            <el-icon :size="18">
-              <Moon v-if="isDark" />
-              <Sunny v-else />
-            </el-icon>
-          </button>
-
           <template v-if="userStore.isLoggedIn">
             <RouterLink to="/dashboard" class="user-link" :class="{ active: route.path === '/dashboard' }">
               <el-icon :size="16"><User /></el-icon>
@@ -136,15 +120,6 @@ const navLinks = [
           <el-icon :size="20"><component :is="link.icon" /></el-icon>
           <span>{{ link.label }}</span>
         </RouterLink>
-
-        <!-- Theme Toggle in Mobile -->
-        <div class="mobile-nav-item" @click="toggleTheme">
-          <el-icon :size="20">
-            <Moon v-if="isDark" />
-            <Sunny v-else />
-          </el-icon>
-          <span>{{ isDark ? '浅色模式' : '深色模式' }}</span>
-        </div>
 
         <el-divider />
 
@@ -235,12 +210,6 @@ const navLinks = [
   border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
-/* Light mode header */
-.light-mode .main-header.scrolled {
-  background: rgba(255, 255, 255, 0.95);
-  border-bottom-color: rgba(0, 0, 0, 0.08);
-}
-
 .header-content {
   max-width: 1200px;
   margin: 0 auto;
@@ -289,12 +258,6 @@ const navLinks = [
   border-radius: 8px;
 }
 
-/* Light mode nav */
-.light-mode .desktop-nav {
-  background: rgba(0, 0, 0, 0.03);
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
 @media (min-width: 768px) {
   .desktop-nav {
     display: flex;
@@ -314,28 +277,14 @@ const navLinks = [
   transition: all 0.2s ease;
 }
 
-.light-mode .nav-link {
-  color: rgba(15, 23, 42, 0.6);
-}
-
 .nav-link:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.08);
 }
 
-.light-mode .nav-link:hover {
-  color: #0f172a;
-  background: rgba(0, 0, 0, 0.06);
-}
-
 .nav-link.active {
   color: #fff;
   background: rgba(139, 92, 246, 0.2);
-}
-
-.light-mode .nav-link.active {
-  color: #7c3aed;
-  background: rgba(139, 92, 246, 0.1);
 }
 
 /* ===== Desktop User Menu ===== */
@@ -349,39 +298,6 @@ const navLinks = [
   .desktop-user {
     display: flex;
   }
-}
-
-/* Theme Toggle */
-.theme-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.light-mode .theme-toggle {
-  border-color: rgba(0, 0, 0, 0.08);
-  background: rgba(0, 0, 0, 0.03);
-  color: rgba(15, 23, 42, 0.6);
-}
-
-.theme-toggle:hover {
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.1);
-  border-color: rgba(251, 191, 36, 0.3);
-}
-
-.light-mode .theme-toggle:hover {
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.3);
 }
 
 /* User Link */
@@ -399,32 +315,16 @@ const navLinks = [
   transition: all 0.2s ease;
 }
 
-.light-mode .user-link {
-  color: rgba(15, 23, 42, 0.6);
-}
-
 .user-link:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-.light-mode .user-link:hover {
-  color: #0f172a;
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
 .user-link.active {
   color: #fff;
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.1);
-}
-
-.light-mode .user-link.active {
-  color: #0f172a;
-  background: rgba(0, 0, 0, 0.06);
-  border-color: rgba(0, 0, 0, 0.1);
 }
 
 /* Logout Button */
@@ -443,18 +343,9 @@ const navLinks = [
   transition: all 0.2s ease;
 }
 
-.light-mode .logout-btn {
-  color: rgba(15, 23, 42, 0.6);
-}
-
 .logout-btn:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.05);
-}
-
-.light-mode .logout-btn:hover {
-  color: #0f172a;
-  background: rgba(0, 0, 0, 0.04);
 }
 
 /* Login Button */
@@ -492,19 +383,9 @@ const navLinks = [
   transition: all 0.2s ease;
 }
 
-.light-mode .mobile-menu-btn {
-  background: rgba(0, 0, 0, 0.03);
-  color: rgba(15, 23, 42, 0.7);
-}
-
 .mobile-menu-btn:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.08);
-}
-
-.light-mode .mobile-menu-btn:hover {
-  color: #0f172a;
-  background: rgba(0, 0, 0, 0.06);
 }
 
 @media (min-width: 768px) {
@@ -518,10 +399,6 @@ const navLinks = [
   background: rgba(15, 23, 42, 0.98);
   backdrop-filter: blur(20px);
   padding-top: 80px;
-}
-
-.light-mode .mobile-drawer :deep(.el-drawer__body) {
-  background: rgba(255, 255, 255, 0.98);
 }
 
 .mobile-menu {
@@ -541,28 +418,14 @@ const navLinks = [
   transition: all 0.2s ease;
 }
 
-.light-mode .mobile-nav-item {
-  color: rgba(15, 23, 42, 0.7);
-}
-
 .mobile-nav-item:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.05);
 }
 
-.light-mode .mobile-nav-item:hover {
-  color: #0f172a;
-  background: rgba(0, 0, 0, 0.04);
-}
-
 .mobile-nav-item.active {
   color: #fff;
   background: rgba(255, 255, 255, 0.1);
-}
-
-.light-mode .mobile-nav-item.active {
-  color: #7c3aed;
-  background: rgba(139, 92, 246, 0.1);
 }
 
 .mobile-register-btn {
@@ -596,10 +459,6 @@ const navLinks = [
 .main-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   padding: 32px 20px;
-}
-
-.light-mode .main-footer {
-  border-top-color: rgba(0, 0, 0, 0.06);
 }
 
 .footer-content {
@@ -654,10 +513,6 @@ const navLinks = [
   margin: 0;
 }
 
-.light-mode .footer-tagline {
-  color: rgba(15, 23, 42, 0.4);
-}
-
 .footer-links {
   display: flex;
   align-items: center;
@@ -671,32 +526,16 @@ const navLinks = [
   transition: color 0.2s ease;
 }
 
-.light-mode .footer-link {
-  color: rgba(15, 23, 42, 0.4);
-}
-
 .footer-link:hover {
   color: rgba(255, 255, 255, 0.7);
-}
-
-.light-mode .footer-link:hover {
-  color: rgba(15, 23, 42, 0.7);
 }
 
 .footer-divider {
   color: rgba(255, 255, 255, 0.2);
 }
 
-.light-mode .footer-divider {
-  color: rgba(15, 23, 42, 0.2);
-}
-
 .footer-license {
   color: rgba(255, 255, 255, 0.4);
-}
-
-.light-mode .footer-license {
-  color: rgba(15, 23, 42, 0.4);
 }
 
 .footer-bottom {
@@ -709,11 +548,6 @@ const navLinks = [
   gap: 4px;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.3);
-}
-
-.light-mode .footer-bottom {
-  border-top-color: rgba(0, 0, 0, 0.05);
-  color: rgba(15, 23, 42, 0.3);
 }
 
 @media (min-width: 768px) {
@@ -731,9 +565,5 @@ const navLinks = [
 :deep(.el-divider) {
   border-color: rgba(255, 255, 255, 0.08);
   margin: 12px 0;
-}
-
-.light-mode :deep(.el-divider) {
-  border-color: rgba(0, 0, 0, 0.08);
 }
 </style>

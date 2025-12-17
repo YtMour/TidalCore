@@ -134,9 +134,9 @@ const monthLabels = computed(() => {
 </script>
 
 <template>
-  <div ref="containerRef" class="relative">
+  <div ref="containerRef" class="heatmap-wrapper relative">
     <!-- Month labels -->
-    <div class="flex mb-2 text-xs text-white/40 pl-8 relative h-4">
+    <div class="month-labels flex mb-2 text-xs pl-8 relative h-4">
       <div
         v-for="label in monthLabels"
         :key="label.index"
@@ -150,7 +150,7 @@ const monthLabels = computed(() => {
     <!-- Heatmap grid -->
     <div class="flex gap-1 overflow-x-auto pb-2">
       <!-- Day labels -->
-      <div class="flex flex-col gap-1 text-xs text-white/40 pr-2 shrink-0">
+      <div class="day-labels flex flex-col gap-1 text-xs pr-2 shrink-0">
         <div class="h-3"></div>
         <div class="h-3 leading-3">一</div>
         <div class="h-3"></div>
@@ -184,33 +184,33 @@ const monthLabels = computed(() => {
     <Transition name="fade">
       <div
         v-if="hoveredDay"
-        class="absolute z-50 px-3 py-2 glass-card text-sm pointer-events-none transform -translate-x-1/2 -translate-y-full"
+        class="heatmap-tooltip absolute z-50 px-3 py-2 glass-card text-sm pointer-events-none transform -translate-x-1/2 -translate-y-full"
         :style="{
           left: `${tooltipPosition.x}px`,
           top: `${tooltipPosition.y}px`
         }"
       >
-        <div class="text-white font-medium">{{ formatDate(hoveredDay.date) }}</div>
-        <div class="text-white/60 mt-0.5">
+        <div class="tooltip-date font-medium">{{ formatDate(hoveredDay.date) }}</div>
+        <div class="tooltip-count mt-0.5">
           {{ hoveredDay.count > 0 ? `${hoveredDay.count} 次打卡` : '无打卡记录' }}
         </div>
       </div>
     </Transition>
 
     <!-- Legend and Stats -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 pt-4 border-t border-white/5">
+    <div class="heatmap-footer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 pt-4">
       <!-- Stats -->
-      <div class="flex items-center gap-6 text-sm">
-        <div class="text-white/50">
-          <span class="text-white font-medium">{{ totalCheckins }}</span> 次打卡
+      <div class="heatmap-stats flex items-center gap-6 text-sm">
+        <div class="stat-item">
+          <span class="stat-value">{{ totalCheckins }}</span> 次打卡
         </div>
-        <div class="text-white/50">
-          <span class="text-white font-medium">{{ activeDays }}</span> 天活跃
+        <div class="stat-item">
+          <span class="stat-value">{{ activeDays }}</span> 天活跃
         </div>
       </div>
 
       <!-- Legend -->
-      <div class="flex items-center gap-2 text-xs text-white/50">
+      <div class="heatmap-legend flex items-center gap-2 text-xs">
         <span>少</span>
         <div class="flex gap-1">
           <div
@@ -226,3 +226,43 @@ const monthLabels = computed(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.heatmap-wrapper {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.month-labels {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.day-labels {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.heatmap-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.heatmap-stats .stat-item {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.heatmap-stats .stat-value {
+  color: #fff;
+  font-weight: 500;
+}
+
+.heatmap-legend {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.heatmap-tooltip .tooltip-date {
+  color: #fff;
+}
+
+.heatmap-tooltip .tooltip-count {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+</style>

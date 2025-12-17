@@ -93,12 +93,12 @@ function animateValue(start: number, end: number, duration: number) {
     <div class="flex items-start justify-between">
       <div>
         <div
-          class="text-3xl font-bold tracking-tight"
+          class="stat-card-value text-3xl font-bold tracking-tight"
           :class="colorClasses[color]"
         >
           {{ typeof value === 'number' ? displayValue : value }}
         </div>
-        <div class="text-sm text-white/50 mt-1">{{ label }}</div>
+        <div class="stat-card-label text-sm text-white/50 mt-1">{{ label }}</div>
       </div>
       <div
         v-if="icon"
@@ -109,3 +109,6 @@ function animateValue(start: number, end: number, duration: number) {
     </div>
   </div>
 </template>
+
+<style scoped>
+</style>
