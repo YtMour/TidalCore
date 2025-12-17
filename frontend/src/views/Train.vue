@@ -132,18 +132,20 @@ function updateSetting(key: string, value: number) {
 
       <!-- Settings Toggle -->
       <div class="settings-toggle" :class="{ mounted }">
-        <el-button
+        <button
           @click="showSettings = !showSettings"
-          class="settings-btn"
-          text
+          class="settings-toggle-btn"
+          :class="{ 'is-open': showSettings }"
         >
-          <el-icon><Setting /></el-icon>
-          <span>训练设置</span>
-          <el-icon class="toggle-icon">
+          <span class="toggle-icon-wrapper">
+            <el-icon :size="18"><Setting /></el-icon>
+          </span>
+          <span class="toggle-text">训练设置</span>
+          <el-icon class="toggle-arrow" :size="14">
             <ArrowUp v-if="showSettings" />
             <ArrowDown v-else />
           </el-icon>
-        </el-button>
+        </button>
       </div>
 
       <!-- Settings Panel -->
@@ -159,9 +161,10 @@ function updateSetting(key: string, value: number) {
               自定义训练参数
             </h3>
 
-            <el-row :gutter="24">
-              <el-col :xs="12" :sm="6">
-                <el-form-item label="收缩时间 (秒)">
+            <div class="settings-grid">
+              <div class="setting-item">
+                <label class="setting-label">收缩时间</label>
+                <div class="setting-input-wrapper">
                   <el-input-number
                     :model-value="trainingStore.settings.contractTime"
                     @update:model-value="updateSetting('contractTime', $event as number)"
@@ -171,10 +174,12 @@ function updateSetting(key: string, value: number) {
                     size="large"
                     class="setting-input"
                   />
-                </el-form-item>
-              </el-col>
-              <el-col :xs="12" :sm="6">
-                <el-form-item label="保持时间 (秒)">
+                  <span class="setting-unit">秒</span>
+                </div>
+              </div>
+              <div class="setting-item">
+                <label class="setting-label">保持时间</label>
+                <div class="setting-input-wrapper">
                   <el-input-number
                     :model-value="trainingStore.settings.holdTime"
                     @update:model-value="updateSetting('holdTime', $event as number)"
@@ -184,10 +189,12 @@ function updateSetting(key: string, value: number) {
                     size="large"
                     class="setting-input"
                   />
-                </el-form-item>
-              </el-col>
-              <el-col :xs="12" :sm="6">
-                <el-form-item label="放松时间 (秒)">
+                  <span class="setting-unit">秒</span>
+                </div>
+              </div>
+              <div class="setting-item">
+                <label class="setting-label">放松时间</label>
+                <div class="setting-input-wrapper">
                   <el-input-number
                     :model-value="trainingStore.settings.relaxTime"
                     @update:model-value="updateSetting('relaxTime', $event as number)"
@@ -197,10 +204,12 @@ function updateSetting(key: string, value: number) {
                     size="large"
                     class="setting-input"
                   />
-                </el-form-item>
-              </el-col>
-              <el-col :xs="12" :sm="6">
-                <el-form-item label="循环次数">
+                  <span class="setting-unit">秒</span>
+                </div>
+              </div>
+              <div class="setting-item">
+                <label class="setting-label">循环次数</label>
+                <div class="setting-input-wrapper">
                   <el-input-number
                     :model-value="trainingStore.settings.cycles"
                     @update:model-value="updateSetting('cycles', $event as number)"
@@ -210,9 +219,10 @@ function updateSetting(key: string, value: number) {
                     size="large"
                     class="setting-input"
                   />
-                </el-form-item>
-              </el-col>
-            </el-row>
+                  <span class="setting-unit">次</span>
+                </div>
+              </div>
+            </div>
 
             <!-- Training summary -->
             <el-alert
@@ -482,34 +492,61 @@ function updateSetting(key: string, value: number) {
   transform: translateY(0);
 }
 
-.settings-btn {
+.settings-toggle-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px !important;
-  border-radius: 10px !important;
-  color: rgba(255, 255, 255, 0.5) !important;
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  transition: all 0.2s ease !important;
+  gap: 10px;
+  padding: 12px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
 
-.settings-btn:hover {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+.settings-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-.settings-btn .el-icon:first-child {
+.settings-toggle-btn.is-open {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
+.toggle-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.1));
+  color: #a78bfa;
   transition: transform 0.3s ease;
 }
 
-.settings-btn:hover .el-icon:first-child {
+.settings-toggle-btn:hover .toggle-icon-wrapper {
   transform: rotate(45deg);
 }
 
-.toggle-icon {
-  margin-left: 4px;
+.toggle-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.settings-toggle-btn:hover .toggle-text {
+  color: #fff;
+}
+
+.toggle-arrow {
+  color: rgba(255, 255, 255, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.settings-toggle-btn.is-open .toggle-arrow {
+  color: #a78bfa;
 }
 
 /* Settings Card */
@@ -549,7 +586,7 @@ function updateSetting(key: string, value: number) {
   font-size: 16px;
   font-weight: 600;
   color: #fff;
-  margin: 0 0 20px;
+  margin: 0 0 24px;
 }
 
 .title-icon {
@@ -563,8 +600,48 @@ function updateSetting(key: string, value: number) {
   color: #a78bfa;
 }
 
+/* Settings Grid Layout */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 640px) {
+  .settings-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setting-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.setting-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting-unit {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
 .setting-input {
-  width: 100% !important;
+  flex: 1;
+  min-width: 0;
 }
 
 .setting-input :deep(.el-input-number__decrease),
@@ -583,25 +660,16 @@ function updateSetting(key: string, value: number) {
 .setting-input :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.05) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   box-shadow: none !important;
+  padding: 4px 12px !important;
 }
 
 .setting-input :deep(.el-input__inner) {
   color: #fff !important;
   text-align: center;
   font-weight: 600;
-  font-size: 16px;
-}
-
-:deep(.el-form-item) {
-  margin-bottom: 16px;
-}
-
-:deep(.el-form-item__label) {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 13px;
-  padding-bottom: 6px;
+  font-size: 18px;
 }
 
 .training-summary {
@@ -807,5 +875,122 @@ function updateSetting(key: string, value: number) {
   padding: 12px 32px !important;
   background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
   border: none !important;
+}
+
+/* Light Mode Support */
+:global(html.light) .train-subtitle {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .quick-stat {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .settings-toggle-btn {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+:global(html.light) .settings-toggle-btn:hover {
+  background: rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:global(html.light) .toggle-text {
+  color: rgba(15, 23, 42, 0.7);
+}
+
+:global(html.light) .settings-toggle-btn:hover .toggle-text {
+  color: #0f172a;
+}
+
+:global(html.light) .toggle-arrow {
+  color: rgba(15, 23, 42, 0.4);
+}
+
+:global(html.light) .settings-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+:global(html.light) .settings-title {
+  color: #0f172a;
+}
+
+:global(html.light) .setting-label {
+  color: rgba(15, 23, 42, 0.7);
+}
+
+:global(html.light) .setting-unit {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .setting-input :deep(.el-input-number__decrease),
+:global(html.light) .setting-input :deep(.el-input-number__increase) {
+  background: rgba(15, 23, 42, 0.06) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: rgba(15, 23, 42, 0.7) !important;
+}
+
+:global(html.light) .setting-input :deep(.el-input-number__decrease:hover),
+:global(html.light) .setting-input :deep(.el-input-number__increase:hover) {
+  background: rgba(15, 23, 42, 0.1) !important;
+  color: #0f172a !important;
+}
+
+:global(html.light) .setting-input :deep(.el-input__wrapper) {
+  background: rgba(15, 23, 42, 0.04) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+:global(html.light) .setting-input :deep(.el-input__inner) {
+  color: #0f172a !important;
+}
+
+:global(html.light) .tip-card {
+  background: rgba(15, 23, 42, 0.02);
+  border-color: rgba(15, 23, 42, 0.06);
+}
+
+:global(html.light) .tip-card:hover {
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+:global(html.light) .tip-title {
+  color: #0f172a;
+}
+
+:global(html.light) .tip-desc {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .result-dialog :deep(.el-dialog) {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+:global(html.light) .result-title {
+  color: #0f172a;
+}
+
+:global(html.light) .result-subtitle {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .result-stat {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+:global(html.light) .stat-label {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .summary-text {
+  color: rgba(15, 23, 42, 0.7);
+}
+
+:global(html.light) .summary-stat {
+  color: rgba(15, 23, 42, 0.5);
 }
 </style>

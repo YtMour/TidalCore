@@ -16,7 +16,6 @@ const scrolled = ref(false)
 
 const isDark = computed(() => themeStore.mode === 'dark')
 
-// 监听滚动
 onMounted(() => {
   const handleScroll = () => {
     scrolled.value = window.scrollY > 20
@@ -50,17 +49,14 @@ const navLinks = [
 </script>
 
 <template>
-  <div class="main-layout">
+  <div class="main-layout" :class="{ 'light-mode': !isDark }">
     <!-- Animated Background -->
     <div class="animated-bg"></div>
     <div class="particles-bg"></div>
     <div class="noise-overlay"></div>
 
     <!-- Navigation -->
-    <el-header
-      class="main-header"
-      :class="{ scrolled }"
-    >
+    <header class="main-header" :class="{ scrolled }">
       <div class="header-content">
         <!-- Logo -->
         <RouterLink to="/" class="logo-link">
@@ -69,68 +65,56 @@ const navLinks = [
         </RouterLink>
 
         <!-- Desktop Navigation -->
-        <div class="desktop-nav">
-          <el-menu
-            :default-active="route.path"
-            mode="horizontal"
-            :ellipsis="false"
-            class="nav-menu"
-            router
+        <nav class="desktop-nav">
+          <RouterLink
+            v-for="link in navLinks"
+            :key="link.to"
+            :to="link.to"
+            class="nav-link"
+            :class="{ active: route.path === link.to }"
           >
-            <el-menu-item
-              v-for="link in navLinks"
-              :key="link.to"
-              :index="link.to"
-            >
-              <el-icon><component :is="link.icon" /></el-icon>
-              <span>{{ link.label }}</span>
-            </el-menu-item>
-          </el-menu>
-        </div>
+            <el-icon :size="16"><component :is="link.icon" /></el-icon>
+            <span>{{ link.label }}</span>
+          </RouterLink>
+        </nav>
 
         <!-- Desktop User Menu -->
         <div class="desktop-user">
           <!-- Theme Toggle -->
-          <el-button text @click="toggleTheme" class="theme-btn">
+          <button @click="toggleTheme" class="theme-toggle" :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
             <el-icon :size="18">
               <Moon v-if="isDark" />
               <Sunny v-else />
             </el-icon>
-          </el-button>
+          </button>
 
           <template v-if="userStore.isLoggedIn">
             <RouterLink to="/dashboard" class="user-link" :class="{ active: route.path === '/dashboard' }">
-              <el-icon><User /></el-icon>
+              <el-icon :size="16"><User /></el-icon>
               <span>我的</span>
             </RouterLink>
-            <el-button text @click="handleLogout" class="logout-btn">
-              <el-icon><SwitchButton /></el-icon>
+            <button @click="handleLogout" class="logout-btn">
+              <el-icon :size="16"><SwitchButton /></el-icon>
               <span>退出</span>
-            </el-button>
+            </button>
           </template>
           <template v-else>
-            <RouterLink to="/login">
-              <el-button type="primary" class="login-btn">
-                <el-icon><User /></el-icon>
-                <span>登录</span>
-              </el-button>
+            <RouterLink to="/login" class="login-btn">
+              <el-icon :size="16"><User /></el-icon>
+              <span>登录</span>
             </RouterLink>
           </template>
         </div>
 
         <!-- Mobile Menu Button -->
-        <el-button
-          class="mobile-menu-btn"
-          text
-          @click="mobileMenuOpen = !mobileMenuOpen"
-        >
+        <button class="mobile-menu-btn" @click="mobileMenuOpen = !mobileMenuOpen">
           <el-icon :size="24">
             <Fold v-if="mobileMenuOpen" />
             <Expand v-else />
           </el-icon>
-        </el-button>
+        </button>
       </div>
-    </el-header>
+    </header>
 
     <!-- Mobile Menu Drawer -->
     <el-drawer
@@ -173,10 +157,7 @@ const navLinks = [
             <el-icon :size="20"><User /></el-icon>
             <span>我的</span>
           </RouterLink>
-          <div
-            class="mobile-nav-item"
-            @click="handleLogout"
-          >
+          <div class="mobile-nav-item" @click="handleLogout">
             <el-icon :size="20"><SwitchButton /></el-icon>
             <span>退出登录</span>
           </div>
@@ -194,20 +175,14 @@ const navLinks = [
     </el-drawer>
 
     <!-- Main Content -->
-    <el-main class="main-content">
+    <main class="main-content">
       <slot />
-    </el-main>
+    </main>
 
     <!-- Footer -->
-    <el-footer class="main-footer">
-      <div class="footer-bg">
-        <div class="footer-blob footer-blob-1"></div>
-        <div class="footer-blob footer-blob-2"></div>
-      </div>
-
+    <footer class="main-footer">
       <div class="footer-content">
         <div class="footer-top">
-          <!-- Logo and tagline -->
           <div class="footer-brand">
             <div class="footer-logo">
               <span class="logo-icon">🌊</span>
@@ -216,29 +191,21 @@ const navLinks = [
             <p class="footer-tagline">开源盆底肌训练平台</p>
           </div>
 
-          <!-- Links -->
           <div class="footer-links">
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="footer-link"
-            >
-              <el-icon><Link /></el-icon>
-              <span>GitHub</span>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="footer-link">
+              GitHub
             </a>
-            <el-divider direction="vertical" />
+            <span class="footer-divider">·</span>
             <span class="footer-license">MIT License</span>
           </div>
         </div>
 
-        <!-- Bottom bar -->
         <div class="footer-bottom">
           <p>Made with <span class="heart">♥</span> for health</p>
-          <p>© 2024 TidalCore. All rights reserved.</p>
+          <p>© 2024 TidalCore</p>
         </div>
       </div>
-    </el-footer>
+    </footer>
   </div>
 </template>
 
@@ -250,23 +217,28 @@ const navLinks = [
   position: relative;
 }
 
-/* Header Styles */
+/* ===== Header ===== */
 .main-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  height: 64px;
-  padding: 0 24px;
+  height: 60px;
+  padding: 0 20px;
   background: transparent;
   border-bottom: 1px solid transparent;
   transition: all 0.3s ease;
 }
 
 .main-header.scrolled {
-  background: rgba(15, 23, 42, 0.9);
-  backdrop-filter: blur(20px);
-  border-bottom-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Light mode header */
+.light-mode .main-header.scrolled {
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
 }
 
 .header-content {
@@ -276,27 +248,29 @@ const navLinks = [
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
 }
 
-/* Logo */
+/* ===== Logo ===== */
 .logo-link {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .logo-icon {
-  font-size: 28px;
+  font-size: 24px;
   transition: transform 0.3s ease;
 }
 
 .logo-link:hover .logo-icon {
-  transform: scale(1.1);
+  transform: scale(1.1) rotate(-5deg);
 }
 
 .logo-text {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   background: linear-gradient(135deg, #8b5cf6, #ec4899);
   -webkit-background-clip: text;
@@ -304,52 +278,67 @@ const navLinks = [
   background-clip: text;
 }
 
-/* Desktop Navigation */
+/* ===== Desktop Navigation ===== */
 .desktop-nav {
   display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+/* Light mode nav */
+.light-mode .desktop-nav {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 @media (min-width: 768px) {
   .desktop-nav {
-    display: block;
+    display: flex;
   }
 }
 
-.nav-menu {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 12px;
-  padding: 4px;
-  border-bottom: none !important;
-}
-
-.nav-menu :deep(.el-menu-item) {
-  background: transparent !important;
-  border-radius: 8px;
-  margin: 0 2px;
-  padding: 0 16px;
-  height: 36px;
-  line-height: 36px;
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.6);
-  border-bottom: none !important;
+  text-decoration: none;
   transition: all 0.2s ease;
 }
 
-.nav-menu :deep(.el-menu-item:hover) {
-  background: rgba(255, 255, 255, 0.05) !important;
+.light-mode .nav-link {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+.nav-link:hover {
   color: #fff;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.nav-menu :deep(.el-menu-item.is-active) {
-  background: rgba(255, 255, 255, 0.1) !important;
+.light-mode .nav-link:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.nav-link.active {
   color: #fff;
+  background: rgba(139, 92, 246, 0.2);
 }
 
-.nav-menu :deep(.el-menu-item .el-icon) {
-  margin-right: 6px;
+.light-mode .nav-link.active {
+  color: #7c3aed;
+  background: rgba(139, 92, 246, 0.1);
 }
 
-/* Desktop User Menu */
+/* ===== Desktop User Menu ===== */
 .desktop-user {
   display: none;
   align-items: center;
@@ -362,16 +351,56 @@ const navLinks = [
   }
 }
 
+/* Theme Toggle */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.light-mode .theme-toggle {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.03);
+  color: rgba(15, 23, 42, 0.6);
+}
+
+.theme-toggle:hover {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.light-mode .theme-toggle:hover {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* User Link */
 .user-link {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
   border: 1px solid transparent;
   transition: all 0.2s ease;
+}
+
+.light-mode .user-link {
+  color: rgba(15, 23, 42, 0.6);
 }
 
 .user-link:hover {
@@ -380,60 +409,102 @@ const navLinks = [
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-.user-link.active {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.08);
+.light-mode .user-link:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
+.user-link.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.light-mode .user-link.active {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Logout Button */
 .logout-btn {
-  color: rgba(255, 255, 255, 0.6) !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.light-mode .logout-btn {
+  color: rgba(15, 23, 42, 0.6);
 }
 
 .logout-btn:hover {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.05) !important;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
+.light-mode .logout-btn:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Login Button */
 .login-btn {
-  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
-  border: none !important;
-  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  text-decoration: none;
+  transition: all 0.2s ease;
 }
 
-/* Theme Toggle Button */
-.theme-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 6px !important;
-  color: rgba(255, 255, 255, 0.6) !important;
-  transition: all 0.2s ease !important;
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
 }
 
-.theme-btn:hover {
-  color: #fbbf24 !important;
-  background: rgba(251, 191, 36, 0.1) !important;
-}
-
-/* Light mode adjustments */
-html.light .theme-btn {
-  color: rgba(15, 23, 42, 0.6) !important;
-}
-
-html.light .theme-btn:hover {
-  color: #f59e0b !important;
-  background: rgba(245, 158, 11, 0.1) !important;
-}
-
-/* Mobile Menu Button */
+/* ===== Mobile Menu Button ===== */
 .mobile-menu-btn {
   display: flex;
-  color: rgba(255, 255, 255, 0.7) !important;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.light-mode .mobile-menu-btn {
+  background: rgba(0, 0, 0, 0.03);
+  color: rgba(15, 23, 42, 0.7);
 }
 
 .mobile-menu-btn:hover {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.05) !important;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.light-mode .mobile-menu-btn:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.06);
 }
 
 @media (min-width: 768px) {
@@ -442,15 +513,19 @@ html.light .theme-btn:hover {
   }
 }
 
-/* Mobile Drawer */
+/* ===== Mobile Drawer ===== */
 .mobile-drawer :deep(.el-drawer__body) {
   background: rgba(15, 23, 42, 0.98);
   backdrop-filter: blur(20px);
   padding-top: 80px;
 }
 
+.light-mode .mobile-drawer :deep(.el-drawer__body) {
+  background: rgba(255, 255, 255, 0.98);
+}
+
 .mobile-menu {
-  padding: 0 24px;
+  padding: 0 20px;
 }
 
 .mobile-nav-item {
@@ -466,14 +541,28 @@ html.light .theme-btn:hover {
   transition: all 0.2s ease;
 }
 
+.light-mode .mobile-nav-item {
+  color: rgba(15, 23, 42, 0.7);
+}
+
 .mobile-nav-item:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.05);
 }
 
+.light-mode .mobile-nav-item:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.04);
+}
+
 .mobile-nav-item.active {
   color: #fff;
   background: rgba(255, 255, 255, 0.1);
+}
+
+.light-mode .mobile-nav-item.active {
+  color: #7c3aed;
+  background: rgba(139, 92, 246, 0.1);
 }
 
 .mobile-register-btn {
@@ -488,57 +577,29 @@ html.light .theme-btn:hover {
   border: none !important;
 }
 
-/* Main Content */
+/* ===== Main Content ===== */
 .main-content {
   flex: 1;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  padding: 32px 24px;
+  padding: 24px 20px;
 }
 
 @media (min-width: 768px) {
   .main-content {
-    padding: 48px 24px;
+    padding: 40px 24px;
   }
 }
 
-/* Footer */
+/* ===== Footer ===== */
 .main-footer {
-  position: relative;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 40px 24px;
-  height: auto;
-  overflow: hidden;
+  padding: 32px 20px;
 }
 
-.footer-bg {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.footer-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-}
-
-.footer-blob-1 {
-  bottom: 0;
-  left: 25%;
-  width: 256px;
-  height: 128px;
-  background: linear-gradient(to top, rgba(139, 92, 246, 0.05), transparent);
-}
-
-.footer-blob-2 {
-  bottom: 0;
-  right: 25%;
-  width: 192px;
-  height: 96px;
-  background: linear-gradient(to top, rgba(236, 72, 153, 0.05), transparent);
+.light-mode .main-footer {
+  border-top-color: rgba(0, 0, 0, 0.06);
 }
 
 .footer-content {
@@ -550,7 +611,7 @@ html.light .theme-btn:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
 }
 
 @media (min-width: 768px) {
@@ -564,7 +625,7 @@ html.light .theme-btn:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 @media (min-width: 768px) {
@@ -577,54 +638,82 @@ html.light .theme-btn:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: rgba(255, 255, 255, 0.6);
+}
+
+.footer-logo .logo-icon {
+  font-size: 20px;
 }
 
 .footer-logo .logo-text {
   font-size: 16px;
-  font-weight: 600;
 }
 
 .footer-tagline {
-  font-size: 14px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.4);
   margin: 0;
+}
+
+.light-mode .footer-tagline {
+  color: rgba(15, 23, 42, 0.4);
 }
 
 .footer-links {
   display: flex;
   align-items: center;
-  gap: 16px;
-  font-size: 14px;
+  gap: 12px;
+  font-size: 13px;
 }
 
 .footer-link {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   color: rgba(255, 255, 255, 0.4);
   text-decoration: none;
   transition: color 0.2s ease;
+}
+
+.light-mode .footer-link {
+  color: rgba(15, 23, 42, 0.4);
 }
 
 .footer-link:hover {
   color: rgba(255, 255, 255, 0.7);
 }
 
+.light-mode .footer-link:hover {
+  color: rgba(15, 23, 42, 0.7);
+}
+
+.footer-divider {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.light-mode .footer-divider {
+  color: rgba(15, 23, 42, 0.2);
+}
+
 .footer-license {
   color: rgba(255, 255, 255, 0.4);
 }
 
+.light-mode .footer-license {
+  color: rgba(15, 23, 42, 0.4);
+}
+
 .footer-bottom {
-  margin-top: 32px;
-  padding-top: 24px;
+  margin-top: 24px;
+  padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.3);
+}
+
+.light-mode .footer-bottom {
+  border-top-color: rgba(0, 0, 0, 0.05);
+  color: rgba(15, 23, 42, 0.3);
 }
 
 @media (min-width: 768px) {
@@ -640,11 +729,11 @@ html.light .theme-btn:hover {
 
 /* Element Plus Overrides */
 :deep(.el-divider) {
-  border-color: rgba(255, 255, 255, 0.1);
-  margin: 16px 0;
+  border-color: rgba(255, 255, 255, 0.08);
+  margin: 12px 0;
 }
 
-:deep(.el-divider--vertical) {
-  border-color: rgba(255, 255, 255, 0.2);
+.light-mode :deep(.el-divider) {
+  border-color: rgba(0, 0, 0, 0.08);
 }
 </style>

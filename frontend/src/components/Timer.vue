@@ -253,34 +253,34 @@ onUnmounted(() => {
     </div>
 
     <!-- Control Buttons -->
-    <div class="flex items-center gap-4">
+    <div class="control-buttons">
       <button
         v-if="!trainingStore.isRunning"
         @click="handleStart"
-        class="group relative btn-gradient px-8 py-4 rounded-lg text-white font-semibold text-lg flex items-center gap-3 overflow-hidden"
-        :class="{ 'scale-95': isAnimating }"
+        class="start-btn"
+        :class="{ 'is-animating': isAnimating }"
       >
-        <Play class="w-6 h-6 fill-current" />
-        <span>开始训练</span>
+        <span class="btn-glow"></span>
+        <span class="btn-content">
+          <Play class="btn-icon" />
+          <span class="btn-text">开始训练</span>
+        </span>
       </button>
 
       <template v-else>
-        <button
-          @click="handleStop"
-          class="px-8 py-4 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-white font-semibold text-lg flex items-center gap-3 transition-all duration-200 border border-white/[0.08] hover:border-white/[0.12]"
-        >
-          <Square class="w-5 h-5 fill-current" />
-          <span>结束训练</span>
+        <button @click="handleStop" class="stop-btn">
+          <Square class="btn-icon filled" />
+          <span class="btn-text">结束训练</span>
         </button>
       </template>
 
       <button
         v-if="trainingStore.currentCycle > 0 && !trainingStore.isRunning"
         @click="handleReset"
-        class="icon-btn w-12 h-12 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06]"
+        class="reset-btn"
         title="重置"
       >
-        <RotateCcw class="w-5 h-5" />
+        <RotateCcw class="reset-icon" />
       </button>
     </div>
 
@@ -371,29 +371,178 @@ onUnmounted(() => {
   50% { opacity: 1; }
 }
 
-/* Button styles */
-.btn-gradient {
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
-  transition: all 0.2s ease;
-  border-radius: 10px !important;
+/* Control Buttons Container */
+.control-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.btn-gradient:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.35);
-}
-
-.icon-btn {
+/* Start Button - Enhanced Design */
+.start-btn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.6);
-  transition: all 0.2s ease;
-  border-radius: 10px !important;
+  padding: 14px 36px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #8b5cf6, #a855f7, #ec4899);
+  background-size: 200% 200%;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.35);
 }
 
-.icon-btn:hover {
+.start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.5);
+  background-position: 100% 0;
+}
+
+.start-btn:active,
+.start-btn.is-animating {
+  transform: scale(0.97);
+}
+
+.start-btn .btn-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.start-btn:hover .btn-glow {
+  opacity: 1;
+}
+
+.start-btn .btn-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1;
+}
+
+.start-btn .btn-icon {
+  width: 22px;
+  height: 22px;
   color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  fill: currentColor;
+}
+
+.start-btn .btn-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+/* Stop Button */
+.stop-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stop-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.stop-btn .btn-icon {
+  width: 18px;
+  height: 18px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stop-btn .btn-icon.filled {
+  fill: currentColor;
+}
+
+.stop-btn .btn-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Reset Button */
+.reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.reset-btn .reset-icon {
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s ease;
+}
+
+.reset-btn:hover .reset-icon {
+  color: #fff;
+}
+
+/* Light Mode Support */
+:global(html.light) .stop-btn {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+:global(html.light) .stop-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+:global(html.light) .stop-btn .btn-icon {
+  color: rgba(15, 23, 42, 0.8);
+}
+
+:global(html.light) .stop-btn .btn-text {
+  color: #0f172a;
+}
+
+:global(html.light) .reset-btn {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+:global(html.light) .reset-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:global(html.light) .reset-btn .reset-icon {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+:global(html.light) .reset-btn:hover .reset-icon {
+  color: #0f172a;
+}
+
+:global(html.light) .progress-track {
+  border-color: rgba(15, 23, 42, 0.08);
+  background: rgba(15, 23, 42, 0.06) !important;
 }
 </style>

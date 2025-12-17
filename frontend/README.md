@@ -8,16 +8,44 @@ TidalCore 前端应用 - 专业的盆底肌训练平台。
 - **构建工具**: Vite 7
 - **状态管理**: Pinia 3
 - **路由**: Vue Router 4
-- **UI 组件库**: Element Plus 2.x (暗色主题)
-- **样式**: Tailwind CSS 4 + 自定义 CSS
-- **图标**: @element-plus/icons-vue
+- **UI 组件库**: Element Plus 2.x (支持亮/暗色主题)
+- **样式**: Tailwind CSS 4 + 自定义 CSS 设计系统
+- **图标**: @element-plus/icons-vue, Lucide Vue
 - **HTTP 客户端**: Axios
 - **动画**: Canvas Confetti, VueUse Motion
 - **工具库**: VueUse
 
+## 主要特性
+
+### 主题系统
+
+项目支持亮色/暗色主题切换，使用 Pinia store 管理主题状态：
+
+```typescript
+// store/theme.ts
+export const useThemeStore = defineStore('theme', () => {
+  const mode = ref<'light' | 'dark'>('dark')
+
+  function toggle() {
+    mode.value = mode.value === 'dark' ? 'light' : 'dark'
+  }
+
+  return { mode, toggle }
+})
+```
+
+主题切换按钮位于顶部导航栏右侧，点击可在亮色和暗色模式之间切换。
+
+### UI 设计规范
+
+- **圆角**: 统一使用 8-10px 圆角，专业简洁
+- **渐变**: 主色调为紫色-粉色渐变 (`#8b5cf6` → `#ec4899`)
+- **玻璃态**: 半透明背景 + 模糊效果
+- **布局**: 图标与文字水平排列，遵循左右布局原则
+
 ## Element Plus 配置
 
-项目使用 Element Plus 作为主要 UI 组件库，并配置了暗色主题：
+项目使用 Element Plus 作为主要 UI 组件库，支持亮/暗色主题：
 
 ```typescript
 // main.ts
@@ -32,6 +60,10 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 app.use(ElementPlus)
+
+// 初始化主题
+const themeStore = useThemeStore()
+themeStore.initTheme()
 ```
 
 ### 常用组件
@@ -77,13 +109,14 @@ src/
 ├── components/             # 组件
 │   ├── ui/                # 通用 UI 组件 (保留兼容)
 │   ├── Heatmap.vue        # 热力图组件
-│   ├── LeaderboardTable.vue # 排行榜表格组件
+│   ├── LeaderboardTable.vue # 排行榜卡片组件
 │   └── Timer.vue          # 训练计时器组件
 ├── layouts/                # 布局组件
-│   └── MainLayout.vue     # 主布局 (Element Plus)
+│   └── MainLayout.vue     # 主布局 (含导航栏、主题切换)
 ├── router/                 # 路由配置
 │   └── index.ts
 ├── store/                  # 状态管理
+│   ├── theme.ts           # 主题状态 (亮/暗色)
 │   ├── training.ts        # 训练状态
 │   └── user.ts            # 用户状态
 ├── views/                  # 页面视图
@@ -95,7 +128,7 @@ src/
 │   └── Train.vue          # 训练页面
 ├── App.vue                 # 根组件
 ├── main.ts                 # 入口文件
-└── style.css              # 全局样式
+└── style.css              # 全局样式 (含亮/暗色主题变量)
 ```
 
 ## 快速开始
@@ -148,10 +181,35 @@ npm run preview
 ### UI/UX 特性
 
 - 响应式设计，支持移动端和桌面端
-- Element Plus 暗色主题，护眼设计
+- 支持亮色/暗色主题切换
 - 流畅的过渡动画和微交互
 - 玻璃拟态 (Glassmorphism) 设计风格
-- 渐变色装饰和光晕效果
+- 紫粉渐变主色调和光晕效果
+- 统一的 8-10px 圆角设计
+- 图标与文字水平排列布局
+
+## 组件说明
+
+### Timer.vue 训练计时器
+
+- 环形进度条显示当前阶段进度
+- 渐变色「开始训练」按钮
+- 进度条带闪光动画效果
+- 支持亮/暗色主题
+
+### LeaderboardTable.vue 排行榜
+
+- 卡片式列表设计
+- 前三名特殊渐变边框
+- 用户头像和统计数据水平布局
+- 支持亮/暗色主题
+
+### MainLayout.vue 主布局
+
+- 顶部导航栏 (玻璃态效果)
+- 导航链接水平布局
+- 主题切换按钮 (太阳/月亮图标)
+- 移动端响应式菜单
 
 ## 设计系统
 
@@ -172,7 +230,7 @@ background: linear-gradient(135deg, #10b981, #14b8a6);  /* 绿青渐变 */
 --aurora-orange: #fb923c;   /* 橙色 */
 ```
 
-### 暗色背景
+### 暗色模式背景
 
 ```css
 /* 卡片背景 */
@@ -182,6 +240,33 @@ border: 1px solid rgba(255, 255, 255, 0.06);
 /* 装饰光晕 */
 background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), transparent);
 filter: blur(60px);
+```
+
+### 亮色模式背景
+
+```css
+/* 页面背景 */
+background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+
+/* 卡片背景 */
+background: rgba(255, 255, 255, 0.9);
+border: 1px solid rgba(15, 23, 42, 0.08);
+
+/* 文字颜色 */
+color: #0f172a;
+```
+
+### 亮色模式样式覆盖
+
+使用 `:global(html.light)` 选择器覆盖组件样式：
+
+```css
+/* 在 scoped 样式中覆盖亮色模式 */
+:global(html.light) .my-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
 ```
 
 ### Element Plus 样式覆盖
@@ -302,7 +387,13 @@ onMounted(() => {
 .content-card {
   background: rgba(30, 30, 46, 0.8) !important;
   border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 16px !important;
+  border-radius: 10px !important;
+}
+
+/* 亮色模式下 */
+:global(html.light) .content-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
 }
 </style>
 ```

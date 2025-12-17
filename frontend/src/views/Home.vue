@@ -1005,4 +1005,115 @@ export default {
     justify-content: center;
   }
 }
+
+/* Light Mode Support */
+:global(html.light) .hero-badge {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.08);
+  color: rgba(15, 23, 42, 0.7);
+}
+
+:global(html.light) .hero-subtitle {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+:global(html.light) .hero-subtitle .highlight {
+  color: rgba(15, 23, 42, 0.8);
+}
+
+:global(html.light) .cta-secondary {
+  background: rgba(15, 23, 42, 0.04) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: #0f172a !important;
+}
+
+:global(html.light) .cta-secondary:hover {
+  background: rgba(15, 23, 42, 0.08) !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+}
+
+:global(html.light) .stat-card {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+:global(html.light) .stat-card:hover {
+  background: rgba(15, 23, 42, 0.05);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:global(html.light) .stat-value {
+  color: #0f172a;
+}
+
+:global(html.light) .stat-suffix {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+:global(html.light) .stat-label {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .heatmap-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+:global(html.light) .header-text h2 {
+  color: #0f172a;
+}
+
+:global(html.light) .header-text p {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .section-title {
+  color: #0f172a;
+}
+
+:global(html.light) .section-subtitle {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .feature-card {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+:global(html.light) .feature-card:hover {
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+:global(html.light) .feature-title {
+  color: #0f172a;
+}
+
+:global(html.light) .feature-card:hover .feature-title {
+  color: #7c3aed;
+}
+
+:global(html.light) .feature-desc {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .step-title {
+  color: #0f172a;
+}
+
+:global(html.light) .step-desc {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .cta-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+:global(html.light) .cta-title {
+  color: #0f172a;
+}
+
+:global(html.light) .cta-text {
+  color: rgba(15, 23, 42, 0.5);
+}
 </style>

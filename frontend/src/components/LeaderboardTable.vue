@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import type { LeaderboardUser } from '@/api/checkin'
-import { Trophy, Flame, Target, Award } from 'lucide-vue-next'
 import { Skeleton } from '@/components/ui'
 
 defineProps<{
@@ -17,13 +16,18 @@ onMounted(() => {
   }, 100)
 })
 
-function getMedal(index: number): { icon: string; color: string } | null {
-  const medals = [
-    { icon: '🥇', color: 'from-yellow-400 to-amber-500' },
-    { icon: '🥈', color: 'from-gray-300 to-gray-400' },
-    { icon: '🥉', color: 'from-amber-600 to-orange-700' }
+function getMedalEmoji(index: number): string {
+  const medals = ['🥇', '🥈', '🥉']
+  return medals[index] || ''
+}
+
+function getMedalBg(index: number): string {
+  const bgs = [
+    'linear-gradient(135deg, #fbbf24, #f59e0b)',
+    'linear-gradient(135deg, #94a3b8, #64748b)',
+    'linear-gradient(135deg, #d97706, #b45309)'
   ]
-  return medals[index] || null
+  return bgs[index] || 'rgba(255, 255, 255, 0.08)'
 }
 
 function maskUsername(username: string): string {
@@ -34,120 +38,376 @@ function maskUsername(username: string): string {
 }
 
 function getStreakColor(streak: number): string {
-  if (streak >= 30) return 'text-orange-400'
-  if (streak >= 14) return 'text-amber-400'
-  if (streak >= 7) return 'text-yellow-400'
-  return 'text-white/70'
+  if (streak >= 30) return '#fb923c'
+  if (streak >= 14) return '#fbbf24'
+  if (streak >= 7) return '#facc15'
+  return 'inherit'
 }
 </script>
 
 <template>
-  <div class="glass-card overflow-hidden">
+  <div class="leaderboard-container">
     <!-- Loading State -->
-    <div v-if="loading" class="p-6 space-y-4">
-      <div v-for="i in 5" :key="i" class="flex items-center gap-4">
+    <div v-if="loading" class="loading-state">
+      <div v-for="i in 5" :key="i" class="loading-row">
         <Skeleton width="2rem" height="2rem" rounded="full" />
         <Skeleton width="40%" height="1.25rem" />
-        <div class="ml-auto flex gap-8">
-          <Skeleton width="3rem" height="1.25rem" />
-          <Skeleton width="3rem" height="1.25rem" />
-          <Skeleton width="3rem" height="1.25rem" />
-        </div>
+        <Skeleton width="4rem" height="1.25rem" class="ml-auto" />
       </div>
     </div>
 
-    <!-- Table -->
-    <div v-else class="overflow-x-auto">
-      <table class="w-full">
-        <thead>
-          <tr class="border-b border-white/5">
-            <th class="px-6 py-4 text-left text-sm font-medium text-white/50">排名</th>
-            <th class="px-6 py-4 text-left text-sm font-medium text-white/50">用户</th>
-            <th class="px-6 py-4 text-right text-sm font-medium text-white/50">
-              <span class="inline-flex items-center gap-1.5">
-                <Flame class="w-4 h-4 text-orange-400" />
-                连续天数
-              </span>
-            </th>
-            <th class="px-6 py-4 text-right text-sm font-medium text-white/50">
-              <span class="inline-flex items-center gap-1.5">
-                <Trophy class="w-4 h-4 text-purple-400" />
-                最高记录
-              </span>
-            </th>
-            <th class="px-6 py-4 text-right text-sm font-medium text-white/50">
-              <span class="inline-flex items-center gap-1.5">
-                <Target class="w-4 h-4 text-emerald-400" />
-                总打卡
-              </span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <TransitionGroup name="list">
-            <tr
-              v-for="(user, index) in users"
-              :key="user.id"
-              class="table-row border-b border-white/5 last:border-0"
-              :style="{ transitionDelay: mounted ? `${index * 50}ms` : '0ms' }"
-            >
-              <!-- Rank -->
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                  <template v-if="getMedal(index)">
-                    <span class="text-2xl">{{ getMedal(index)!.icon }}</span>
-                  </template>
-                  <template v-else>
-                    <span class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/50 text-sm font-medium">
-                      {{ index + 1 }}
-                    </span>
-                  </template>
-                </div>
-              </td>
+    <!-- Empty State -->
+    <div v-else-if="users.length === 0" class="empty-state">
+      <div class="empty-icon">🏆</div>
+      <p class="empty-title">暂无排行数据</p>
+      <p class="empty-desc">成为第一个打卡的人吧!</p>
+    </div>
 
-              <!-- Username -->
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
-                    :class="index < 3 ? `bg-gradient-to-br ${getMedal(index)!.color}` : 'bg-white/10'"
-                  >
-                    {{ user.username?.[0]?.toUpperCase() || '?' }}
-                  </div>
-                  <span class="text-white font-medium">{{ maskUsername(user.username) }}</span>
-                </div>
-              </td>
+    <!-- Leaderboard List -->
+    <div v-else class="leaderboard-list">
+      <div
+        v-for="(user, index) in users"
+        :key="user.id"
+        class="user-card"
+        :class="{ 'top-three': index < 3, [`rank-${index + 1}`]: index < 3 }"
+        :style="{ animationDelay: mounted ? `${index * 40}ms` : '0ms' }"
+      >
+        <!-- Rank Badge -->
+        <div class="rank-badge" :class="{ 'is-medal': index < 3 }">
+          <template v-if="index < 3">
+            <span class="medal-emoji">{{ getMedalEmoji(index) }}</span>
+          </template>
+          <template v-else>
+            <span class="rank-num">{{ index + 1 }}</span>
+          </template>
+        </div>
 
-              <!-- Streak -->
-              <td class="px-6 py-4 text-right">
-                <span class="font-bold text-lg" :class="getStreakColor(user.streak)">
-                  {{ user.streak }}
-                </span>
-                <span class="text-white/40 text-sm ml-1">天</span>
-              </td>
+        <!-- User Avatar & Name -->
+        <div class="user-info">
+          <div
+            class="user-avatar"
+            :style="{ background: index < 3 ? getMedalBg(index) : undefined }"
+          >
+            {{ user.username?.[0]?.toUpperCase() || '?' }}
+          </div>
+          <span class="user-name">{{ maskUsername(user.username) }}</span>
+        </div>
 
-              <!-- Max Streak -->
-              <td class="px-6 py-4 text-right text-white/60">
-                {{ user.max_streak }} 天
-              </td>
-
-              <!-- Total -->
-              <td class="px-6 py-4 text-right text-white/60">
-                {{ user.total_checkin }} 次
-              </td>
-            </tr>
-          </TransitionGroup>
-
-          <!-- Empty State -->
-          <tr v-if="users.length === 0">
-            <td colspan="5" class="px-6 py-12 text-center">
-              <Award class="w-12 h-12 mx-auto text-white/20 mb-3" />
-              <p class="text-white/50">暂无排行数据</p>
-              <p class="text-white/30 text-sm mt-1">成为第一个打卡的人吧！</p>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <!-- Stats -->
+        <div class="user-stats">
+          <div class="stat-item main-stat">
+            <span class="stat-value" :style="{ color: getStreakColor(user.streak) }">
+              {{ user.streak }}
+            </span>
+            <span class="stat-label">连续</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-value">{{ user.max_streak }}</span>
+            <span class="stat-label">最高</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-value">{{ user.total_checkin }}</span>
+            <span class="stat-label">总计</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.leaderboard-container {
+  background: var(--card-bg, rgba(30, 30, 46, 0.6));
+  border: 1px solid var(--card-border, rgba(255, 255, 255, 0.06));
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Loading State */
+.loading-state {
+  padding: 20px;
+}
+
+.loading-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.loading-row + .loading-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Empty State */
+.empty-state {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 8px;
+}
+
+.empty-desc {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+}
+
+/* Leaderboard List */
+.leaderboard-list {
+  padding: 8px;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: transparent;
+  transition: all 0.2s ease;
+  animation: fadeIn 0.4s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.user-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.user-card.top-three {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  margin-bottom: 8px;
+}
+
+.user-card.rank-1 {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(245, 158, 11, 0.04));
+  border-color: rgba(251, 191, 36, 0.15);
+}
+
+.user-card.rank-2 {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.08), rgba(100, 116, 139, 0.04));
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.user-card.rank-3 {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.08), rgba(180, 83, 9, 0.04));
+  border-color: rgba(217, 119, 6, 0.15);
+}
+
+/* Rank Badge */
+.rank-badge {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rank-badge.is-medal {
+  background: transparent;
+}
+
+.medal-emoji {
+  font-size: 24px;
+}
+
+.rank-num {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* User Info */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* User Stats */
+.user-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 40px;
+}
+
+.stat-item.main-stat .stat-value {
+  font-size: 18px;
+}
+
+.stat-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.stat-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .user-stats {
+    gap: 8px;
+  }
+
+  .stat-item {
+    min-width: 32px;
+  }
+
+  .stat-item.main-stat .stat-value {
+    font-size: 16px;
+  }
+
+  .stat-value {
+    font-size: 13px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+  }
+
+  .stat-divider {
+    height: 20px;
+  }
+}
+
+/* Light mode */
+:global(html.light) .leaderboard-container {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+:global(html.light) .user-card:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+:global(html.light) .user-card.top-three {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+:global(html.light) .user-card.rank-1 {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+:global(html.light) .user-card.rank-2 {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.1), rgba(100, 116, 139, 0.05));
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+:global(html.light) .user-card.rank-3 {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.1), rgba(180, 83, 9, 0.05));
+  border-color: rgba(217, 119, 6, 0.2);
+}
+
+:global(html.light) .rank-badge {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+:global(html.light) .rank-num {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+:global(html.light) .user-avatar {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+:global(html.light) .user-name {
+  color: #0f172a;
+}
+
+:global(html.light) .stat-value {
+  color: #0f172a;
+}
+
+:global(html.light) .stat-label {
+  color: rgba(15, 23, 42, 0.4);
+}
+
+:global(html.light) .stat-divider {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+:global(html.light) .empty-title {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+:global(html.light) .empty-desc {
+  color: rgba(15, 23, 42, 0.4);
+}
+
+:global(html.light) .loading-row + .loading-row {
+  border-top-color: rgba(0, 0, 0, 0.04);
+}
+</style>
