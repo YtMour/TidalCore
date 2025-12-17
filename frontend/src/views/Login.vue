@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
-import { Card, Input, Button } from '@/components/ui'
 import { useUserStore } from '@/store/user'
-import { LogIn, User, Lock, AlertCircle, Sparkles, Shield, Zap } from 'lucide-vue-next'
+import type { FormInstance, FormRules } from 'element-plus'
+import { User, Lock, Timer, Star } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 
-const form = ref({
+const formRef = ref<FormInstance>()
+const form = reactive({
   username: '',
   password: ''
 })
@@ -18,17 +19,13 @@ const loading = ref(false)
 const error = ref('')
 const mounted = ref(false)
 
-const features = [
-  { icon: Shield, text: '安全加密存储' },
-  { icon: Zap, text: '快速登录体验' },
-  { icon: Sparkles, text: '个性化训练记录' }
-]
+const rules = reactive<FormRules>({
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+})
 
 onMounted(() => {
-  setTimeout(() => {
-    mounted.value = true
-  }, 100)
-
+  setTimeout(() => { mounted.value = true }, 100)
   if (route.query.expired === '1') {
     error.value = '登录已过期，请重新登录'
   }
@@ -36,140 +33,254 @@ onMounted(() => {
 
 function isValidRedirect(url: string): boolean {
   if (!url) return false
-  if (url.startsWith('/') && !url.startsWith('//')) {
-    return true
-  }
-  return false
+  return url.startsWith('/') && !url.startsWith('//')
 }
 
 async function handleSubmit() {
-  if (!form.value.username || !form.value.password) {
-    error.value = '请填写用户名和密码'
-    return
-  }
-
-  loading.value = true
-  error.value = ''
-
-  try {
-    await userStore.login(form.value)
-    const redirect = route.query.redirect as string
-    if (isValidRedirect(redirect)) {
-      router.push(redirect)
-    } else {
-      router.push('/')
+  if (!formRef.value) return
+  await formRef.value.validate(async (valid) => {
+    if (!valid) return
+    loading.value = true
+    error.value = ''
+    try {
+      await userStore.login(form)
+      const redirect = route.query.redirect as string
+      router.push(isValidRedirect(redirect) ? redirect : '/')
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '登录失败'
+    } finally {
+      loading.value = false
     }
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : '登录失败'
-  } finally {
-    loading.value = false
-  }
+  })
 }
 </script>
 
 <template>
   <MainLayout>
-    <div class="min-h-[70vh] flex items-center justify-center py-12 relative">
-      <!-- Decorative background elements -->
-      <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-br from-violet-500/20 to-purple-500/10 rounded-full blur-3xl animate-float-slow"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-48 h-48 bg-gradient-to-br from-pink-500/15 to-rose-500/10 rounded-full blur-3xl animate-float-medium" style="animation-delay: -3s;"></div>
+    <div class="login-container">
+      <div class="login-bg">
+        <div class="login-blob login-blob-1"></div>
+        <div class="login-blob login-blob-2"></div>
       </div>
 
-      <div
-        class="w-full max-w-md relative transition-all duration-1000"
-        :class="mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
-      >
-        <Card padding="lg" class="relative overflow-hidden">
-          <!-- Decorative corner gradient -->
-          <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-violet-500/10 to-transparent rounded-full blur-2xl pointer-events-none"></div>
-
-          <div class="relative">
-            <!-- Header -->
-            <div class="text-center mb-8">
-              <div class="w-18 h-18 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center shadow-xl shadow-violet-500/30 p-4">
-                <LogIn class="w-9 h-9 text-white" />
-              </div>
-              <h1 class="text-2xl font-bold text-white mb-2">欢迎回来</h1>
-              <p class="text-white/50">登录以继续你的训练之旅</p>
+      <div class="login-card-wrapper" :class="{ mounted }">
+        <el-card class="login-card" shadow="always">
+          <div class="login-header">
+            <div class="login-icon">
+              <el-icon :size="36"><User /></el-icon>
             </div>
-
-            <!-- Form -->
-            <form @submit.prevent="handleSubmit" class="space-y-5">
-              <div class="relative">
-                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none mt-3">
-                  <User class="w-5 h-5" />
-                </div>
-                <Input
-                  v-model="form.username"
-                  type="text"
-                  label="用户名"
-                  placeholder="请输入用户名"
-                  autocomplete="username"
-                  class="[&_input]:pl-12"
-                />
-              </div>
-
-              <div class="relative">
-                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none mt-3">
-                  <Lock class="w-5 h-5" />
-                </div>
-                <Input
-                  v-model="form.password"
-                  type="password"
-                  label="密码"
-                  placeholder="请输入密码"
-                  autocomplete="current-password"
-                  class="[&_input]:pl-12"
-                />
-              </div>
-
-              <!-- Error Message -->
-              <Transition name="slide-up">
-                <div v-if="error" class="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                  <AlertCircle class="w-5 h-5 text-red-400 shrink-0" />
-                  <span class="text-sm text-red-400">{{ error }}</span>
-                </div>
-              </Transition>
-
-              <!-- Submit Button -->
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                :loading="loading"
-                full-width
-                class="!rounded-xl"
-              >
-                <LogIn class="w-5 h-5" />
-                {{ loading ? '登录中...' : '登录' }}
-              </Button>
-            </form>
-
-            <!-- Features -->
-            <div class="mt-6 flex items-center justify-center gap-4 flex-wrap">
-              <div
-                v-for="feature in features"
-                :key="feature.text"
-                class="flex items-center gap-1.5 text-xs text-white/40"
-              >
-                <component :is="feature.icon" class="w-3.5 h-3.5 text-violet-400" />
-                <span>{{ feature.text }}</span>
-              </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="mt-8 pt-6 border-t border-white/5 text-center">
-              <p class="text-white/50">
-                还没有账号?
-                <RouterLink to="/register" class="text-violet-400 hover:text-violet-300 font-medium transition-colors animated-underline">
-                  立即注册
-                </RouterLink>
-              </p>
-            </div>
+            <h1 class="login-title">欢迎回来</h1>
+            <p class="login-subtitle">登录以继续你的训练之旅</p>
           </div>
-        </Card>
+
+          <el-form ref="formRef" :model="form" :rules="rules" label-position="top" size="large" @submit.prevent="handleSubmit">
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model="form.username" placeholder="请输入用户名" :prefix-icon="User" autocomplete="username" />
+            </el-form-item>
+
+            <el-form-item label="密码" prop="password">
+              <el-input v-model="form.password" type="password" placeholder="请输入密码" :prefix-icon="Lock" show-password autocomplete="current-password" />
+            </el-form-item>
+
+            <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="login-error" />
+
+            <el-form-item>
+              <el-button type="primary" native-type="submit" :loading="loading" class="login-btn">
+                {{ loading ? '登录中...' : '登录' }}
+              </el-button>
+            </el-form-item>
+          </el-form>
+
+          <div class="login-features">
+            <el-tag effect="plain" round><el-icon><Lock /></el-icon> 安全加密</el-tag>
+            <el-tag effect="plain" round><el-icon><Timer /></el-icon> 快速登录</el-tag>
+            <el-tag effect="plain" round><el-icon><Star /></el-icon> 个性化记录</el-tag>
+          </div>
+
+          <el-divider />
+          <div class="login-footer">
+            <span>还没有账号?</span>
+            <RouterLink to="/register"><el-link type="primary">立即注册</el-link></RouterLink>
+          </div>
+        </el-card>
       </div>
     </div>
   </MainLayout>
 </template>
+
+<style scoped>
+.login-container {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  position: relative;
+}
+
+.login-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.login-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+.login-blob-1 {
+  top: 25%;
+  left: 25%;
+  width: 256px;
+  height: 256px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.1));
+  animation: float 6s ease-in-out infinite;
+}
+
+.login-blob-2 {
+  bottom: 25%;
+  right: 25%;
+  width: 192px;
+  height: 192px;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(244, 63, 94, 0.1));
+  animation: float 8s ease-in-out infinite;
+  animation-delay: -3s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.login-card-wrapper {
+  width: 100%;
+  max-width: 420px;
+  opacity: 0;
+  transform: translateY(32px);
+  transition: all 0.8s ease;
+}
+
+.login-card-wrapper.mounted {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.login-card {
+  background: rgba(30, 30, 46, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+.login-card :deep(.el-card__body) {
+  padding: 40px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3);
+  color: white;
+}
+
+.login-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.login-subtitle {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  margin: 0;
+}
+
+.login-error {
+  margin-bottom: 20px;
+}
+
+.login-btn {
+  width: 100%;
+  height: 48px;
+  font-size: 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
+  border: none !important;
+}
+
+.login-btn:hover {
+  opacity: 0.9;
+}
+
+.login-features {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.login-features .el-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.login-footer {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+:deep(.el-form-item__label) {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+:deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: none !important;
+}
+
+:deep(.el-input__wrapper:hover) {
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  border-color: #8b5cf6;
+}
+
+:deep(.el-input__inner) {
+  color: #fff;
+}
+
+:deep(.el-input__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+:deep(.el-divider) {
+  border-color: rgba(255, 255, 255, 0.1);
+  margin: 24px 0;
+}
+</style>

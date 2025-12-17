@@ -14,7 +14,7 @@
   --aurora-emerald: 52 211 153;
   --aurora-amber: 251 191 36;
 
-  /* Background Colors */
+  /* Background Colors - Dark Mode Default */
   --ocean-deep: 15 23 42;
   --ocean-dark: 30 41 59;
   --ocean-mid: 51 65 85;
@@ -46,6 +46,16 @@
   --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
   --glass-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
 
+  /* Text Colors */
+  --text-primary: 255 255 255;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-tertiary: rgba(255, 255, 255, 0.5);
+  --text-muted: rgba(255, 255, 255, 0.3);
+
+  /* Card Colors */
+  --card-bg: rgba(30, 30, 46, 0.8);
+  --card-border: rgba(255, 255, 255, 0.06);
+
   /* Animation Timing - Smooth & Professional */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -55,12 +65,12 @@
   --duration-normal: 250ms;
   --duration-slow: 400ms;
 
-  /* Unified Border Radius - Enterprise Standard */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 20px;
+  /* Unified Border Radius - Reduced for professional look */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
   --radius-full: 9999px;
 
   /* Spacing Scale - Consistent */
@@ -73,6 +83,32 @@
   --space-8: 32px;
   --space-10: 40px;
   --space-12: 48px;
+}
+
+/* ===== Light Mode Variables ===== */
+html.light {
+  --ocean-deep: 248 250 252;
+  --ocean-dark: 241 245 249;
+  --ocean-mid: 226 232 240;
+  --ocean-light: 99 102 241;
+  --ocean-bright: 129 140 248;
+
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-bg-hover: rgba(255, 255, 255, 0.9);
+  --glass-bg-active: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-hover: rgba(0, 0, 0, 0.12);
+  --glass-border-active: rgba(0, 0, 0, 0.16);
+  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --glass-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12);
+
+  --text-primary: 15 23 42;
+  --text-secondary: rgba(15, 23, 42, 0.7);
+  --text-tertiary: rgba(15, 23, 42, 0.5);
+  --text-muted: rgba(15, 23, 42, 0.3);
+
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-border: rgba(0, 0, 0, 0.08);
 }
 
 /* ===== Base Styles ===== */
@@ -92,9 +128,16 @@ html {
 body {
   min-height: 100vh;
   background: rgb(var(--ocean-deep));
-  color: rgba(255, 255, 255, 0.95);
+  color: rgb(var(--text-primary));
   line-height: 1.6;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Light mode body adjustments */
+html.light body {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  color: rgb(var(--text-primary));
 }
 
 /* ===== Background - Clean & Professional ===== */

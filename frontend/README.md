@@ -4,14 +4,66 @@ TidalCore 前端应用 - 专业的盆底肌训练平台。
 
 ## 技术栈
 
-- **框架**: Vue 3.5 + TypeScript
+- **框架**: Vue 3.5 + TypeScript + Composition API
 - **构建工具**: Vite 7
 - **状态管理**: Pinia 3
 - **路由**: Vue Router 4
-- **样式**: Tailwind CSS 4
-- **图标**: Lucide Vue Next
+- **UI 组件库**: Element Plus 2.x (暗色主题)
+- **样式**: Tailwind CSS 4 + 自定义 CSS
+- **图标**: @element-plus/icons-vue
 - **HTTP 客户端**: Axios
 - **动画**: Canvas Confetti, VueUse Motion
+- **工具库**: VueUse
+
+## Element Plus 配置
+
+项目使用 Element Plus 作为主要 UI 组件库，并配置了暗色主题：
+
+```typescript
+// main.ts
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+
+// 全局注册所有图标
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component)
+}
+
+app.use(ElementPlus)
+```
+
+### 常用组件
+
+| Element Plus 组件 | 用途 |
+|------------------|------|
+| `el-card` | 卡片容器 |
+| `el-button` | 按钮 |
+| `el-input` | 输入框 |
+| `el-form` / `el-form-item` | 表单 |
+| `el-dialog` | 模态框 |
+| `el-drawer` | 抽屉 |
+| `el-menu` | 导航菜单 |
+| `el-row` / `el-col` | 栅格布局 |
+| `el-tag` | 标签 |
+| `el-alert` | 提示 |
+| `el-skeleton` | 骨架屏 |
+| `el-divider` | 分割线 |
+| `el-collapse-transition` | 折叠过渡 |
+
+### 图标使用
+
+```vue
+<script setup>
+import { Timer, Trophy, User } from '@element-plus/icons-vue'
+</script>
+
+<template>
+  <el-icon><Timer /></el-icon>
+  <el-icon :size="20" color="#a78bfa"><Trophy /></el-icon>
+</template>
+```
 
 ## 项目结构
 
@@ -23,19 +75,12 @@ src/
 │   └── request.ts         # Axios 实例配置
 ├── assets/                 # 静态资源
 ├── components/             # 组件
-│   ├── ui/                # 通用 UI 组件
-│   │   ├── Button.vue     # 按钮组件
-│   │   ├── Card.vue       # 卡片组件
-│   │   ├── Input.vue      # 输入框组件
-│   │   ├── Modal.vue      # 模态框组件
-│   │   ├── Skeleton.vue   # 骨架屏组件
-│   │   ├── StatCard.vue   # 统计卡片组件
-│   │   └── index.ts       # 组件导出
+│   ├── ui/                # 通用 UI 组件 (保留兼容)
 │   ├── Heatmap.vue        # 热力图组件
 │   ├── LeaderboardTable.vue # 排行榜表格组件
 │   └── Timer.vue          # 训练计时器组件
 ├── layouts/                # 布局组件
-│   └── MainLayout.vue     # 主布局
+│   └── MainLayout.vue     # 主布局 (Element Plus)
 ├── router/                 # 路由配置
 │   └── index.ts
 ├── store/                  # 状态管理
@@ -103,44 +148,56 @@ npm run preview
 ### UI/UX 特性
 
 - 响应式设计，支持移动端和桌面端
-- 深色主题，护眼设计
-- 流畅的过渡动画
+- Element Plus 暗色主题，护眼设计
+- 流畅的过渡动画和微交互
 - 玻璃拟态 (Glassmorphism) 设计风格
+- 渐变色装饰和光晕效果
 
 ## 设计系统
 
-### 颜色变量
+### 主题配色
 
 ```css
-/* 主色调 */
---color-primary: 99 102 241;      /* Indigo */
---color-primary-light: 129 140 248;
---color-primary-dark: 79 70 229;
+/* 主渐变色 */
+background: linear-gradient(135deg, #8b5cf6, #ec4899);  /* 紫粉渐变 */
+background: linear-gradient(135deg, #fbbf24, #f97316);  /* 金橙渐变 */
+background: linear-gradient(135deg, #10b981, #14b8a6);  /* 绿青渐变 */
 
 /* 强调色 */
---aurora-purple: 139 92 246;
---aurora-pink: 236 72 153;
---aurora-cyan: 34 211 238;
---aurora-emerald: 52 211 153;
---aurora-amber: 251 191 36;
+--aurora-purple: #8b5cf6;   /* 紫色 */
+--aurora-pink: #ec4899;     /* 粉色 */
+--aurora-cyan: #22d3ee;     /* 青色 */
+--aurora-emerald: #34d399;  /* 绿色 */
+--aurora-amber: #fbbf24;    /* 琥珀色 */
+--aurora-orange: #fb923c;   /* 橙色 */
 ```
 
-### 圆角规范
+### 暗色背景
 
 ```css
---radius-sm: 6px;
---radius-md: 8px;
---radius-lg: 12px;
---radius-xl: 16px;
---radius-2xl: 20px;
+/* 卡片背景 */
+background: rgba(30, 30, 46, 0.8);
+border: 1px solid rgba(255, 255, 255, 0.06);
+
+/* 装饰光晕 */
+background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), transparent);
+filter: blur(60px);
 ```
 
-### 动画时长
+### Element Plus 样式覆盖
+
+使用 `:deep()` 选择器覆盖 Element Plus 默认样式：
 
 ```css
---duration-fast: 150ms;
---duration-normal: 250ms;
---duration-slow: 400ms;
+.my-card :deep(.el-card__body) {
+  padding: 32px;
+}
+
+.my-input :deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none !important;
+}
 ```
 
 ## API 配置
@@ -174,14 +231,81 @@ docker run -d -p 80:80 tidalcore-frontend
 ### 添加新页面
 
 1. 在 `src/views/` 创建新的 Vue 组件
-2. 在 `src/router/index.ts` 添加路由配置
-3. 如需要，在 `src/layouts/MainLayout.vue` 添加导航链接
+2. 使用 Element Plus 组件构建 UI
+3. 在 `src/router/index.ts` 添加路由配置
+4. 如需要，在 `src/layouts/MainLayout.vue` 添加导航链接
 
-### 添加新组件
+### 页面模板示例
 
-1. 通用 UI 组件放在 `src/components/ui/`
-2. 业务组件放在 `src/components/`
-3. 在 `src/components/ui/index.ts` 导出通用组件
+```vue
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import MainLayout from '@/layouts/MainLayout.vue'
+import { Timer, Star } from '@element-plus/icons-vue'
+
+const mounted = ref(false)
+
+onMounted(() => {
+  setTimeout(() => {
+    mounted.value = true
+  }, 100)
+})
+</script>
+
+<template>
+  <MainLayout>
+    <div class="page-container">
+      <section class="hero-section" :class="{ mounted }">
+        <el-tag type="primary" effect="plain" round>
+          <el-icon><Star /></el-icon>
+          标签文字
+        </el-tag>
+        <h1 class="page-title">
+          <span class="gradient-text">页面标题</span>
+        </h1>
+      </section>
+
+      <section class="content-section" :class="{ mounted }">
+        <el-card shadow="never" class="content-card">
+          <!-- 内容 -->
+        </el-card>
+      </section>
+    </div>
+  </MainLayout>
+</template>
+
+<style scoped>
+.page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.hero-section {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: all 0.7s ease;
+}
+
+.hero-section.mounted {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.content-card {
+  background: rgba(30, 30, 46, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px !important;
+}
+</style>
+```
 
 ### 状态管理
 

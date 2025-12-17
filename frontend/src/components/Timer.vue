@@ -257,7 +257,7 @@ onUnmounted(() => {
       <button
         v-if="!trainingStore.isRunning"
         @click="handleStart"
-        class="group relative btn-gradient px-8 py-4 rounded-xl text-white font-semibold text-lg flex items-center gap-3 overflow-hidden"
+        class="group relative btn-gradient px-8 py-4 rounded-lg text-white font-semibold text-lg flex items-center gap-3 overflow-hidden"
         :class="{ 'scale-95': isAnimating }"
       >
         <Play class="w-6 h-6 fill-current" />
@@ -267,7 +267,7 @@ onUnmounted(() => {
       <template v-else>
         <button
           @click="handleStop"
-          class="px-8 py-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white font-semibold text-lg flex items-center gap-3 transition-all duration-200 border border-white/[0.08] hover:border-white/[0.12]"
+          class="px-8 py-4 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-white font-semibold text-lg flex items-center gap-3 transition-all duration-200 border border-white/[0.08] hover:border-white/[0.12]"
         >
           <Square class="w-5 h-5 fill-current" />
           <span>结束训练</span>
@@ -277,29 +277,123 @@ onUnmounted(() => {
       <button
         v-if="trainingStore.currentCycle > 0 && !trainingStore.isRunning"
         @click="handleReset"
-        class="icon-btn w-12 h-12 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06]"
+        class="icon-btn w-12 h-12 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06]"
         title="重置"
       >
         <RotateCcw class="w-5 h-5" />
       </button>
     </div>
 
-    <!-- Overall Progress Bar -->
+    <!-- Overall Progress Bar with enhanced visibility -->
     <div class="w-full max-w-md">
       <div class="flex items-center justify-between text-sm text-white/50 mb-2">
         <span>整体进度</span>
-        <span class="tabular-nums">{{ Math.round(trainingStore.progress) }}%</span>
+        <span class="tabular-nums font-medium text-white/70">{{ Math.round(trainingStore.progress) }}%</span>
       </div>
-      <div class="h-2 bg-white/[0.04] rounded-lg overflow-hidden">
+      <div class="progress-track h-3 bg-white/[0.08] rounded-lg overflow-hidden shadow-inner relative">
+        <!-- Subtle background gradient -->
+        <div class="absolute inset-0 bg-gradient-to-r from-white/[0.02] via-transparent to-white/[0.02]"></div>
+        <!-- Main progress bar -->
         <div
-          class="h-full rounded-lg progress-bar-animated"
+          class="h-full rounded-lg progress-bar-enhanced relative overflow-hidden"
+          :class="{ 'animate-shimmer': trainingStore.isRunning }"
           :style="{
             width: `${trainingStore.progress}%`,
-            background: 'linear-gradient(90deg, rgb(99, 102, 241), rgb(139, 92, 246))',
-            transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+            background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7)',
+            boxShadow: `0 0 16px rgba(139, 92, 246, 0.5), inset 0 1px 0 rgba(255,255,255,0.2)`,
+            transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+          }"
+        >
+          <!-- Shimmer effect -->
+          <div class="absolute inset-0 shimmer-overlay"></div>
+        </div>
+        <!-- Progress glow effect -->
+        <div
+          v-if="trainingStore.isRunning && trainingStore.progress > 0"
+          class="progress-glow absolute top-0 h-full rounded-full"
+          :style="{
+            left: `calc(${trainingStore.progress}% - 4px)`,
+            width: '8px',
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.8) 0%, transparent 70%)',
+            boxShadow: '0 0 12px 4px rgba(139, 92, 246, 0.6)',
+            transition: 'left 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
           }"
         ></div>
+      </div>
+      <!-- Progress markers -->
+      <div class="flex justify-between mt-2 text-xs text-white/30">
+        <span>0%</span>
+        <span>50%</span>
+        <span>100%</span>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.progress-ring {
+  transition: stroke-dashoffset 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-track {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.progress-bar-enhanced {
+  position: relative;
+}
+
+.shimmer-overlay {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+}
+
+.animate-shimmer .shimmer-overlay {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.progress-glow {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Button styles */
+.btn-gradient {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  transition: all 0.2s ease;
+  border-radius: 10px !important;
+}
+
+.btn-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.35);
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
+  border-radius: 10px !important;
+}
+
+.icon-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+</style>

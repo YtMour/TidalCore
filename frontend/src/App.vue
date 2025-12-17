@@ -18,7 +18,7 @@ onMounted(async () => {
 
 <template>
   <div
-    class="app-wrapper"
+    class="app-wrapper dark"
     :class="{ 'app-ready': isReady }"
   >
     <RouterView v-slot="{ Component, route }">

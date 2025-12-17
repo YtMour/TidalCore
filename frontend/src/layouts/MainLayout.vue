@@ -1,26 +1,20 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
+import { useThemeStore } from '@/store/theme'
 import { useScrollLock } from '@vueuse/core'
-import {
-  Menu,
-  X,
-  Home,
-  Timer,
-  Trophy,
-  User,
-  LogOut,
-  LogIn,
-  Github
-} from 'lucide-vue-next'
+import { HomeFilled, Timer, Trophy, User, SwitchButton, Fold, Expand, Sunny, Moon } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
+const themeStore = useThemeStore()
 const route = useRoute()
 
 const mobileMenuOpen = ref(false)
 const scrollLock = useScrollLock(document.body)
 const scrolled = ref(false)
+
+const isDark = computed(() => themeStore.mode === 'dark')
 
 // 监听滚动
 onMounted(() => {
@@ -44,202 +38,613 @@ function handleLogout() {
   mobileMenuOpen.value = false
 }
 
+function toggleTheme() {
+  themeStore.toggle()
+}
+
 const navLinks = [
-  { to: '/', label: '首页', icon: Home },
+  { to: '/', label: '首页', icon: HomeFilled },
   { to: '/train', label: '训练', icon: Timer },
   { to: '/leaderboard', label: '排行榜', icon: Trophy }
 ]
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="main-layout">
     <!-- Animated Background -->
     <div class="animated-bg"></div>
     <div class="particles-bg"></div>
     <div class="noise-overlay"></div>
 
     <!-- Navigation -->
-    <nav
-      class="sticky top-0 z-40 transition-all duration-300"
-      :class="[
-        scrolled
-          ? 'bg-slate-900/90 backdrop-blur-xl border-b border-white/5 shadow-lg shadow-black/10'
-          : 'bg-transparent border-b border-transparent'
-      ]"
+    <el-header
+      class="main-header"
+      :class="{ scrolled }"
     >
-      <div class="container-app">
-        <div class="h-16 flex items-center justify-between">
-          <!-- Logo -->
+      <div class="header-content">
+        <!-- Logo -->
+        <RouterLink to="/" class="logo-link">
+          <span class="logo-icon">🌊</span>
+          <span class="logo-text">TidalCore</span>
+        </RouterLink>
+
+        <!-- Desktop Navigation -->
+        <div class="desktop-nav">
+          <el-menu
+            :default-active="route.path"
+            mode="horizontal"
+            :ellipsis="false"
+            class="nav-menu"
+            router
+          >
+            <el-menu-item
+              v-for="link in navLinks"
+              :key="link.to"
+              :index="link.to"
+            >
+              <el-icon><component :is="link.icon" /></el-icon>
+              <span>{{ link.label }}</span>
+            </el-menu-item>
+          </el-menu>
+        </div>
+
+        <!-- Desktop User Menu -->
+        <div class="desktop-user">
+          <!-- Theme Toggle -->
+          <el-button text @click="toggleTheme" class="theme-btn">
+            <el-icon :size="18">
+              <Moon v-if="isDark" />
+              <Sunny v-else />
+            </el-icon>
+          </el-button>
+
+          <template v-if="userStore.isLoggedIn">
+            <RouterLink to="/dashboard" class="user-link" :class="{ active: route.path === '/dashboard' }">
+              <el-icon><User /></el-icon>
+              <span>我的</span>
+            </RouterLink>
+            <el-button text @click="handleLogout" class="logout-btn">
+              <el-icon><SwitchButton /></el-icon>
+              <span>退出</span>
+            </el-button>
+          </template>
+          <template v-else>
+            <RouterLink to="/login">
+              <el-button type="primary" class="login-btn">
+                <el-icon><User /></el-icon>
+                <span>登录</span>
+              </el-button>
+            </RouterLink>
+          </template>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <el-button
+          class="mobile-menu-btn"
+          text
+          @click="mobileMenuOpen = !mobileMenuOpen"
+        >
+          <el-icon :size="24">
+            <Fold v-if="mobileMenuOpen" />
+            <Expand v-else />
+          </el-icon>
+        </el-button>
+      </div>
+    </el-header>
+
+    <!-- Mobile Menu Drawer -->
+    <el-drawer
+      v-model="mobileMenuOpen"
+      direction="ttb"
+      :show-close="false"
+      :with-header="false"
+      size="100%"
+      class="mobile-drawer"
+    >
+      <div class="mobile-menu">
+        <RouterLink
+          v-for="link in navLinks"
+          :key="link.to"
+          :to="link.to"
+          class="mobile-nav-item"
+          :class="{ active: route.path === link.to }"
+        >
+          <el-icon :size="20"><component :is="link.icon" /></el-icon>
+          <span>{{ link.label }}</span>
+        </RouterLink>
+
+        <!-- Theme Toggle in Mobile -->
+        <div class="mobile-nav-item" @click="toggleTheme">
+          <el-icon :size="20">
+            <Moon v-if="isDark" />
+            <Sunny v-else />
+          </el-icon>
+          <span>{{ isDark ? '浅色模式' : '深色模式' }}</span>
+        </div>
+
+        <el-divider />
+
+        <template v-if="userStore.isLoggedIn">
           <RouterLink
-            to="/"
-            class="flex items-center gap-2.5 text-white font-bold text-xl group"
+            to="/dashboard"
+            class="mobile-nav-item"
+            :class="{ active: route.path === '/dashboard' }"
           >
-            <span class="text-2xl group-hover:scale-110 transition-transform duration-300">🌊</span>
-            <span class="gradient-text">TidalCore</span>
+            <el-icon :size="20"><User /></el-icon>
+            <span>我的</span>
           </RouterLink>
-
-          <!-- Desktop Navigation -->
-          <div class="hidden md:flex items-center gap-1 bg-white/[0.02] rounded-xl px-1.5 py-1.5 border border-white/[0.06]">
-            <RouterLink
-              v-for="link in navLinks"
-              :key="link.to"
-              :to="link.to"
-              class="flex items-center gap-2 px-4 py-2 rounded-lg text-white/60 hover:text-white transition-all duration-200"
-              :class="route.path === link.to ? 'text-white bg-white/10' : 'hover:bg-white/5'"
-            >
-              <component :is="link.icon" class="w-4 h-4" />
-              <span>{{ link.label }}</span>
-            </RouterLink>
-          </div>
-
-          <!-- Desktop User Menu -->
-          <div class="hidden md:flex items-center gap-2">
-            <template v-if="userStore.isLoggedIn">
-              <RouterLink
-                to="/dashboard"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 border border-transparent hover:border-white/[0.08]"
-                :class="{ 'text-white bg-white/10 border-white/[0.08]': route.path === '/dashboard' }"
-              >
-                <User class="w-4 h-4" />
-                <span>我的</span>
-              </RouterLink>
-              <button
-                @click="handleLogout"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200"
-              >
-                <LogOut class="w-4 h-4" />
-                <span>退出</span>
-              </button>
-            </template>
-            <template v-else>
-              <RouterLink
-                to="/login"
-                class="group btn-gradient px-5 py-2 rounded-lg text-white text-sm font-medium flex items-center gap-2"
-              >
-                <LogIn class="w-4 h-4" />
-                <span>登录</span>
-              </RouterLink>
-            </template>
-          </div>
-
-          <!-- Mobile Menu Button -->
-          <button
-            @click="mobileMenuOpen = !mobileMenuOpen"
-            class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center text-white/70 hover:text-white hover:bg-white/5 transition-all"
+          <div
+            class="mobile-nav-item"
+            @click="handleLogout"
           >
-            <Transition name="fade" mode="out-in">
-              <X v-if="mobileMenuOpen" class="w-6 h-6" />
-              <Menu v-else class="w-6 h-6" />
-            </Transition>
-          </button>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Mobile Menu -->
-    <Transition name="slide-up">
-      <div
-        v-if="mobileMenuOpen"
-        class="fixed inset-0 z-30 md:hidden"
-      >
-        <div class="absolute inset-0 bg-slate-900/95 backdrop-blur-xl pt-20">
-          <div class="container-app py-6 space-y-2">
-            <RouterLink
-              v-for="link in navLinks"
-              :key="link.to"
-              :to="link.to"
-              class="flex items-center gap-3 px-4 py-3 rounded-lg text-lg text-white/70 hover:text-white hover:bg-white/5 transition-all"
-              :class="{ 'text-white bg-white/10': route.path === link.to }"
-            >
-              <component :is="link.icon" class="w-5 h-5" />
-              <span>{{ link.label }}</span>
-            </RouterLink>
-
-            <div class="divider my-4"></div>
-
-            <template v-if="userStore.isLoggedIn">
-              <RouterLink
-                to="/dashboard"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg text-lg text-white/70 hover:text-white hover:bg-white/5 transition-all"
-                :class="{ 'text-white bg-white/10': route.path === '/dashboard' }"
-              >
-                <User class="w-5 h-5" />
-                <span>我的</span>
-              </RouterLink>
-              <button
-                @click="handleLogout"
-                class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-lg text-white/70 hover:text-white hover:bg-white/5 transition-all"
-              >
-                <LogOut class="w-5 h-5" />
-                <span>退出登录</span>
-              </button>
-            </template>
-            <template v-else>
-              <RouterLink
-                to="/login"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg text-lg text-white/70 hover:text-white hover:bg-white/5 transition-all"
-              >
-                <LogIn class="w-5 h-5" />
-                <span>登录</span>
-              </RouterLink>
-              <RouterLink
-                to="/register"
-                class="flex items-center justify-center gap-2 mt-4 btn-gradient px-6 py-3 rounded-lg text-white font-medium"
-              >
-                <span>立即注册</span>
-              </RouterLink>
-            </template>
+            <el-icon :size="20"><SwitchButton /></el-icon>
+            <span>退出登录</span>
           </div>
-        </div>
+        </template>
+        <template v-else>
+          <RouterLink to="/login" class="mobile-nav-item">
+            <el-icon :size="20"><User /></el-icon>
+            <span>登录</span>
+          </RouterLink>
+          <RouterLink to="/register" class="mobile-register-btn">
+            <el-button type="primary" size="large" class="w-full">立即注册</el-button>
+          </RouterLink>
+        </template>
       </div>
-    </Transition>
+    </el-drawer>
 
     <!-- Main Content -->
-    <main class="flex-1 container-app py-8 md:py-12">
+    <el-main class="main-content">
       <slot />
-    </main>
+    </el-main>
 
     <!-- Footer -->
-    <footer class="relative border-t border-white/5 py-10 mt-auto overflow-hidden">
-      <!-- Decorative gradient -->
-      <div class="absolute inset-0 -z-10">
-        <div class="absolute bottom-0 left-1/4 w-64 h-32 bg-gradient-to-t from-violet-500/5 to-transparent rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 right-1/4 w-48 h-24 bg-gradient-to-t from-pink-500/5 to-transparent rounded-full blur-3xl"></div>
+    <el-footer class="main-footer">
+      <div class="footer-bg">
+        <div class="footer-blob footer-blob-1"></div>
+        <div class="footer-blob footer-blob-2"></div>
       </div>
 
-      <div class="container-app">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="footer-content">
+        <div class="footer-top">
           <!-- Logo and tagline -->
-          <div class="flex flex-col items-center md:items-start gap-2">
-            <div class="flex items-center gap-2 text-white/60">
-              <span class="text-xl">🌊</span>
-              <span class="font-semibold gradient-text">TidalCore</span>
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <span class="logo-icon">🌊</span>
+              <span class="logo-text">TidalCore</span>
             </div>
-            <p class="text-sm text-white/40">开源盆底肌训练平台</p>
+            <p class="footer-tagline">开源盆底肌训练平台</p>
           </div>
 
           <!-- Links -->
-          <div class="flex items-center gap-6 text-sm">
+          <div class="footer-links">
             <a
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              class="flex items-center gap-1.5 text-white/40 hover:text-white/70 transition-colors"
+              class="footer-link"
             >
-              <Github class="w-4 h-4" />
+              <el-icon><Link /></el-icon>
               <span>GitHub</span>
             </a>
-            <span class="text-white/20">|</span>
-            <span class="text-white/40">MIT License</span>
+            <el-divider direction="vertical" />
+            <span class="footer-license">MIT License</span>
           </div>
         </div>
 
         <!-- Bottom bar -->
-        <div class="mt-8 pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/30">
-          <p>Made with <span class="text-pink-400">♥</span> for health</p>
+        <div class="footer-bottom">
+          <p>Made with <span class="heart">♥</span> for health</p>
           <p>© 2024 TidalCore. All rights reserved.</p>
         </div>
       </div>
-    </footer>
+    </el-footer>
   </div>
 </template>
+
+<style scoped>
+.main-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Header Styles */
+.main-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 64px;
+  padding: 0 24px;
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.main-header.scrolled {
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(20px);
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Logo */
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logo-icon {
+  font-size: 28px;
+  transition: transform 0.3s ease;
+}
+
+.logo-link:hover .logo-icon {
+  transform: scale(1.1);
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Desktop Navigation */
+.desktop-nav {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .desktop-nav {
+    display: block;
+  }
+}
+
+.nav-menu {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 12px;
+  padding: 4px;
+  border-bottom: none !important;
+}
+
+.nav-menu :deep(.el-menu-item) {
+  background: transparent !important;
+  border-radius: 8px;
+  margin: 0 2px;
+  padding: 0 16px;
+  height: 36px;
+  line-height: 36px;
+  color: rgba(255, 255, 255, 0.6);
+  border-bottom: none !important;
+  transition: all 0.2s ease;
+}
+
+.nav-menu :deep(.el-menu-item:hover) {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #fff;
+}
+
+.nav-menu :deep(.el-menu-item.is-active) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff;
+}
+
+.nav-menu :deep(.el-menu-item .el-icon) {
+  margin-right: 6px;
+}
+
+/* Desktop User Menu */
+.desktop-user {
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .desktop-user {
+    display: flex;
+  }
+}
+
+.user-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.user-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.user-link.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.logout-btn {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.logout-btn:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
+  border: none !important;
+  border-radius: 6px;
+}
+
+/* Theme Toggle Button */
+.theme-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  transition: all 0.2s ease !important;
+}
+
+.theme-btn:hover {
+  color: #fbbf24 !important;
+  background: rgba(251, 191, 36, 0.1) !important;
+}
+
+/* Light mode adjustments */
+html.light .theme-btn {
+  color: rgba(15, 23, 42, 0.6) !important;
+}
+
+html.light .theme-btn:hover {
+  color: #f59e0b !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-btn {
+  display: flex;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.mobile-menu-btn:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+@media (min-width: 768px) {
+  .mobile-menu-btn {
+    display: none;
+  }
+}
+
+/* Mobile Drawer */
+.mobile-drawer :deep(.el-drawer__body) {
+  background: rgba(15, 23, 42, 0.98);
+  backdrop-filter: blur(20px);
+  padding-top: 80px;
+}
+
+.mobile-menu {
+  padding: 0 24px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-nav-item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-nav-item.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-register-btn {
+  display: block;
+  margin-top: 16px;
+  text-decoration: none;
+}
+
+.mobile-register-btn .el-button {
+  width: 100%;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
+  border: none !important;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 32px 24px;
+}
+
+@media (min-width: 768px) {
+  .main-content {
+    padding: 48px 24px;
+  }
+}
+
+/* Footer */
+.main-footer {
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 40px 24px;
+  height: auto;
+  overflow: hidden;
+}
+
+.footer-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.footer-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+.footer-blob-1 {
+  bottom: 0;
+  left: 25%;
+  width: 256px;
+  height: 128px;
+  background: linear-gradient(to top, rgba(139, 92, 246, 0.05), transparent);
+}
+
+.footer-blob-2 {
+  bottom: 0;
+  right: 25%;
+  width: 192px;
+  height: 96px;
+  background: linear-gradient(to top, rgba(236, 72, 153, 0.05), transparent);
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .footer-top {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .footer-brand {
+    align-items: flex-start;
+  }
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.footer-logo .logo-text {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.footer-tagline {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.footer-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.footer-license {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.footer-bottom {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+@media (min-width: 768px) {
+  .footer-bottom {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.footer-bottom .heart {
+  color: #ec4899;
+}
+
+/* Element Plus Overrides */
+:deep(.el-divider) {
+  border-color: rgba(255, 255, 255, 0.1);
+  margin: 16px 0;
+}
+
+:deep(.el-divider--vertical) {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+</style>
