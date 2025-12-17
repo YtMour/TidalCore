@@ -10,53 +10,82 @@ interface DayData {
   date: string
   count: number
   level: number
+  dayOfWeek: number
 }
 
 const containerRef = ref<HTMLElement>()
 const hoveredDay = ref<DayData | null>(null)
 const tooltipPosition = ref({ x: 0, y: 0, showAbove: true })
 
+// 标准化日期键 - 支持多种格式
+function normalizeDataKeys(data: Record<string, number>): Record<string, number> {
+  const normalized: Record<string, number> = {}
+  for (const [key, value] of Object.entries(data)) {
+    // 处理 ISO 格式 "2025-12-17T00:00:00+08:00" 或简单格式 "2025-12-17"
+    const dateOnly = key.split('T')[0] ?? key
+    normalized[dateOnly] = (normalized[dateOnly] || 0) + value
+  }
+  return normalized
+}
+
+// 格式化日期为 YYYY-MM-DD（本地时区）
+function formatDateKey(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+// 标准化后的数据
+const normalizedData = computed(() => normalizeDataKeys(props.data || {}))
+
 // 计算总打卡次数
 const totalCheckins = computed(() => {
-  return Object.values(props.data || {}).reduce((sum, count) => sum + count, 0)
+  return Object.values(normalizedData.value).reduce((sum, count) => sum + count, 0)
 })
 
 // 计算活跃天数
 const activeDays = computed(() => {
-  return Object.values(props.data || {}).filter(count => count > 0).length
+  return Object.values(normalizedData.value).filter(count => count > 0).length
 })
 
+// 生成热力图网格数据
 const weeks = computed(() => {
   const result: DayData[][] = []
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   const daysCount = props.days || 365
 
-  // 从今天往前推 daysCount 天
+  // 计算开始日期
   const startDate = new Date(today)
   startDate.setDate(startDate.getDate() - daysCount + 1)
 
-  // 调整到周日开始
-  const startDayOfWeek = startDate.getDay()
-  startDate.setDate(startDate.getDate() - startDayOfWeek)
+  // 调整到该周的周日（周日=0）
+  const dayOfWeek = startDate.getDay()
+  startDate.setDate(startDate.getDate() - dayOfWeek)
 
   let currentWeek: DayData[] = []
-  const endDate = new Date(today)
+  const current = new Date(startDate)
 
-  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-    const dateStr = d.toISOString().split('T')[0] || ''
-    const count = dateStr ? (props.data?.[dateStr] || 0) : 0
+  while (current <= today) {
+    const dateKey = formatDateKey(current)
+    const count = normalizedData.value[dateKey] || 0
 
     currentWeek.push({
-      date: dateStr,
+      date: dateKey,
       count,
-      level: getLevel(count)
+      level: getLevel(count),
+      dayOfWeek: current.getDay()
     })
 
-    // 每周六结束一周（周日=0, 周六=6）
-    if (d.getDay() === 6) {
+    // 周六结束当前周
+    if (current.getDay() === 6) {
       result.push(currentWeek)
       currentWeek = []
     }
+
+    current.setDate(current.getDate() + 1)
   }
 
   // 添加最后一个不完整的周
@@ -75,24 +104,16 @@ function getLevel(count: number): number {
   return 4
 }
 
-const levelColors = [
-  'heatmap-level-0',
-  'heatmap-level-1',
-  'heatmap-level-2',
-  'heatmap-level-3',
-  'heatmap-level-4'
-]
+const levelLabels = ['无记录', '1次', '2-3次', '4-5次', '5次以上']
 
-const levelLabels = ['无', '少量', '一般', '较多', '活跃']
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'short'
-  })
+function formatDisplayDate(dateStr: string): string {
+  const parts = dateStr.split('-').map(Number)
+  const year = parts[0] ?? 0
+  const month = parts[1] ?? 1
+  const day = parts[2] ?? 1
+  const date = new Date(year, month - 1, day)
+  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  return `${year}年${month}月${day}日 ${weekdays[date.getDay()]}`
 }
 
 function handleMouseEnter(day: DayData, event: MouseEvent) {
@@ -118,50 +139,46 @@ function updateTooltipPosition(event: MouseEvent) {
   const x = event.clientX - rect.left
   const y = event.clientY - rect.top
 
-  // 检查是否靠近顶部，如果是则显示在下方
-  const showAbove = y > 60
+  const showAbove = y > 80
 
   tooltipPosition.value = {
-    x: Math.max(80, Math.min(x, rect.width - 80)),
-    y: showAbove ? y - 10 : y + 20,
+    x: Math.max(70, Math.min(x, rect.width - 70)),
+    y: showAbove ? y - 8 : y + 24,
     showAbove
   }
 }
 
-const monthLabels = computed(() => {
-  const labels: { month: string; weekIndex: number }[] = []
-  const today = new Date()
-  const daysCount = props.days || 365
-
-  const startDate = new Date(today)
-  startDate.setDate(startDate.getDate() - daysCount + 1)
-  const startDayOfWeek = startDate.getDay()
-  startDate.setDate(startDate.getDate() - startDayOfWeek)
-
+// 计算每个月份标签的位置（按周计算）
+const monthPositions = computed(() => {
+  const positions: { month: string; weekIndex: number }[] = []
   let lastMonth = -1
-  let weekIndex = 0
-  const endDate = new Date(today)
+  const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
 
-  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 7)) {
-    const month = d.getMonth()
-    if (month !== lastMonth) {
-      labels.push({
-        month: d.toLocaleDateString('zh-CN', { month: 'short' }),
-        weekIndex
-      })
-      lastMonth = month
+  weeks.value.forEach((week, weekIndex) => {
+    if (week.length > 0) {
+      const firstDay = week[0]
+      if (firstDay) {
+        const parts = firstDay.date.split('-').map(Number)
+        const month = parts[1] ?? 1
+        if (month !== lastMonth) {
+          positions.push({
+            month: monthNames[month - 1] ?? '1月',
+            weekIndex
+          })
+          lastMonth = month
+        }
+      }
     }
-    weekIndex++
-  }
+  })
 
-  return labels
+  return positions
 })
 </script>
 
 <template>
-  <div ref="containerRef" class="heatmap-container">
-    <!-- Stats bar -->
-    <div class="heatmap-stats">
+  <div ref="containerRef" class="heatmap-wrap">
+    <!-- 统计信息 -->
+    <div class="hm-stats">
       <div class="stat-item">
         <span class="stat-value">{{ totalCheckins }}</span>
         <span class="stat-label">次打卡</span>
@@ -173,119 +190,112 @@ const monthLabels = computed(() => {
       </div>
     </div>
 
-    <!-- Heatmap grid wrapper -->
-    <div class="heatmap-scroll">
-      <div class="heatmap-grid">
-        <!-- Month labels -->
-        <div class="month-row">
-          <div class="day-label-spacer"></div>
-          <div class="months">
-            <span
-              v-for="label in monthLabels"
-              :key="label.weekIndex"
-              class="month-label"
-              :style="{ left: `${label.weekIndex * 14}px` }"
-            >
-              {{ label.month }}
-            </span>
-          </div>
+    <!-- 热力图主体 -->
+    <div class="hm-main">
+      <!-- 月份标签行 -->
+      <div class="month-row">
+        <div class="weekday-placeholder"></div>
+        <div class="month-track">
+          <span
+            v-for="(m, idx) in monthPositions"
+            :key="idx"
+            class="month-label"
+            :style="{ left: `${m.weekIndex * 11}px` }"
+          >{{ m.month }}</span>
+        </div>
+      </div>
+
+      <!-- 网格区域 -->
+      <div class="grid-area">
+        <!-- 星期标签 -->
+        <div class="weekday-col">
+          <span>日</span>
+          <span>一</span>
+          <span>二</span>
+          <span>三</span>
+          <span>四</span>
+          <span>五</span>
+          <span>六</span>
         </div>
 
-        <!-- Grid with day labels -->
-        <div class="grid-body">
-          <!-- Day labels -->
-          <div class="day-labels">
-            <span></span>
-            <span>一</span>
-            <span></span>
-            <span>三</span>
-            <span></span>
-            <span>五</span>
-            <span></span>
-          </div>
-
-          <!-- Weeks grid -->
-          <div class="weeks-grid">
+        <!-- 热力图网格 -->
+        <div class="grid-box">
+          <div
+            v-for="(week, wIdx) in weeks"
+            :key="wIdx"
+            class="week"
+          >
             <div
-              v-for="(week, weekIndex) in weeks"
-              :key="weekIndex"
-              class="week-column"
-            >
-              <div
-                v-for="day in week"
-                :key="day.date"
-                :class="['day-cell', levelColors[day.level]]"
-                @mouseenter="handleMouseEnter(day, $event)"
-                @mousemove="handleMouseMove"
-                @mouseleave="handleMouseLeave"
-              ></div>
-            </div>
+              v-for="day in week"
+              :key="day.date"
+              class="cell"
+              :class="`lv-${day.level}`"
+              @mouseenter="handleMouseEnter(day, $event)"
+              @mousemove="handleMouseMove"
+              @mouseleave="handleMouseLeave"
+            />
           </div>
         </div>
       </div>
     </div>
 
     <!-- Tooltip -->
-    <Transition name="tooltip">
+    <Transition name="tip">
       <div
         v-if="hoveredDay"
-        class="heatmap-tooltip"
-        :class="{ 'show-below': !tooltipPosition.showAbove }"
-        :style="{
-          left: `${tooltipPosition.x}px`,
-          top: `${tooltipPosition.y}px`
-        }"
+        class="hm-tooltip"
+        :class="{ 'below': !tooltipPosition.showAbove }"
+        :style="{ left: `${tooltipPosition.x}px`, top: `${tooltipPosition.y}px` }"
       >
-        <div class="tooltip-date">{{ formatDate(hoveredDay.date) }}</div>
-        <div class="tooltip-count">
+        <div class="tip-date">{{ formatDisplayDate(hoveredDay.date) }}</div>
+        <div class="tip-count" :class="{ active: hoveredDay.count > 0 }">
           {{ hoveredDay.count > 0 ? `${hoveredDay.count} 次打卡` : '无打卡记录' }}
         </div>
       </div>
     </Transition>
 
-    <!-- Legend -->
-    <div class="heatmap-footer">
-      <div class="heatmap-legend">
-        <span class="legend-label">少</span>
-        <div class="legend-colors">
-          <div
-            v-for="(color, index) in levelColors"
-            :key="index"
-            :class="['legend-cell', color]"
-            :title="levelLabels[index]"
-          ></div>
-        </div>
-        <span class="legend-label">多</span>
+    <!-- 图例 -->
+    <div class="hm-legend">
+      <span class="lg-text">少</span>
+      <div class="lg-items">
+        <div
+          v-for="i in 5"
+          :key="i"
+          class="lg-box"
+          :class="`lv-${i - 1}`"
+          :title="levelLabels[i - 1]"
+        />
       </div>
+      <span class="lg-text">多</span>
     </div>
   </div>
 </template>
 
 <style scoped>
-.heatmap-container {
+.heatmap-wrap {
   position: relative;
 }
 
-/* Stats bar */
-.heatmap-stats {
-  display: flex;
+/* 统计信息 */
+.hm-stats {
+  display: inline-flex;
   align-items: center;
   gap: 16px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.04));
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 10px;
   margin-bottom: 20px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .stat-item {
   display: flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 6px;
 }
 
 .stat-value {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: #10b981;
 }
@@ -297,53 +307,27 @@ const monthLabels = computed(() => {
 
 .stat-divider {
   width: 1px;
-  height: 20px;
+  height: 24px;
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Scroll wrapper */
-.heatmap-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 8px;
-  margin: 0 -4px;
-  padding: 0 4px;
+/* 热力图主体 */
+.hm-main {
+  margin-bottom: 16px;
 }
 
-.heatmap-scroll::-webkit-scrollbar {
-  height: 6px;
-}
-
-.heatmap-scroll::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 3px;
-}
-
-.heatmap-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-.heatmap-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-/* Grid layout */
-.heatmap-grid {
-  min-width: max-content;
-}
-
+/* 月份行 */
 .month-row {
   display: flex;
   margin-bottom: 4px;
 }
 
-.day-label-spacer {
-  width: 28px;
+.weekday-placeholder {
+  width: 22px;
   flex-shrink: 0;
 }
 
-.months {
+.month-track {
   position: relative;
   height: 16px;
   flex: 1;
@@ -351,167 +335,190 @@ const monthLabels = computed(() => {
 
 .month-label {
   position: absolute;
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.4);
   white-space: nowrap;
 }
 
-.grid-body {
+/* 网格区域 */
+.grid-area {
   display: flex;
 }
 
-.day-labels {
+.weekday-col {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin-right: 6px;
+  width: 22px;
   flex-shrink: 0;
 }
 
-.day-labels span {
-  height: 12px;
-  line-height: 12px;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
+.weekday-col span {
+  height: 10px;
+  line-height: 10px;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.35);
   text-align: right;
-  width: 20px;
+  padding-right: 4px;
 }
 
-.weeks-grid {
+/* 网格容器 */
+.grid-box {
   display: flex;
+  flex-wrap: nowrap;
   gap: 2px;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
 
-.week-column {
+.grid-box::-webkit-scrollbar {
+  height: 3px;
+}
+
+.grid-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.grid-box::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.week {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.day-cell {
-  width: 12px;
-  height: 12px;
+.cell {
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: transform 0.1s, box-shadow 0.1s;
 }
 
-.day-cell:hover {
-  transform: scale(1.3);
+.cell:hover {
+  transform: scale(1.5);
   z-index: 10;
 }
 
-/* Level colors */
-.heatmap-level-0 {
-  background: rgba(255, 255, 255, 0.04);
+/* 等级颜色 */
+.lv-0 {
+  background: rgba(255, 255, 255, 0.06);
 }
-.heatmap-level-0:hover {
-  background: rgba(255, 255, 255, 0.1);
+.lv-0:hover {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.1);
 }
 
-.heatmap-level-1 {
-  background: rgba(16, 185, 129, 0.25);
-}
-.heatmap-level-1:hover {
+.lv-1 {
   background: rgba(16, 185, 129, 0.35);
 }
-
-.heatmap-level-2 {
-  background: rgba(16, 185, 129, 0.45);
+.lv-1:hover {
+  background: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
 }
-.heatmap-level-2:hover {
+
+.lv-2 {
   background: rgba(16, 185, 129, 0.55);
 }
-
-.heatmap-level-3 {
-  background: rgba(16, 185, 129, 0.65);
+.lv-2:hover {
+  background: rgba(16, 185, 129, 0.7);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
 }
-.heatmap-level-3:hover {
+
+.lv-3 {
   background: rgba(16, 185, 129, 0.75);
 }
+.lv-3:hover {
+  background: rgba(16, 185, 129, 0.9);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+}
 
-.heatmap-level-4 {
+.lv-4 {
   background: #10b981;
 }
-.heatmap-level-4:hover {
+.lv-4:hover {
   background: #34d399;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.7);
 }
 
 /* Tooltip */
-.heatmap-tooltip {
+.hm-tooltip {
   position: absolute;
   z-index: 100;
-  padding: 8px 12px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 14px;
+  background: rgba(10, 15, 25, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   backdrop-filter: blur(8px);
   pointer-events: none;
   transform: translate(-50%, -100%);
   white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
-.heatmap-tooltip.show-below {
+.hm-tooltip.below {
   transform: translate(-50%, 0);
 }
 
-.tooltip-date {
-  font-size: 13px;
-  font-weight: 500;
-  color: #fff;
-}
-
-.tooltip-count {
+.tip-date {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 2px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 3px;
 }
 
-/* Tooltip animation */
-.tooltip-enter-active,
-.tooltip-leave-active {
-  transition: all 0.15s ease;
+.tip-count {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
 }
 
-.tooltip-enter-from,
-.tooltip-leave-to {
+.tip-count.active {
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* Tooltip 动画 */
+.tip-enter-active,
+.tip-leave-active {
+  transition: all 0.12s ease;
+}
+
+.tip-enter-from,
+.tip-leave-to {
   opacity: 0;
-  transform: translate(-50%, -100%) scale(0.95);
+  transform: translate(-50%, -100%) scale(0.92);
 }
 
-.heatmap-tooltip.show-below.tooltip-enter-from,
-.heatmap-tooltip.show-below.tooltip-leave-to {
-  transform: translate(-50%, 0) scale(0.95);
+.hm-tooltip.below.tip-enter-from,
+.hm-tooltip.below.tip-leave-to {
+  transform: translate(-50%, 0) scale(0.92);
 }
 
-/* Footer / Legend */
-.heatmap-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.heatmap-legend {
+/* 图例 */
+.hm-legend {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.legend-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+.lg-text {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
 }
 
-.legend-colors {
+.lg-items {
   display: flex;
-  gap: 2px;
+  gap: 3px;
 }
 
-.legend-cell {
-  width: 12px;
-  height: 12px;
+.lg-box {
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
 }
 </style>
