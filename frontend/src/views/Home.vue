@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Heatmap from '@/components/Heatmap.vue'
-import { getGlobalHeatmap } from '@/api/checkin'
+import { getGlobalHeatmap, getLeaderboard } from '@/api/checkin'
 import { Timer, Pointer, Trophy, Lock, Lightning, StarFilled, User } from '@element-plus/icons-vue'
 
 const heatmapData = ref<Record<string, number>>()
@@ -55,9 +55,9 @@ const features = [
 ]
 
 const stats = ref([
-  { value: '0', label: '活跃用户', icon: User, suffix: '' },
-  { value: '0', label: '累计打卡', icon: Pointer, suffix: '' },
-  { value: '0', label: '最长连续', icon: Trophy, suffix: '天' }
+  { value: '-', label: '活跃用户', icon: User, suffix: '' },
+  { value: '-', label: '累计打卡', icon: Pointer, suffix: '' },
+  { value: '-', label: '最长连续', icon: Trophy, suffix: '天' }
 ])
 
 // 格式化数字显示
@@ -76,14 +76,22 @@ onMounted(async () => {
   }, 100)
 
   try {
-    heatmapData.value = await getGlobalHeatmap(365)
-    // 从热力图数据计算统计
-    const totalCheckins = Object.values(heatmapData.value || {}).reduce((sum, count) => sum + count, 0)
-    const activeDays = Object.keys(heatmapData.value || {}).length
+    // 并行获取热力图和排行榜数据
+    const [heatmapResult, leaderboardResult] = await Promise.all([
+      getGlobalHeatmap(365),
+      getLeaderboard(100) // 获取更多用户以计算真实活跃用户数
+    ])
 
-    // 模拟真实数据（实际应从后端获取）
-    const activeUsers = Math.max(Math.floor(totalCheckins / 10), 100)
-    const maxStreak = Math.max(activeDays, 30)
+    heatmapData.value = heatmapResult
+
+    // 从热力图数据计算总打卡次数
+    const totalCheckins = Object.values(heatmapResult || {}).reduce((sum, count) => sum + count, 0)
+
+    // 从排行榜获取真实用户数和最长连续天数
+    const activeUsers = leaderboardResult?.length || 0
+    const maxStreak = leaderboardResult?.length > 0
+      ? Math.max(...leaderboardResult.map(u => u.max_streak || 0))
+      : 0
 
     const formatted1 = formatNumber(activeUsers)
     const formatted2 = formatNumber(totalCheckins)
@@ -190,10 +198,12 @@ onMounted(async () => {
                   <p>社区成员的坚持轨迹</p>
                 </div>
               </div>
-              <el-tag type="success" effect="plain" round class="live-tag">
-                <span class="live-dot"></span>
-                实时更新
-              </el-tag>
+              <div class="header-right">
+                <span class="live-indicator">
+                  <span class="live-dot"></span>
+                  实时
+                </span>
+              </div>
             </div>
 
             <div v-if="loading" class="heatmap-loading">
@@ -728,19 +738,28 @@ export default {
   margin: 0;
 }
 
-.live-tag {
-  background: rgba(16, 185, 129, 0.1) !important;
-  border-color: rgba(16, 185, 129, 0.2) !important;
-  color: #34d399 !important;
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #34d399;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.15);
 }
 
 .live-dot {
-  display: inline-block;
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: #34d399;
-  margin-right: 6px;
   animation: pulse 2s ease-in-out infinite;
 }
 
