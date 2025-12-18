@@ -6,8 +6,8 @@ WORKDIR /app
 # 复制 package.json 和 lock 文件
 COPY package.json package-lock.json* ./
 
-# 安装依赖
-RUN npm ci || npm install
+# 安装依赖 - 删除 lock 文件重新安装以解决平台兼容问题
+RUN rm -f package-lock.json && npm install
 
 # 复制源代码（排除 node_modules，见 .dockerignore）
 COPY . .

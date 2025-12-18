@@ -2,6 +2,7 @@
 import { ref, watch, onMounted, computed } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Timer from '@/components/Timer.vue'
+import TidalBackground from '@/components/TidalBackground.vue'
 import { useTrainingStore } from '@/store/training'
 import { useUserStore } from '@/store/user'
 import { checkin } from '@/api/checkin'
@@ -93,6 +94,13 @@ function updateSetting(key: string, value: number) {
 <template>
   <MainLayout>
     <div class="train-page">
+      <!-- Three.js Tidal Background -->
+      <TidalBackground
+        :phase="trainingStore.phase"
+        :intensity="trainingStore.isRunning ? 1.2 : 0.8"
+        :is-active="trainingStore.isRunning"
+      />
+
       <!-- Header with decorative elements -->
       <div class="train-header" :class="{ mounted }">
         <!-- Decorative background -->
@@ -165,62 +173,86 @@ function updateSetting(key: string, value: number) {
             <div class="settings-grid">
               <div class="setting-item">
                 <label class="setting-label">收缩时间</label>
-                <div class="setting-input-wrapper">
-                  <el-input-number
-                    :model-value="trainingStore.settings.contractTime"
-                    @update:model-value="updateSetting('contractTime', $event as number)"
-                    :min="1"
-                    :max="30"
-                    controls-position="right"
-                    size="large"
-                    class="setting-input"
-                  />
-                  <span class="setting-unit">秒</span>
+                <div class="stepper-control">
+                  <button
+                    class="stepper-btn"
+                    @click="updateSetting('contractTime', Math.max(1, trainingStore.settings.contractTime - 1))"
+                  >
+                    <span class="stepper-icon">−</span>
+                  </button>
+                  <div class="stepper-value">
+                    <span class="value-number">{{ trainingStore.settings.contractTime }}</span>
+                    <span class="value-unit">秒</span>
+                  </div>
+                  <button
+                    class="stepper-btn"
+                    @click="updateSetting('contractTime', Math.min(30, trainingStore.settings.contractTime + 1))"
+                  >
+                    <span class="stepper-icon">+</span>
+                  </button>
                 </div>
               </div>
               <div class="setting-item">
                 <label class="setting-label">保持时间</label>
-                <div class="setting-input-wrapper">
-                  <el-input-number
-                    :model-value="trainingStore.settings.holdTime"
-                    @update:model-value="updateSetting('holdTime', $event as number)"
-                    :min="1"
-                    :max="30"
-                    controls-position="right"
-                    size="large"
-                    class="setting-input"
-                  />
-                  <span class="setting-unit">秒</span>
+                <div class="stepper-control">
+                  <button
+                    class="stepper-btn"
+                    @click="updateSetting('holdTime', Math.max(1, trainingStore.settings.holdTime - 1))"
+                  >
+                    <span class="stepper-icon">−</span>
+                  </button>
+                  <div class="stepper-value">
+                    <span class="value-number">{{ trainingStore.settings.holdTime }}</span>
+                    <span class="value-unit">秒</span>
+                  </div>
+                  <button
+                    class="stepper-btn"
+                    @click="updateSetting('holdTime', Math.min(30, trainingStore.settings.holdTime + 1))"
+                  >
+                    <span class="stepper-icon">+</span>
+                  </button>
                 </div>
               </div>
               <div class="setting-item">
                 <label class="setting-label">放松时间</label>
-                <div class="setting-input-wrapper">
-                  <el-input-number
-                    :model-value="trainingStore.settings.relaxTime"
-                    @update:model-value="updateSetting('relaxTime', $event as number)"
-                    :min="1"
-                    :max="30"
-                    controls-position="right"
-                    size="large"
-                    class="setting-input"
-                  />
-                  <span class="setting-unit">秒</span>
+                <div class="stepper-control">
+                  <button
+                    class="stepper-btn"
+                    @click="updateSetting('relaxTime', Math.max(1, trainingStore.settings.relaxTime - 1))"
+                  >
+                    <span class="stepper-icon">−</span>
+                  </button>
+                  <div class="stepper-value">
+                    <span class="value-number">{{ trainingStore.settings.relaxTime }}</span>
+                    <span class="value-unit">秒</span>
+                  </div>
+                  <button
+                    class="stepper-btn"
+                    @click="updateSetting('relaxTime', Math.min(30, trainingStore.settings.relaxTime + 1))"
+                  >
+                    <span class="stepper-icon">+</span>
+                  </button>
                 </div>
               </div>
               <div class="setting-item">
                 <label class="setting-label">循环次数</label>
-                <div class="setting-input-wrapper">
-                  <el-input-number
-                    :model-value="trainingStore.settings.cycles"
-                    @update:model-value="updateSetting('cycles', $event as number)"
-                    :min="1"
-                    :max="50"
-                    controls-position="right"
-                    size="large"
-                    class="setting-input"
-                  />
-                  <span class="setting-unit">次</span>
+                <div class="stepper-control">
+                  <button
+                    class="stepper-btn"
+                    @click="updateSetting('cycles', Math.max(1, trainingStore.settings.cycles - 1))"
+                  >
+                    <span class="stepper-icon">−</span>
+                  </button>
+                  <div class="stepper-value">
+                    <span class="value-number">{{ trainingStore.settings.cycles }}</span>
+                    <span class="value-unit">次</span>
+                  </div>
+                  <button
+                    class="stepper-btn"
+                    @click="updateSetting('cycles', Math.min(50, trainingStore.settings.cycles + 1))"
+                  >
+                    <span class="stepper-icon">+</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -361,6 +393,8 @@ function updateSetting(key: string, value: number) {
 .train-page {
   max-width: 768px;
   margin: 0 auto;
+  position: relative;
+  min-height: 100vh;
 }
 
 /* Header */
@@ -581,6 +615,7 @@ function updateSetting(key: string, value: number) {
 
 .settings-card :deep(.el-card__body) {
   padding: 24px;
+  overflow: hidden;
 }
 
 .settings-decoration {
@@ -624,14 +659,14 @@ function updateSetting(key: string, value: number) {
 .settings-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 16px 20px;
   margin-bottom: 24px;
 }
 
 @media (min-width: 640px) {
   .settings-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
   }
 }
 
@@ -639,57 +674,76 @@ function updateSetting(key: string, value: number) {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .setting-label {
   font-size: 13px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
 }
 
-.setting-input-wrapper {
+/* Custom Stepper Control */
+.stepper-control {
   display: flex;
   align-items: center;
-  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.setting-unit {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+.stepper-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 44px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
-.setting-input {
+.stepper-btn:hover {
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+.stepper-btn:active {
+  background: rgba(139, 92, 246, 0.3);
+}
+
+.stepper-icon {
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.stepper-value {
   flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 4px;
   min-width: 0;
 }
 
-.setting-input :deep(.el-input-number__decrease),
-.setting-input :deep(.el-input-number__increase) {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  color: rgba(255, 255, 255, 0.7) !important;
-}
-
-.setting-input :deep(.el-input-number__decrease:hover),
-.setting-input :deep(.el-input-number__increase:hover) {
-  background: rgba(255, 255, 255, 0.12) !important;
-  color: #fff !important;
-}
-
-.setting-input :deep(.el-input__wrapper) {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 8px !important;
-  box-shadow: none !important;
-  padding: 4px 12px !important;
-}
-
-.setting-input :deep(.el-input__inner) {
-  color: #fff !important;
-  text-align: center;
+.value-number {
+  font-size: 20px;
   font-weight: 600;
-  font-size: 18px;
+  color: #fff;
+  line-height: 1;
+}
+
+.value-unit {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
 }
 
 .training-summary {
