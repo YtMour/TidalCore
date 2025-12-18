@@ -1,6 +1,6 @@
 # TidalCore Frontend
 
-TidalCore 前端应用 - 专业的盆底肌训练平台。
+TidalCore 前端应用 - 专业的盆底肌训练平台，采用全屏沉浸式海洋主题设计。
 
 ## 技术栈
 
@@ -8,93 +8,120 @@ TidalCore 前端应用 - 专业的盆底肌训练平台。
 - **构建工具**: Vite 7
 - **状态管理**: Pinia 3
 - **路由**: Vue Router 4
-- **UI 组件库**: Element Plus 2.x (支持亮/暗色主题)
-- **样式**: Tailwind CSS 4 + 自定义 CSS 设计系统
-- **图标**: @element-plus/icons-vue, Lucide Vue
+- **UI 组件库**: Element Plus 2.x (深色海洋主题)
+- **样式**: Tailwind CSS 4 + 自定义海洋设计系统
+- **图标**: @element-plus/icons-vue
 - **HTTP 客户端**: Axios
-- **动画**: Canvas Confetti, VueUse Motion
+- **动画**: Canvas Confetti, Three.js, GSAP
 - **工具库**: VueUse
+
+## 设计理念
+
+TidalCore 采用**全屏沉浸式海洋主题**设计，整个页面如同置身深海之中：
+
+- **全屏海洋背景**: 多层动态海浪、涟漪、气泡效果
+- **海浪涌动动画**: 波浪上下起伏，模拟真实海浪涌动
+- **玻璃态组件**: 透明背景，内容悬浮在海洋之上
+- **海洋色系**: 深海蓝到浅海青的渐变色调
 
 ## 主要特性
 
-### 主题系统
+### 全屏海洋背景系统
 
-项目支持亮色/暗色主题切换，使用 Pinia store 管理主题状态：
-
-```typescript
-// store/theme.ts
-export const useThemeStore = defineStore('theme', () => {
-  const mode = ref<'light' | 'dark'>('dark')
-
-  function toggle() {
-    mode.value = mode.value === 'dark' ? 'light' : 'dark'
-  }
-
-  return { mode, toggle }
-})
+```css
+/* 多层背景架构 */
+.ocean-bg          /* 深海渐变基底 */
+.ocean-gradient    /* 光线穿透效果 */
+.animated-bg       /* 动态水体效果 */
+.particles-bg      /* 海洋光斑粒子 */
+.wave-layer        /* 三层海浪动画 */
+.ripple-layer      /* 涟漪效果 */
+.bubbles-container /* 上升气泡 */
 ```
 
-主题切换按钮位于顶部导航栏右侧，点击可在亮色和暗色模式之间切换。
+### 海洋色系
 
-### UI 设计规范
+```css
+:root {
+  /* 海洋主色 */
+  --ocean-surface: 56 189 248;    /* #38bdf8 - 海面蓝 */
+  --ocean-shallow: 14 165 233;    /* #0ea5e9 - 浅海蓝 */
+  --ocean-mid: 2 132 199;         /* #0284c7 - 中海蓝 */
+  --ocean-deep: 3 105 161;        /* #0369a1 - 深海蓝 */
+  --ocean-abyss: 12 74 110;       /* #0c4a6e - 海渊蓝 */
 
-- **圆角**: 统一使用 8-10px 圆角，专业简洁
-- **渐变**: 主色调为紫色-粉色渐变 (`#8b5cf6` → `#ec4899`)
-- **玻璃态**: 半透明背景 + 模糊效果
-- **布局**: 图标与文字水平排列，遵循左右布局原则
+  /* 海洋强调色 */
+  --aqua-glow: 34 211 238;        /* #22d3ee 水光 */
+  --seaweed-green: 52 211 153;    /* #34d399 海藻绿 */
+  --sunset-amber: 251 191 36;     /* #fbbf24 落日金 */
+  --coral-pink: 244 114 182;      /* #f472b6 珊瑚粉 */
+}
+```
 
-## Element Plus 配置
+### 海浪涌动动画
 
-项目使用 Element Plus 作为主要 UI 组件库，支持亮/暗色主题：
+核心动画效果 - 波浪上下起伏而非左右移动：
 
-```typescript
-// main.ts
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
-import 'element-plus/theme-chalk/dark/css-vars.css'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-
-// 全局注册所有图标
-for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
+```css
+/* 海浪涌动 - 不同层次不同速度 */
+@keyframes wave-surge-1 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
-app.use(ElementPlus)
+@keyframes wave-surge-2 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
 
-// 初始化主题
-const themeStore = useThemeStore()
-themeStore.initTheme()
+@keyframes wave-surge-3 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
 ```
 
-### 常用组件
+### SVG 海浪组件
 
-| Element Plus 组件 | 用途 |
-|------------------|------|
-| `el-card` | 卡片容器 |
-| `el-button` | 按钮 |
-| `el-input` | 输入框 |
-| `el-form` / `el-form-item` | 表单 |
-| `el-dialog` | 模态框 |
-| `el-drawer` | 抽屉 |
-| `el-menu` | 导航菜单 |
-| `el-row` / `el-col` | 栅格布局 |
-| `el-tag` | 标签 |
-| `el-alert` | 提示 |
-| `el-skeleton` | 骨架屏 |
-| `el-divider` | 分割线 |
-| `el-collapse-transition` | 折叠过渡 |
+Logo、CTA图标、奖杯等均使用海浪填充效果：
 
-### 图标使用
+```html
+<!-- 海浪填充SVG示例 -->
+<svg viewBox="0 0 60 60">
+  <defs>
+    <linearGradient id="waveGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+    <clipPath id="clip">
+      <circle cx="30" cy="30" r="26" />
+    </clipPath>
+  </defs>
+  <g clip-path="url(#clip)">
+    <path class="wave-1" d="M0 35 Q15 30, 30 35 T60 35 L60 60 L0 60 Z" fill="url(#waveGrad)"/>
+    <path class="wave-2" d="M0 40 Q15 35, 30 40 T60 40 L60 60 L0 60 Z" fill="#22d3ee" opacity="0.6"/>
+    <path class="wave-3" d="M0 45 Q15 40, 30 45 T60 45 L60 60 L0 60 Z" fill="#06b6d4" opacity="0.4"/>
+  </g>
+</svg>
+```
 
-```vue
-<script setup>
-import { Timer, Trophy, User } from '@element-plus/icons-vue'
-</script>
+## Element Plus 深色海洋主题
 
-<template>
-  <el-icon><Timer /></el-icon>
-  <el-icon :size="20" color="#a78bfa"><Trophy /></el-icon>
-</template>
+项目对 Element Plus 进行了深度定制，与海洋主题融为一体：
+
+```css
+.dark {
+  --el-bg-color: transparent;
+  --el-bg-color-page: transparent;
+  --el-fill-color: rgba(56, 189, 248, 0.05);
+  --el-border-color: rgba(56, 189, 248, 0.1);
+  --el-color-primary: rgb(var(--ocean-surface));
+}
+
+/* 所有组件背景透明，显示海洋背景 */
+.el-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+}
 ```
 
 ## 项目结构
@@ -105,30 +132,28 @@ src/
 │   ├── auth.ts            # 认证相关 API
 │   ├── checkin.ts         # 打卡相关 API
 │   └── request.ts         # Axios 实例配置
-├── assets/                 # 静态资源
 ├── components/             # 组件
-│   ├── ui/                # 通用 UI 组件 (保留兼容)
 │   ├── Heatmap.vue        # 热力图组件
-│   ├── LeaderboardTable.vue # 排行榜卡片组件
+│   ├── LeaderboardTable.vue # 排行榜表格组件
+│   ├── TidalBackground.vue  # Three.js 海洋背景
 │   └── Timer.vue          # 训练计时器组件
 ├── layouts/                # 布局组件
-│   └── MainLayout.vue     # 主布局 (含导航栏、主题切换)
+│   └── MainLayout.vue     # 主布局 (全屏海洋背景、透明导航)
 ├── router/                 # 路由配置
 │   └── index.ts
 ├── store/                  # 状态管理
-│   ├── theme.ts           # 主题状态 (亮/暗色)
 │   ├── training.ts        # 训练状态
 │   └── user.ts            # 用户状态
 ├── views/                  # 页面视图
-│   ├── Dashboard.vue      # 个人中心
-│   ├── Home.vue           # 首页
-│   ├── Leaderboard.vue    # 排行榜
-│   ├── Login.vue          # 登录
-│   ├── Register.vue       # 注册
-│   └── Train.vue          # 训练页面
+│   ├── Dashboard.vue      # 个人中心 (全屏)
+│   ├── Home.vue           # 首页 (全屏英雄区)
+│   ├── Leaderboard.vue    # 排行榜 (奖杯海浪效果)
+│   ├── Login.vue          # 登录 (全屏)
+│   ├── Register.vue       # 注册 (全屏)
+│   └── Train.vue          # 训练页面 (Three.js 背景)
 ├── App.vue                 # 根组件
 ├── main.ts                 # 入口文件
-└── style.css              # 全局样式 (含亮/暗色主题变量)
+└── style.css              # 全局样式 (海洋设计系统)
 ```
 
 ## 快速开始
@@ -162,12 +187,6 @@ npm run build
 
 构建产物将输出到 `dist/` 目录。
 
-### 预览生产版本
-
-```bash
-npm run preview
-```
-
 ## 功能特性
 
 ### 核心功能
@@ -180,108 +199,137 @@ npm run preview
 
 ### UI/UX 特性
 
-- 响应式设计，支持移动端和桌面端
-- 支持亮色/暗色主题切换
-- 流畅的过渡动画和微交互
-- 玻璃拟态 (Glassmorphism) 设计风格
-- 紫粉渐变主色调和光晕效果
-- 统一的 8-10px 圆角设计
-- 图标与文字水平排列布局
+- 全屏沉浸式海洋背景
+- 多层海浪动画（上下涌动效果）
+- 动态气泡上升效果
+- 涟漪向外扩散效果
+- 玻璃态透明组件
+- 透明悬浮导航栏
+- 海洋色系渐变
+- 响应式设计
+
+## 页面说明
+
+### Home.vue 首页
+
+- 全屏英雄区 (`min-height: calc(100vh - 72px)`)
+- Logo 带涟漪扩散和海浪填充效果
+- 统计数据卡片
+- 功能特性网格
+- 全站热力图
+- CTA 区域（海浪涌动图标）
+
+### Train.vue 训练页
+
+- Three.js 动态海洋背景
+- 环形计时器
+- 潮汐阶段提示（涨潮、平潮、退潮）
+- 打卡成功庆祝动画
+
+### Leaderboard.vue 排行榜
+
+- 奖杯图标（内部海浪填充动画）
+- Top 3 领奖台展示
+- 统计卡片
+- 排行榜表格
+
+### Dashboard.vue 个人中心
+
+- 用户信息卡片
+- 连续打卡统计
+- 个人热力图
+- 最近训练记录
 
 ## 组件说明
+
+### MainLayout.vue 主布局
+
+负责全屏海洋背景系统：
+
+```vue
+<template>
+  <div class="main-layout">
+    <!-- 全屏海洋背景层 -->
+    <div class="ocean-bg"></div>
+    <div class="ocean-gradient"></div>
+    <div class="animated-bg"></div>
+    <div class="wave-layer">
+      <div class="wave wave-1"></div>
+      <div class="wave wave-2"></div>
+      <div class="wave wave-3"></div>
+    </div>
+    <div class="ripple-layer"></div>
+    <div class="bubbles-container">
+      <!-- 动态气泡 -->
+    </div>
+
+    <!-- 透明悬浮导航 -->
+    <header class="main-header" :class="{ scrolled }">
+      <!-- ... -->
+    </header>
+
+    <!-- 内容区 -->
+    <main class="main-content">
+      <slot />
+    </main>
+  </div>
+</template>
+```
 
 ### Timer.vue 训练计时器
 
 - 环形进度条显示当前阶段进度
-- 渐变色「开始训练」按钮
-- 进度条带闪光动画效果
-- 支持亮/暗色主题
+- 相位颜色：收缩(红)、保持(黄)、放松(绿)
+- 海洋主题按钮样式
 
-### LeaderboardTable.vue 排行榜
+### TidalBackground.vue
 
-- 卡片式列表设计
-- 前三名特殊渐变边框
-- 用户头像和统计数据水平布局
-- 支持亮/暗色主题
+Three.js 动态海洋背景，用于训练页面：
 
-### MainLayout.vue 主布局
+- 波浪网格动画
+- 根据训练相位调整颜色和强度
+- 粒子效果
 
-- 顶部导航栏 (玻璃态效果)
-- 导航链接水平布局
-- 主题切换按钮 (太阳/月亮图标)
-- 移动端响应式菜单
+## 样式规范
 
-## 设计系统
+### 页面容器
 
-### 主题配色
+所有页面使用全屏高度：
 
 ```css
-/* 主渐变色 */
-background: linear-gradient(135deg, #8b5cf6, #ec4899);  /* 紫粉渐变 */
-background: linear-gradient(135deg, #fbbf24, #f97316);  /* 金橙渐变 */
-background: linear-gradient(135deg, #10b981, #14b8a6);  /* 绿青渐变 */
-
-/* 强调色 */
---aurora-purple: #8b5cf6;   /* 紫色 */
---aurora-pink: #ec4899;     /* 粉色 */
---aurora-cyan: #22d3ee;     /* 青色 */
---aurora-emerald: #34d399;  /* 绿色 */
---aurora-amber: #fbbf24;    /* 琥珀色 */
---aurora-orange: #fb923c;   /* 橙色 */
-```
-
-### 暗色模式背景
-
-```css
-/* 卡片背景 */
-background: rgba(30, 30, 46, 0.8);
-border: 1px solid rgba(255, 255, 255, 0.06);
-
-/* 装饰光晕 */
-background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), transparent);
-filter: blur(60px);
-```
-
-### 亮色模式背景
-
-```css
-/* 页面背景 */
-background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-
-/* 卡片背景 */
-background: rgba(255, 255, 255, 0.9);
-border: 1px solid rgba(15, 23, 42, 0.08);
-
-/* 文字颜色 */
-color: #0f172a;
-```
-
-### 亮色模式样式覆盖
-
-使用 `:global(html.light)` 选择器覆盖组件样式：
-
-```css
-/* 在 scoped 样式中覆盖亮色模式 */
-:global(html.light) .my-card {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(15, 23, 42, 0.08);
-  color: #0f172a;
+.page {
+  min-height: calc(100vh - 72px);
+  padding: 40px 24px 80px;
 }
 ```
 
-### Element Plus 样式覆盖
-
-使用 `:deep()` 选择器覆盖 Element Plus 默认样式：
+### 玻璃态卡片
 
 ```css
-.my-card :deep(.el-card__body) {
-  padding: 32px;
+.glass-card {
+  background: rgba(8, 15, 30, 0.4);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.08);
+  border-radius: 18px;
 }
+```
 
-.my-input :deep(.el-input__wrapper) {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: none !important;
+### 海洋渐变文字
+
+```css
+.gradient-text {
+  background: linear-gradient(135deg, #38bdf8, #22d3ee, #0ea5e9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+```
+
+### 海洋按钮
+
+```css
+.btn-ocean {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4);
 }
 ```
 
@@ -316,9 +364,8 @@ docker run -d -p 80:80 tidalcore-frontend
 ### 添加新页面
 
 1. 在 `src/views/` 创建新的 Vue 组件
-2. 使用 Element Plus 组件构建 UI
+2. 使用全屏布局和海洋主题样式
 3. 在 `src/router/index.ts` 添加路由配置
-4. 如需要，在 `src/layouts/MainLayout.vue` 添加导航链接
 
 ### 页面模板示例
 
@@ -326,7 +373,6 @@ docker run -d -p 80:80 tidalcore-frontend
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
-import { Timer, Star } from '@element-plus/icons-vue'
 
 const mounted = ref(false)
 
@@ -339,97 +385,47 @@ onMounted(() => {
 
 <template>
   <MainLayout>
-    <div class="page-container">
-      <section class="hero-section" :class="{ mounted }">
-        <el-tag type="primary" effect="plain" round>
-          <el-icon><Star /></el-icon>
-          标签文字
-        </el-tag>
-        <h1 class="page-title">
-          <span class="gradient-text">页面标题</span>
-        </h1>
+    <div class="page">
+      <section class="header-section" :class="{ mounted }">
+        <h1 class="gradient-text">页面标题</h1>
+        <p class="subtitle">页面描述</p>
       </section>
 
       <section class="content-section" :class="{ mounted }">
-        <el-card shadow="never" class="content-card">
-          <!-- 内容 -->
-        </el-card>
+        <!-- 内容 -->
       </section>
     </div>
   </MainLayout>
 </template>
 
 <style scoped>
-.page-container {
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
+.page {
+  min-height: calc(100vh - 72px);
+  padding: 40px 24px 80px;
 }
 
-.hero-section {
+.header-section {
+  text-align: center;
   opacity: 0;
   transform: translateY(16px);
-  transition: all 0.7s ease;
+  transition: all 0.7s var(--ease-smooth);
 }
 
-.hero-section.mounted {
+.header-section.mounted {
   opacity: 1;
   transform: translateY(0);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  background: linear-gradient(135deg, rgb(var(--ocean-surface)), rgb(var(--aqua-glow)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
-.content-card {
-  background: rgba(30, 30, 46, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 10px !important;
-}
-
-/* 亮色模式下 */
-:global(html.light) .content-card {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(15, 23, 42, 0.08) !important;
+.subtitle {
+  color: rgba(255, 255, 255, 0.5);
 }
 </style>
-```
-
-### 状态管理
-
-使用 Pinia 进行状态管理：
-
-```typescript
-// 定义 Store
-export const useExampleStore = defineStore('example', () => {
-  const state = ref<Type>(initialValue)
-
-  function action() {
-    // ...
-  }
-
-  return { state, action }
-})
-
-// 使用 Store
-const store = useExampleStore()
-```
-
-### API 调用
-
-```typescript
-// 在 src/api/ 中定义接口
-export function getData(): Promise<DataType> {
-  return request.get('/endpoint')
-}
-
-// 在组件中使用
-import { getData } from '@/api/example'
-
-const data = await getData()
 ```
 
 ## 浏览器支持

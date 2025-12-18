@@ -285,14 +285,15 @@ const navLinks = [
   height: 72px;
   padding: 0 24px;
   background: transparent;
-  transition: all 0.4s var(--ease-smooth);
+  border-bottom: 1px solid transparent;
+  transition: background 0.4s var(--ease-smooth), border-color 0.4s var(--ease-smooth);
 }
 
 .main-header.scrolled {
-  background: rgba(5, 8, 15, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+  background: rgba(8, 15, 30, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom-color: rgba(56, 189, 248, 0.08);
 }
 
 .header-content {

@@ -859,3 +859,143 @@ body {
 .status-dot-online { background: rgb(var(--success)); }
 .status-dot-offline { background: rgb(var(--error)); }
 .status-dot-away { background: rgb(var(--warning)); }
+
+/* ===== Element Plus 深色覆盖 ===== */
+.dark {
+  --el-bg-color: transparent;
+  --el-bg-color-page: transparent;
+  --el-bg-color-overlay: rgba(8, 15, 30, 0.95);
+  --el-fill-color: rgba(56, 189, 248, 0.05);
+  --el-fill-color-light: rgba(56, 189, 248, 0.08);
+  --el-fill-color-lighter: rgba(56, 189, 248, 0.04);
+  --el-fill-color-blank: transparent;
+  --el-border-color: rgba(56, 189, 248, 0.1);
+  --el-border-color-light: rgba(56, 189, 248, 0.08);
+  --el-border-color-lighter: rgba(56, 189, 248, 0.05);
+  --el-text-color-primary: rgba(255, 255, 255, 0.95);
+  --el-text-color-regular: rgba(255, 255, 255, 0.75);
+  --el-text-color-secondary: rgba(255, 255, 255, 0.55);
+  --el-text-color-placeholder: rgba(255, 255, 255, 0.35);
+  --el-color-primary: rgb(var(--ocean-surface));
+  --el-color-primary-light-3: rgba(56, 189, 248, 0.7);
+  --el-color-primary-light-5: rgba(56, 189, 248, 0.5);
+  --el-color-primary-light-7: rgba(56, 189, 248, 0.3);
+  --el-color-primary-light-8: rgba(56, 189, 248, 0.2);
+  --el-color-primary-light-9: rgba(56, 189, 248, 0.1);
+  --el-color-primary-dark-2: rgb(var(--ocean-shallow));
+  --el-mask-color: rgba(5, 8, 15, 0.85);
+  --el-overlay-color: rgba(5, 8, 15, 0.85);
+}
+
+/* 修复 Element Plus 对话框/抽屉背景 */
+.el-dialog,
+.el-drawer,
+.el-message-box {
+  background: rgba(8, 15, 30, 0.95) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.1) !important;
+}
+
+.el-drawer__body {
+  background: transparent !important;
+}
+
+/* 修复按钮样式 */
+.el-button--primary {
+  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid))) !important;
+  border: none !important;
+}
+
+.el-button--primary:hover {
+  background: linear-gradient(135deg, rgb(var(--ocean-surface)), rgb(var(--ocean-shallow))) !important;
+}
+
+/* 修复输入框样式 */
+.el-input__wrapper,
+.el-textarea__inner {
+  background: rgba(8, 15, 30, 0.6) !important;
+  border: 1px solid rgba(56, 189, 248, 0.15) !important;
+  box-shadow: none !important;
+}
+
+.el-input__wrapper:hover,
+.el-textarea__inner:hover {
+  border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus {
+  border-color: rgb(var(--ocean-surface)) !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+}
+
+/* 修复卡片样式 */
+.el-card {
+  background: var(--glass-bg) !important;
+  border: 1px solid rgba(56, 189, 248, 0.08) !important;
+}
+
+/* 修复表格样式 */
+.el-table {
+  background: transparent !important;
+}
+
+.el-table tr,
+.el-table th.el-table__cell,
+.el-table td.el-table__cell {
+  background: transparent !important;
+}
+
+.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
+  background: rgba(56, 189, 248, 0.05) !important;
+}
+
+/* 修复消息提示样式 */
+.el-message {
+  background: rgba(8, 15, 30, 0.95) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.15) !important;
+}
+
+/* 修复骨架屏样式 */
+.el-skeleton__item {
+  background: linear-gradient(90deg,
+    rgba(56, 189, 248, 0.05) 25%,
+    rgba(56, 189, 248, 0.1) 50%,
+    rgba(56, 189, 248, 0.05) 75%) !important;
+  background-size: 200% 100% !important;
+}
+
+/* 修复分割线样式 */
+.el-divider {
+  border-color: rgba(56, 189, 248, 0.1) !important;
+}
+
+/* 修复警告框样式 */
+.el-alert {
+  background: rgba(56, 189, 248, 0.08) !important;
+  border: 1px solid rgba(56, 189, 248, 0.15) !important;
+}
+
+.el-alert--info {
+  background: rgba(56, 189, 248, 0.08) !important;
+}
+
+/* 修复 Tooltip 样式 */
+.el-popper.is-dark {
+  background: rgba(8, 15, 30, 0.95) !important;
+  border: 1px solid rgba(56, 189, 248, 0.15) !important;
+}
+
+/* 修复下拉框样式 */
+.el-dropdown-menu,
+.el-select-dropdown {
+  background: rgba(8, 15, 30, 0.95) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.15) !important;
+}
+
+.el-dropdown-menu__item:hover,
+.el-select-dropdown__item.hover {
+  background: rgba(56, 189, 248, 0.1) !important;
+}

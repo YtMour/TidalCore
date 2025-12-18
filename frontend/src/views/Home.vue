@@ -107,15 +107,36 @@ onMounted(async () => {
           <!-- TidalCore Logo -->
           <div class="hero-logo" :class="{ mounted }">
             <div class="logo-container">
-              <div class="logo-rings">
-                <div class="ring ring-1"></div>
-                <div class="ring ring-2"></div>
-                <div class="ring ring-3"></div>
+              <!-- 涟漪效果 -->
+              <div class="logo-ripples">
+                <div class="ripple ripple-1"></div>
+                <div class="ripple ripple-2"></div>
+                <div class="ripple ripple-3"></div>
               </div>
+              <!-- 核心圆 -->
               <div class="logo-core">
-                <svg viewBox="0 0 40 40" fill="none" class="core-wave-svg">
-                  <path d="M8 20C8 20 12 14 18 20C24 26 28 14 32 20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <!-- 海浪涌动SVG -->
+                <svg viewBox="0 0 60 60" fill="none" class="core-wave-svg">
+                  <defs>
+                    <linearGradient id="coreWaveGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                      <stop offset="0%" stop-color="#0ea5e9" />
+                      <stop offset="100%" stop-color="#38bdf8" />
+                    </linearGradient>
+                    <clipPath id="coreClip">
+                      <circle cx="30" cy="30" r="26" />
+                    </clipPath>
+                  </defs>
+                  <!-- 海浪填充效果 - 从下往上涌动 -->
+                  <g clip-path="url(#coreClip)">
+                    <path class="wave-fill wave-fill-1" d="M0 35 Q15 30, 30 35 T60 35 L60 60 L0 60 Z" fill="url(#coreWaveGrad)" opacity="0.9"/>
+                    <path class="wave-fill wave-fill-2" d="M0 40 Q15 35, 30 40 T60 40 L60 60 L0 60 Z" fill="#22d3ee" opacity="0.6"/>
+                    <path class="wave-fill wave-fill-3" d="M0 45 Q15 40, 30 45 T60 45 L60 60 L0 60 Z" fill="#06b6d4" opacity="0.4"/>
+                  </g>
+                  <!-- 波浪线条 -->
+                  <path class="wave-line" d="M4 30 Q17 22, 30 30 T56 30" stroke="white" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.8"/>
                 </svg>
+                <!-- 光晕效果 -->
+                <div class="core-glow"></div>
               </div>
             </div>
           </div>
@@ -272,8 +293,25 @@ onMounted(async () => {
       <section class="cta-section">
         <div class="cta-container">
           <div class="cta-icon">
-            <svg viewBox="0 0 48 48" fill="none" class="cta-wave-svg">
-              <path d="M8 24C8 24 14 16 22 24C30 32 36 16 40 24" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <svg viewBox="0 0 60 60" fill="none" class="cta-wave-svg">
+              <defs>
+                <linearGradient id="ctaWaveGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#0284c7" />
+                  <stop offset="100%" stop-color="#38bdf8" />
+                </linearGradient>
+                <clipPath id="ctaClip">
+                  <rect x="4" y="4" width="52" height="52" rx="12" />
+                </clipPath>
+              </defs>
+              <!-- 海浪涌动填充 -->
+              <g clip-path="url(#ctaClip)">
+                <rect x="4" y="4" width="52" height="52" rx="12" fill="rgba(255,255,255,0.1)"/>
+                <path class="cta-wave-fill cta-wave-1" d="M0 32 Q15 26, 30 32 T60 32 L60 60 L0 60 Z" fill="url(#ctaWaveGrad)" opacity="0.8"/>
+                <path class="cta-wave-fill cta-wave-2" d="M0 38 Q15 32, 30 38 T60 38 L60 60 L0 60 Z" fill="#22d3ee" opacity="0.5"/>
+                <path class="cta-wave-fill cta-wave-3" d="M0 44 Q15 38, 30 44 T60 44 L60 60 L0 60 Z" fill="#0ea5e9" opacity="0.3"/>
+              </g>
+              <!-- 波浪线条 -->
+              <path class="cta-wave-line" d="M8 28 Q22 20, 36 28 T52 28" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.9"/>
             </svg>
           </div>
           <h2 class="cta-title">准备好入海了吗？</h2>
@@ -343,79 +381,134 @@ export default {
   margin: 0 auto;
 }
 
-.logo-rings {
+/* 涟漪效果 - 从中心向外扩散 */
+.logo-ripples {
   position: absolute;
   inset: 0;
+  pointer-events: none;
 }
 
-.ring {
+.logo-ripples .ripple {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 2px solid transparent;
-  animation: ring-pulse 4s ease-in-out infinite;
+  border: 2px solid rgba(56, 189, 248, 0.4);
+  animation: ripple-out 3s ease-out infinite;
 }
 
-.ring-1 {
-  border-color: rgba(56, 189, 248, 0.3);
+.logo-ripples .ripple-1 {
   animation-delay: 0s;
 }
 
-.ring-2 {
-  inset: 15%;
-  border-color: rgba(34, 211, 238, 0.4);
-  animation-delay: 0.5s;
-}
-
-.ring-3 {
-  inset: 30%;
-  border-color: rgba(14, 165, 233, 0.5);
+.logo-ripples .ripple-2 {
   animation-delay: 1s;
 }
 
-@keyframes ring-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.1); opacity: 1; }
+.logo-ripples .ripple-3 {
+  animation-delay: 2s;
 }
 
+@keyframes ripple-out {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Logo核心 */
 .logo-core {
   position: absolute;
-  inset: 35%;
+  inset: 20%;
   border-radius: 50%;
-  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  background: linear-gradient(180deg, #0c4a6e 0%, #0369a1 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   box-shadow:
-    0 0 40px rgba(56, 189, 248, 0.5),
-    0 0 80px rgba(56, 189, 248, 0.3),
-    inset 0 0 30px rgba(255, 255, 255, 0.2);
-  animation: core-glow 3s ease-in-out infinite;
+    0 0 40px rgba(56, 189, 248, 0.4),
+    0 0 80px rgba(56, 189, 248, 0.2),
+    inset 0 -20px 40px rgba(56, 189, 248, 0.3);
 }
 
 .core-wave-svg {
-  width: 60%;
-  height: 60%;
-  color: white;
-  animation: wave-flow 2s ease-in-out infinite;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
 }
 
-@keyframes wave-flow {
-  0%, 100% { transform: translateX(-2px); }
-  50% { transform: translateX(2px); }
+/* 海浪涌动动画 - 上下起伏 */
+.core-wave-svg .wave-fill-1 {
+  animation: wave-surge-1 3s ease-in-out infinite;
 }
 
-@keyframes core-glow {
+.core-wave-svg .wave-fill-2 {
+  animation: wave-surge-2 3.5s ease-in-out infinite;
+}
+
+.core-wave-svg .wave-fill-3 {
+  animation: wave-surge-3 4s ease-in-out infinite;
+}
+
+.core-wave-svg .wave-line {
+  animation: wave-line-surge 2.5s ease-in-out infinite;
+}
+
+@keyframes wave-surge-1 {
   0%, 100% {
-    box-shadow:
-      0 0 40px rgba(56, 189, 248, 0.5),
-      0 0 80px rgba(56, 189, 248, 0.3);
+    transform: translateY(0);
   }
   50% {
-    box-shadow:
-      0 0 60px rgba(56, 189, 248, 0.7),
-      0 0 120px rgba(56, 189, 248, 0.4);
+    transform: translateY(-8px);
   }
+}
+
+@keyframes wave-surge-2 {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes wave-surge-3 {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes wave-line-surge {
+  0%, 100% {
+    transform: translateY(0);
+    d: path("M4 30 Q17 22, 30 30 T56 30");
+  }
+  50% {
+    transform: translateY(-3px);
+    d: path("M4 30 Q17 38, 30 30 T56 30");
+  }
+}
+
+/* 核心光晕 */
+.core-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent 60%);
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
 }
 
 /* 标题 */
@@ -975,18 +1068,63 @@ export default {
   height: 80px;
   margin: 0 auto 28px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid)));
+  background: linear-gradient(180deg, #0c4a6e, #0369a1);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 10px 40px rgba(14, 165, 233, 0.3);
+  overflow: hidden;
+  position: relative;
 }
 
 .cta-wave-svg {
-  width: 48px;
-  height: 48px;
-  color: white;
-  animation: wave-flow 2s ease-in-out infinite;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+/* CTA海浪涌动动画 */
+.cta-wave-svg .cta-wave-1 {
+  animation: cta-surge-1 3s ease-in-out infinite;
+}
+
+.cta-wave-svg .cta-wave-2 {
+  animation: cta-surge-2 3.5s ease-in-out infinite;
+}
+
+.cta-wave-svg .cta-wave-3 {
+  animation: cta-surge-3 4s ease-in-out infinite;
+}
+
+.cta-wave-svg .cta-wave-line {
+  animation: cta-line-surge 2.5s ease-in-out infinite;
+}
+
+@keyframes cta-surge-1 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes cta-surge-2 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes cta-surge-3 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes cta-line-surge {
+  0%, 100% {
+    transform: translateY(0);
+    d: path("M8 28 Q22 20, 36 28 T52 28");
+  }
+  50% {
+    transform: translateY(-2px);
+    d: path("M8 28 Q22 36, 36 28 T52 28");
+  }
 }
 
 .cta-title {

@@ -42,10 +42,39 @@ const top3Users = computed(() => users.value.slice(0, 3))
         </div>
 
         <div class="trophy-icon">
-          <svg viewBox="0 0 48 48" fill="none" width="48" height="48" class="trophy-svg">
-            <circle cx="24" cy="24" r="20" fill="rgba(255,255,255,0.1)"/>
-            <path d="M16 24C16 24 20 18 24 24C28 30 32 18 36 24" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-            <circle cx="24" cy="24" r="6" fill="currentColor" opacity="0.3"/>
+          <svg viewBox="0 0 60 60" fill="none" width="60" height="60" class="trophy-svg">
+            <defs>
+              <linearGradient id="trophyGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fcd34d" />
+                <stop offset="50%" stop-color="#f59e0b" />
+                <stop offset="100%" stop-color="#d97706" />
+              </linearGradient>
+              <linearGradient id="trophyWater" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#0284c7" />
+                <stop offset="100%" stop-color="#38bdf8" />
+              </linearGradient>
+              <clipPath id="trophyCup">
+                <path d="M18 14h24v6c0 8-5 15-12 18c-7-3-12-10-12-18v-6z"/>
+              </clipPath>
+            </defs>
+            <!-- 奖杯主体 -->
+            <path d="M18 14h24v6c0 8-5 15-12 18c-7-3-12-10-12-18v-6z" fill="url(#trophyGold)" opacity="0.2"/>
+            <!-- 海浪填充效果 -->
+            <g clip-path="url(#trophyCup)">
+              <path class="trophy-wave-1" d="M10 26 Q20 22, 30 26 T50 26 L50 50 L10 50 Z" fill="url(#trophyWater)" opacity="0.9"/>
+              <path class="trophy-wave-2" d="M10 30 Q20 26, 30 30 T50 30 L50 50 L10 50 Z" fill="#22d3ee" opacity="0.6"/>
+              <path class="trophy-wave-3" d="M10 34 Q20 30, 30 34 T50 34 L50 50 L10 50 Z" fill="#06b6d4" opacity="0.4"/>
+            </g>
+            <!-- 奖杯边框 -->
+            <path d="M18 14h24v6c0 8-5 15-12 18c-7-3-12-10-12-18v-6z" stroke="url(#trophyGold)" stroke-width="2" fill="none"/>
+            <!-- 把手 -->
+            <path d="M16 16c-4 0-6 3-6 6s2 6 6 6" stroke="url(#trophyGold)" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M44 16c4 0 6 3 6 6s-2 6-6 6" stroke="url(#trophyGold)" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <!-- 底座 -->
+            <rect x="24" y="38" width="12" height="4" rx="2" fill="url(#trophyGold)" opacity="0.8"/>
+            <rect x="20" y="42" width="20" height="4" rx="2" fill="url(#trophyGold)" opacity="0.6"/>
+            <!-- 闪光 -->
+            <circle cx="24" cy="18" r="2" fill="white" opacity="0.5"/>
           </svg>
         </div>
 
@@ -293,7 +322,35 @@ const top3Users = computed(() => users.value.slice(0, 3))
 }
 
 .trophy-svg {
-  color: white;
+  filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.4));
+}
+
+/* 奖杯内海浪涌动动画 */
+.trophy-svg .trophy-wave-1 {
+  animation: trophy-surge-1 3s ease-in-out infinite;
+}
+
+.trophy-svg .trophy-wave-2 {
+  animation: trophy-surge-2 3.5s ease-in-out infinite;
+}
+
+.trophy-svg .trophy-wave-3 {
+  animation: trophy-surge-3 4s ease-in-out infinite;
+}
+
+@keyframes trophy-surge-1 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes trophy-surge-2 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes trophy-surge-3 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
 }
 
 @keyframes float {
