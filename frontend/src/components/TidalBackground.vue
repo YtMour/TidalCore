@@ -17,15 +17,17 @@ let renderer: THREE.WebGLRenderer
 let particles: THREE.Points
 let waveGeometry: THREE.PlaneGeometry
 let waveMesh: THREE.Mesh
+let coreMesh: THREE.Mesh // 潮汐核心
+let ringMeshes: THREE.Mesh[] = [] // 能量环
 let animationId: number
 let clock: THREE.Clock
 
-// Phase colors
+// TidalCore 品牌色系 - 深海蓝绿渐变
 const phaseColors = {
-  idle: { primary: 0x64748b, secondary: 0x475569 },
-  contract: { primary: 0xf43f5e, secondary: 0xec4899 },
-  hold: { primary: 0xf59e0b, secondary: 0xf97316 },
-  relax: { primary: 0x10b981, secondary: 0x14b8a6 }
+  idle: { primary: 0x0ea5e9, secondary: 0x0284c7, accent: 0x38bdf8 },      // 宁静海蓝
+  contract: { primary: 0xf43f5e, secondary: 0xbe123c, accent: 0xfb7185 },  // 张力珊瑚红
+  hold: { primary: 0xf59e0b, secondary: 0xd97706, accent: 0xfbbf24 },      // 蓄力琥珀
+  relax: { primary: 0x10b981, secondary: 0x059669, accent: 0x34d399 }      // 舒缓翠绿
 }
 
 // Current target colors for smooth transitions
@@ -33,13 +35,17 @@ let currentPrimaryColor = new THREE.Color(phaseColors.idle.primary)
 let targetPrimaryColor = new THREE.Color(phaseColors.idle.primary)
 let currentSecondaryColor = new THREE.Color(phaseColors.idle.secondary)
 let targetSecondaryColor = new THREE.Color(phaseColors.idle.secondary)
+let currentAccentColor = new THREE.Color(phaseColors.idle.accent)
+let targetAccentColor = new THREE.Color(phaseColors.idle.accent)
 
-// Shader for the wave plane
+// ===== 潮汐波浪着色器 - 增强版 =====
 const waveVertexShader = `
   uniform float uTime;
   uniform float uIntensity;
+  uniform float uTidalPhase; // 潮汐相位 0-1
   varying vec2 vUv;
   varying float vElevation;
+  varying float vDepth;
 
   // Simplex noise function
   vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -112,18 +118,27 @@ const waveVertexShader = `
 
     vec3 pos = position;
 
-    // Multiple wave layers for realistic ocean effect
-    float wave1 = snoise(vec3(pos.x * 0.5, pos.y * 0.5, uTime * 0.3)) * 0.5;
-    float wave2 = snoise(vec3(pos.x * 1.0, pos.y * 1.0, uTime * 0.5)) * 0.25;
-    float wave3 = snoise(vec3(pos.x * 2.0, pos.y * 2.0, uTime * 0.7)) * 0.125;
+    // 计算到中心的距离（用于同心圆波纹）
+    float distFromCenter = length(pos.xy);
 
-    // Tidal breathing effect
-    float tidal = sin(uTime * 0.2) * 0.3;
+    // 主波浪层 - 自然海洋波动
+    float wave1 = snoise(vec3(pos.x * 0.4, pos.y * 0.4, uTime * 0.25)) * 0.6;
+    float wave2 = snoise(vec3(pos.x * 0.8, pos.y * 0.8, uTime * 0.4)) * 0.3;
+    float wave3 = snoise(vec3(pos.x * 1.6, pos.y * 1.6, uTime * 0.6)) * 0.15;
 
-    float elevation = (wave1 + wave2 + wave3 + tidal) * uIntensity;
+    // 潮汐呼吸效果 - 从中心向外扩散的波纹
+    float tidalBreath = sin(uTime * 0.15) * 0.4;
+    float ripple = sin(distFromCenter * 2.0 - uTime * 0.8) * 0.2 * smoothstep(4.0, 0.0, distFromCenter);
+
+    // 中心涡旋效果
+    float vortex = sin(distFromCenter * 1.5 - uTime * 0.5 + uTidalPhase * 6.28) * 0.15;
+    vortex *= smoothstep(3.0, 0.5, distFromCenter);
+
+    float elevation = (wave1 + wave2 + wave3 + tidalBreath + ripple + vortex) * uIntensity;
     pos.z = elevation;
 
     vElevation = elevation;
+    vDepth = distFromCenter;
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   }
@@ -132,58 +147,132 @@ const waveVertexShader = `
 const waveFragmentShader = `
   uniform vec3 uPrimaryColor;
   uniform vec3 uSecondaryColor;
+  uniform vec3 uAccentColor;
   uniform float uTime;
   varying vec2 vUv;
   varying float vElevation;
+  varying float vDepth;
 
   void main() {
-    // Color based on elevation
-    float mixStrength = (vElevation + 0.5) * 0.5;
+    // 基于高度的颜色混合
+    float mixStrength = (vElevation + 0.5) * 0.6;
     vec3 color = mix(uSecondaryColor, uPrimaryColor, mixStrength);
 
-    // Add shimmer effect
-    float shimmer = sin(vUv.x * 20.0 + uTime) * sin(vUv.y * 20.0 + uTime * 0.7) * 0.1;
-    color += shimmer;
+    // 中心高亮效果
+    float centerGlow = smoothstep(3.0, 0.0, vDepth) * 0.3;
+    color = mix(color, uAccentColor, centerGlow);
 
-    // Fade edges
-    float edgeFade = smoothstep(0.0, 0.3, vUv.x) * smoothstep(1.0, 0.7, vUv.x) *
-                     smoothstep(0.0, 0.3, vUv.y) * smoothstep(1.0, 0.7, vUv.y);
+    // 波光粼粼效果
+    float shimmer = sin(vUv.x * 30.0 + uTime * 1.5) * sin(vUv.y * 30.0 + uTime * 1.2) * 0.08;
+    shimmer += sin(vDepth * 5.0 - uTime * 2.0) * 0.05;
+    color += shimmer * uAccentColor;
 
-    float alpha = 0.15 * edgeFade;
+    // 能量脉冲线
+    float pulse = sin(vDepth * 3.0 - uTime * 1.5) * 0.5 + 0.5;
+    pulse = smoothstep(0.7, 1.0, pulse) * smoothstep(4.0, 1.0, vDepth);
+    color += pulse * uAccentColor * 0.3;
+
+    // 边缘渐变淡出
+    float edgeFade = smoothstep(0.0, 0.25, vUv.x) * smoothstep(1.0, 0.75, vUv.x) *
+                     smoothstep(0.0, 0.25, vUv.y) * smoothstep(1.0, 0.75, vUv.y);
+
+    float alpha = 0.2 * edgeFade;
 
     gl_FragColor = vec4(color, alpha);
   }
 `
 
-// Particle shader
+// ===== 潮汐核心着色器 =====
+const coreVertexShader = `
+  uniform float uTime;
+  uniform float uIntensity;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
+  varying float vPulse;
+
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vPosition = position;
+
+    // 呼吸脉动
+    float breathe = sin(uTime * 0.3) * 0.1 + 1.0;
+    float pulse = sin(uTime * 2.0) * 0.02;
+    vPulse = pulse;
+
+    vec3 pos = position * (breathe + pulse * uIntensity);
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+  }
+`
+
+const coreFragmentShader = `
+  uniform vec3 uPrimaryColor;
+  uniform vec3 uAccentColor;
+  uniform float uTime;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
+  varying float vPulse;
+
+  void main() {
+    // 菲涅尔边缘发光
+    vec3 viewDir = normalize(cameraPosition - vPosition);
+    float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 3.0);
+
+    // 核心渐变
+    vec3 color = mix(uPrimaryColor * 0.3, uAccentColor, fresnel);
+
+    // 能量脉冲
+    float energyPulse = sin(uTime * 3.0) * 0.5 + 0.5;
+    color += uAccentColor * energyPulse * 0.2;
+
+    // 内部发光
+    float innerGlow = smoothstep(1.0, 0.0, length(vPosition)) * 0.5;
+    color += uAccentColor * innerGlow;
+
+    float alpha = 0.6 + fresnel * 0.4;
+
+    gl_FragColor = vec4(color, alpha);
+  }
+`
+
+// ===== 粒子着色器 - 增强版 =====
 const particleVertexShader = `
   uniform float uTime;
   uniform float uIntensity;
   attribute float aScale;
   attribute float aSpeed;
   attribute float aOffset;
+  attribute float aOrbit; // 轨道半径
   varying float vAlpha;
+  varying float vGlow;
 
   void main() {
     vec3 pos = position;
 
-    // Floating motion
-    float floatY = sin(uTime * aSpeed + aOffset) * 0.5;
-    float floatX = cos(uTime * aSpeed * 0.7 + aOffset) * 0.3;
+    // 围绕中心旋转的轨道运动
+    float angle = uTime * aSpeed * 0.3 + aOffset;
+    float orbitRadius = aOrbit * (1.0 + sin(uTime * 0.5 + aOffset) * 0.2);
 
+    pos.x += cos(angle) * orbitRadius * 0.5;
+    pos.z += sin(angle) * orbitRadius * 0.3;
+
+    // 上升漂浮
+    float floatY = sin(uTime * aSpeed + aOffset) * 0.3;
     pos.y += floatY * uIntensity;
-    pos.x += floatX * uIntensity;
-
-    // Rising motion (like bubbles)
-    pos.y += mod(uTime * aSpeed * 0.2 + aOffset, 4.0) - 2.0;
+    pos.y += mod(uTime * aSpeed * 0.15 + aOffset, 5.0) - 2.5;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
 
-    // Size attenuation
-    gl_PointSize = aScale * 50.0 * (1.0 / -mvPosition.z) * uIntensity;
+    // 大小衰减
+    gl_PointSize = aScale * 60.0 * (1.0 / -mvPosition.z) * uIntensity;
 
-    // Alpha based on position
-    vAlpha = smoothstep(-2.0, 0.0, pos.y) * smoothstep(2.0, 0.0, pos.y);
+    // 基于位置的透明度
+    float distFromCenter = length(pos.xz);
+    vAlpha = smoothstep(-2.5, 0.0, pos.y) * smoothstep(2.5, 0.0, pos.y);
+    vAlpha *= smoothstep(4.0, 1.0, distFromCenter);
+
+    // 发光强度
+    vGlow = sin(uTime * 2.0 + aOffset * 3.0) * 0.5 + 0.5;
 
     gl_Position = projectionMatrix * mvPosition;
   }
@@ -191,17 +280,26 @@ const particleVertexShader = `
 
 const particleFragmentShader = `
   uniform vec3 uColor;
+  uniform vec3 uAccentColor;
   varying float vAlpha;
+  varying float vGlow;
 
   void main() {
-    // Circular particle
+    // 圆形粒子
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
 
-    // Soft edges
-    float alpha = smoothstep(0.5, 0.2, dist) * vAlpha * 0.6;
+    // 柔和边缘
+    float alpha = smoothstep(0.5, 0.1, dist) * vAlpha * 0.7;
 
-    gl_FragColor = vec4(uColor, alpha);
+    // 颜色混合
+    vec3 color = mix(uColor, uAccentColor, vGlow * 0.5);
+
+    // 中心发光
+    float centerGlow = smoothstep(0.3, 0.0, dist) * vGlow;
+    color += uAccentColor * centerGlow * 0.5;
+
+    gl_FragColor = vec4(color, alpha);
   }
 `
 
@@ -214,15 +312,16 @@ function initThree() {
   // Scene
   scene = new THREE.Scene()
 
-  // Camera
-  camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100)
-  camera.position.z = 3
-  camera.position.y = 1
+  // Camera - 调整视角以更好展示潮汐核心
+  camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 100)
+  camera.position.z = 4
+  camera.position.y = 1.5
 
   // Renderer
   renderer = new THREE.WebGLRenderer({
     antialias: true,
-    alpha: true
+    alpha: true,
+    powerPreference: 'high-performance'
   })
   renderer.setSize(width, height)
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -232,10 +331,10 @@ function initThree() {
   // Clock
   clock = new THREE.Clock()
 
-  // Create wave plane
+  // Create scene elements
   createWavePlane()
-
-  // Create particles
+  createTidalCore()
+  createEnergyRings()
   createParticles()
 
   // Start animation
@@ -246,7 +345,8 @@ function initThree() {
 }
 
 function createWavePlane() {
-  waveGeometry = new THREE.PlaneGeometry(8, 8, 128, 128)
+  // 更大的波浪平面，更高的细分度
+  waveGeometry = new THREE.PlaneGeometry(12, 12, 160, 160)
 
   const waveMaterial = new THREE.ShaderMaterial({
     vertexShader: waveVertexShader,
@@ -255,33 +355,88 @@ function createWavePlane() {
     side: THREE.DoubleSide,
     uniforms: {
       uTime: { value: 0 },
+      uTidalPhase: { value: 0 },
       uIntensity: { value: props.intensity ?? 1 },
       uPrimaryColor: { value: currentPrimaryColor },
-      uSecondaryColor: { value: currentSecondaryColor }
+      uSecondaryColor: { value: currentSecondaryColor },
+      uAccentColor: { value: currentAccentColor }
     }
   })
 
   waveMesh = new THREE.Mesh(waveGeometry, waveMaterial)
-  waveMesh.rotation.x = -Math.PI / 2.5
-  waveMesh.position.y = -1
+  waveMesh.rotation.x = -Math.PI / 2.2
+  waveMesh.position.y = -1.2
   scene.add(waveMesh)
 }
 
+// 创建潮汐核心 - 中央发光球体
+function createTidalCore() {
+  const coreGeometry = new THREE.SphereGeometry(0.3, 64, 64)
+
+  const coreMaterial = new THREE.ShaderMaterial({
+    vertexShader: coreVertexShader,
+    fragmentShader: coreFragmentShader,
+    transparent: true,
+    side: THREE.DoubleSide,
+    uniforms: {
+      uTime: { value: 0 },
+      uIntensity: { value: props.intensity ?? 1 },
+      uPrimaryColor: { value: currentPrimaryColor },
+      uAccentColor: { value: currentAccentColor }
+    }
+  })
+
+  coreMesh = new THREE.Mesh(coreGeometry, coreMaterial)
+  coreMesh.position.set(0, 0.3, 0)
+  scene.add(coreMesh)
+}
+
+// 创建能量环 - 围绕核心的同心圆环
+function createEnergyRings() {
+  const ringCount = 3
+  const ringColors = [0x38bdf8, 0x0ea5e9, 0x0284c7]
+
+  for (let i = 0; i < ringCount; i++) {
+    const radius = 0.5 + i * 0.25
+    const ringGeometry = new THREE.TorusGeometry(radius, 0.01, 16, 100)
+
+    const ringMaterial = new THREE.MeshBasicMaterial({
+      color: ringColors[i],
+      transparent: true,
+      opacity: 0.4 - i * 0.1
+    })
+
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial)
+    ring.position.set(0, 0.3, 0)
+    ring.rotation.x = Math.PI / 2
+
+    ringMeshes.push(ring)
+    scene.add(ring)
+  }
+}
+
 function createParticles() {
-  const particleCount = 200
+  const particleCount = 300 // 增加粒子数量
   const positions = new Float32Array(particleCount * 3)
   const scales = new Float32Array(particleCount)
   const speeds = new Float32Array(particleCount)
   const offsets = new Float32Array(particleCount)
+  const orbits = new Float32Array(particleCount)
 
   for (let i = 0; i < particleCount; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 6
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 4
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 4
+    // 以核心为中心分布
+    const theta = Math.random() * Math.PI * 2
+    const phi = Math.random() * Math.PI
+    const radius = 0.5 + Math.random() * 3
 
-    scales[i] = Math.random() * 0.5 + 0.5
-    speeds[i] = Math.random() * 0.5 + 0.5
+    positions[i * 3] = Math.sin(phi) * Math.cos(theta) * radius
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 4
+    positions[i * 3 + 2] = Math.sin(phi) * Math.sin(theta) * radius
+
+    scales[i] = Math.random() * 0.6 + 0.4
+    speeds[i] = Math.random() * 0.4 + 0.3
     offsets[i] = Math.random() * Math.PI * 2
+    orbits[i] = Math.random() * 2 + 0.5
   }
 
   const particleGeometry = new THREE.BufferGeometry()
@@ -289,6 +444,7 @@ function createParticles() {
   particleGeometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1))
   particleGeometry.setAttribute('aSpeed', new THREE.BufferAttribute(speeds, 1))
   particleGeometry.setAttribute('aOffset', new THREE.BufferAttribute(offsets, 1))
+  particleGeometry.setAttribute('aOrbit', new THREE.BufferAttribute(orbits, 1))
 
   const particleMaterial = new THREE.ShaderMaterial({
     vertexShader: particleVertexShader,
@@ -299,7 +455,8 @@ function createParticles() {
     uniforms: {
       uTime: { value: 0 },
       uIntensity: { value: props.intensity ?? 1 },
-      uColor: { value: currentPrimaryColor }
+      uColor: { value: currentPrimaryColor },
+      uAccentColor: { value: currentAccentColor }
     }
   })
 
@@ -312,33 +469,68 @@ function animate() {
 
   const elapsedTime = clock.getElapsedTime()
 
-  // Smooth color transitions
-  currentPrimaryColor.lerp(targetPrimaryColor, 0.02)
-  currentSecondaryColor.lerp(targetSecondaryColor, 0.02)
+  // 平滑颜色过渡
+  currentPrimaryColor.lerp(targetPrimaryColor, 0.025)
+  currentSecondaryColor.lerp(targetSecondaryColor, 0.025)
+  currentAccentColor.lerp(targetAccentColor, 0.025)
 
-  // Update wave uniforms
+  // 计算潮汐相位 (用于同步所有元素)
+  const tidalPhase = (Math.sin(elapsedTime * 0.15) + 1) / 2
+
+  // 更新波浪 uniforms
   if (waveMesh) {
     const waveMaterial = waveMesh.material as THREE.ShaderMaterial
     if (waveMaterial.uniforms.uTime) waveMaterial.uniforms.uTime.value = elapsedTime
-    if (waveMaterial.uniforms.uIntensity) waveMaterial.uniforms.uIntensity.value = props.isActive ? (props.intensity ?? 1) : 0.5
+    if (waveMaterial.uniforms.uTidalPhase) waveMaterial.uniforms.uTidalPhase.value = tidalPhase
+    if (waveMaterial.uniforms.uIntensity) waveMaterial.uniforms.uIntensity.value = props.isActive ? (props.intensity ?? 1) : 0.6
     if (waveMaterial.uniforms.uPrimaryColor) waveMaterial.uniforms.uPrimaryColor.value = currentPrimaryColor
     if (waveMaterial.uniforms.uSecondaryColor) waveMaterial.uniforms.uSecondaryColor.value = currentSecondaryColor
+    if (waveMaterial.uniforms.uAccentColor) waveMaterial.uniforms.uAccentColor.value = currentAccentColor
   }
 
-  // Update particle uniforms
+  // 更新核心 uniforms
+  if (coreMesh) {
+    const coreMaterial = coreMesh.material as THREE.ShaderMaterial
+    if (coreMaterial.uniforms.uTime) coreMaterial.uniforms.uTime.value = elapsedTime
+    if (coreMaterial.uniforms.uIntensity) coreMaterial.uniforms.uIntensity.value = props.isActive ? (props.intensity ?? 1) : 0.6
+    if (coreMaterial.uniforms.uPrimaryColor) coreMaterial.uniforms.uPrimaryColor.value = currentPrimaryColor
+    if (coreMaterial.uniforms.uAccentColor) coreMaterial.uniforms.uAccentColor.value = currentAccentColor
+
+    // 核心微妙旋转
+    coreMesh.rotation.y = elapsedTime * 0.1
+  }
+
+  // 更新能量环
+  ringMeshes.forEach((ring, index) => {
+    // 不同速度的旋转
+    ring.rotation.z = elapsedTime * (0.2 + index * 0.1)
+
+    // 脉动效果
+    const pulse = Math.sin(elapsedTime * 2 + index * Math.PI / 3) * 0.02 + 1
+    ring.scale.set(pulse, pulse, 1)
+
+    // 更新颜色
+    const material = ring.material as THREE.MeshBasicMaterial
+    material.color.lerp(currentAccentColor, 0.02)
+    material.opacity = (0.4 - index * 0.1) * (props.isActive ? 1 : 0.5)
+  })
+
+  // 更新粒子 uniforms
   if (particles) {
     const particleMaterial = particles.material as THREE.ShaderMaterial
     if (particleMaterial.uniforms.uTime) particleMaterial.uniforms.uTime.value = elapsedTime
     if (particleMaterial.uniforms.uIntensity) particleMaterial.uniforms.uIntensity.value = props.isActive ? (props.intensity ?? 1) : 0.5
     if (particleMaterial.uniforms.uColor) particleMaterial.uniforms.uColor.value = currentPrimaryColor
+    if (particleMaterial.uniforms.uAccentColor) particleMaterial.uniforms.uAccentColor.value = currentAccentColor
 
-    // Subtle rotation
-    particles.rotation.y = elapsedTime * 0.05
+    // 粒子整体缓慢旋转
+    particles.rotation.y = elapsedTime * 0.03
   }
 
-  // Camera subtle movement
-  camera.position.x = Math.sin(elapsedTime * 0.1) * 0.2
-  camera.position.y = 1 + Math.cos(elapsedTime * 0.15) * 0.1
+  // 相机呼吸运动 - 更加流畅
+  camera.position.x = Math.sin(elapsedTime * 0.08) * 0.3
+  camera.position.y = 1.5 + Math.cos(elapsedTime * 0.1) * 0.15
+  camera.lookAt(0, 0, 0)
 
   renderer.render(scene, camera)
 }
@@ -355,12 +547,13 @@ function handleResize() {
   renderer.setSize(width, height)
 }
 
-// Watch for phase changes
+// 监听相位变化
 watch(() => props.phase, (newPhase) => {
   if (newPhase) {
     const colors = phaseColors[newPhase]
     targetPrimaryColor = new THREE.Color(colors.primary)
     targetSecondaryColor = new THREE.Color(colors.secondary)
+    targetAccentColor = new THREE.Color(colors.accent)
   }
 }, { immediate: true })
 
@@ -375,7 +568,7 @@ onUnmounted(() => {
 
   window.removeEventListener('resize', handleResize)
 
-  // Cleanup
+  // 清理资源
   if (renderer) {
     renderer.dispose()
     if (containerRef.value && renderer.domElement) {
@@ -387,6 +580,17 @@ onUnmounted(() => {
   if (waveMesh) {
     (waveMesh.material as THREE.Material).dispose()
   }
+
+  if (coreMesh) {
+    coreMesh.geometry.dispose()
+    ;(coreMesh.material as THREE.Material).dispose()
+  }
+
+  ringMeshes.forEach(ring => {
+    ring.geometry.dispose()
+    ;(ring.material as THREE.Material).dispose()
+  })
+  ringMeshes = []
 
   if (particles) {
     particles.geometry.dispose()

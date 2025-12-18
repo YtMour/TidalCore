@@ -6,7 +6,7 @@ import TidalBackground from '@/components/TidalBackground.vue'
 import { useTrainingStore } from '@/store/training'
 import { useUserStore } from '@/store/user'
 import { checkin } from '@/api/checkin'
-import { Setting, Clock, Aim, TrendCharts, WarningFilled, StarFilled, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
+import { Setting, Clock, Aim, TrendCharts, WarningFilled, ArrowUp, ArrowDown, Lightning } from '@element-plus/icons-vue'
 import confetti from 'canvas-confetti'
 
 const trainingStore = useTrainingStore()
@@ -65,8 +65,8 @@ async function handleCheckin() {
     userStore.updateStreak(res.current_streak, res.max_streak, res.total_checkin)
     showResultModal.value = true
 
-    // Enhanced confetti
-    const colors = ['#a855f7', '#ec4899', '#f59e0b', '#10b981']
+    // Enhanced confetti - ocean colors
+    const colors = ['#38bdf8', '#22d3ee', '#0ea5e9', '#34d399', '#fbbf24']
     confetti({
       particleCount: 150,
       spread: 100,
@@ -110,14 +110,14 @@ function updateSetting(key: string, value: number) {
 
         <div class="train-eyebrow">
           <span class="eyebrow-line"></span>
-          <span class="eyebrow-text">专业训练</span>
+          <span class="eyebrow-text">潮汐训练</span>
           <span class="eyebrow-line"></span>
         </div>
 
         <h1 class="train-title">
-          <span class="gradient-text">潮汐训练器</span>
+          <span class="gradient-text">潮汐呼吸</span>
         </h1>
-        <p class="train-subtitle">跟随节奏，完成今日训练，坚持就是胜利</p>
+        <p class="train-subtitle">跟随海浪节奏，完成今日训练，如潮汐般坚持</p>
 
         <!-- Quick stats -->
         <div class="quick-stats">
@@ -286,39 +286,39 @@ function updateSetting(key: string, value: number) {
         </el-card>
       </el-collapse-transition>
 
-      <!-- Tips Section -->
+      <!-- Tips Section - 潮汐阶段 -->
       <div class="tips-section" :class="{ mounted }">
         <el-row :gutter="16">
           <el-col :xs="24" :sm="8">
             <div class="tip-card tip-contract">
               <div class="tip-icon">
-                <el-icon :size="20" color="#fb7185"><Lightning /></el-icon>
+                <el-icon :size="20" color="#f43f5e"><Lightning /></el-icon>
               </div>
               <div class="tip-content">
-                <h4 class="tip-title">收缩阶段</h4>
-                <p class="tip-desc">用力收紧盆底肌肉</p>
+                <h4 class="tip-title">涨潮收缩</h4>
+                <p class="tip-desc">如浪涌般用力收紧</p>
               </div>
             </div>
           </el-col>
           <el-col :xs="24" :sm="8">
             <div class="tip-card tip-hold">
               <div class="tip-icon">
-                <el-icon :size="20" color="#fbbf24"><Aim /></el-icon>
+                <el-icon :size="20" color="#f59e0b"><Aim /></el-icon>
               </div>
               <div class="tip-content">
-                <h4 class="tip-title">保持阶段</h4>
-                <p class="tip-desc">维持收缩状态</p>
+                <h4 class="tip-title">平潮保持</h4>
+                <p class="tip-desc">如海面般稳定维持</p>
               </div>
             </div>
           </el-col>
           <el-col :xs="24" :sm="8">
             <div class="tip-card tip-relax">
               <div class="tip-icon">
-                <el-icon :size="20" color="#34d399"><TrendCharts /></el-icon>
+                <el-icon :size="20" color="#10b981"><TrendCharts /></el-icon>
               </div>
               <div class="tip-content">
-                <h4 class="tip-title">放松阶段</h4>
-                <p class="tip-desc">完全放松肌肉</p>
+                <h4 class="tip-title">退潮放松</h4>
+                <p class="tip-desc">如浪退般完全释放</p>
               </div>
             </div>
           </el-col>
@@ -336,10 +336,12 @@ function updateSetting(key: string, value: number) {
         <div class="result-content">
           <template v-if="checkinResult">
             <div class="result-icon success">
-              <el-icon :size="40" color="#fff"><StarFilled /></el-icon>
+              <svg viewBox="0 0 32 32" fill="none" class="result-wave-svg">
+                <path d="M6 16C6 16 9 12 13 16C17 20 21 12 25 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
             </div>
             <h3 class="result-title">打卡成功!</h3>
-            <p class="result-subtitle">太棒了，继续保持！</p>
+            <p class="result-subtitle">如潮汐般坚持，继续加油！</p>
 
             <el-row :gutter="16" class="result-stats">
               <el-col :span="8">
@@ -397,14 +399,14 @@ function updateSetting(key: string, value: number) {
   min-height: 100vh;
 }
 
-/* Header */
+/* Header - 海洋主题 */
 .train-header {
   text-align: center;
   margin-bottom: 48px;
   position: relative;
   opacity: 0;
   transform: translateY(16px);
-  transition: all 0.7s ease;
+  transition: all 0.7s var(--ease-smooth);
 }
 
 .train-header.mounted {
@@ -424,9 +426,9 @@ function updateSetting(key: string, value: number) {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 384px;
-  height: 128px;
-  background: linear-gradient(to bottom, rgba(139, 92, 246, 0.2), transparent);
+  width: 400px;
+  height: 150px;
+  background: linear-gradient(to bottom, rgba(56, 189, 248, 0.2), transparent);
   border-radius: 50%;
   filter: blur(60px);
 }
@@ -442,11 +444,11 @@ function updateSetting(key: string, value: number) {
 .train-eyebrow .eyebrow-line {
   width: 40px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #8b5cf6);
+  background: linear-gradient(90deg, transparent, rgb(var(--ocean-surface)));
 }
 
 .train-eyebrow .eyebrow-line:last-child {
-  background: linear-gradient(90deg, #8b5cf6, transparent);
+  background: linear-gradient(90deg, rgb(var(--ocean-surface)), transparent);
 }
 
 .train-eyebrow .eyebrow-text {
@@ -454,7 +456,7 @@ function updateSetting(key: string, value: number) {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 3px;
-  background: linear-gradient(135deg, #a78bfa, #c4b5fd);
+  background: linear-gradient(135deg, rgb(var(--ocean-surface)), rgb(var(--aqua-glow)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -467,10 +469,17 @@ function updateSetting(key: string, value: number) {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  background: linear-gradient(135deg, rgb(var(--ocean-surface)), rgb(var(--aqua-glow)), rgb(var(--ocean-shallow)));
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: ocean-shimmer 4s ease-in-out infinite;
+}
+
+@keyframes ocean-shimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
 }
 
 .train-subtitle {
@@ -491,14 +500,18 @@ function updateSetting(key: string, value: number) {
   gap: 8px;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.4);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.1);
 }
 
-/* Timer Wrapper */
+/* Timer Wrapper - 海洋光效 */
 .timer-wrapper {
   position: relative;
   opacity: 0;
   transform: translateY(16px);
-  transition: all 0.7s ease 0.1s;
+  transition: all 0.7s var(--ease-smooth) 0.1s;
 }
 
 .timer-wrapper.mounted {
@@ -511,34 +524,34 @@ function updateSetting(key: string, value: number) {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 320px;
-  height: 320px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(14, 165, 233, 0.1) 50%, transparent 70%);
   border-radius: 50%;
-  filter: blur(60px);
+  filter: blur(40px);
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.5s var(--ease-smooth);
   z-index: -1;
 }
 
 .timer-glow.active {
   opacity: 1;
-  animation: pulse-soft 2s ease-in-out infinite;
+  animation: tidal-pulse 4s var(--ease-tidal) infinite;
 }
 
-@keyframes pulse-soft {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -50%) scale(1.1); }
+@keyframes tidal-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
 }
 
-/* Settings Toggle */
+/* Settings Toggle - 海洋风格 */
 .settings-toggle {
   display: flex;
   justify-content: center;
   margin-top: 48px;
   opacity: 0;
   transform: translateY(16px);
-  transition: all 0.7s ease 0.2s;
+  transition: all 0.7s var(--ease-smooth) 0.2s;
 }
 
 .settings-toggle.mounted {
@@ -551,21 +564,21 @@ function updateSetting(key: string, value: number) {
   align-items: center;
   gap: 10px;
   padding: 12px 24px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: var(--radius-lg);
+  background: rgba(56, 189, 248, 0.05);
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.3s var(--ease-smooth);
 }
 
 .settings-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.25);
 }
 
 .settings-toggle-btn.is-open {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.25);
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.3);
 }
 
 .toggle-icon-wrapper {
@@ -574,10 +587,10 @@ function updateSetting(key: string, value: number) {
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.1));
-  color: #a78bfa;
-  transition: transform 0.3s ease;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.1));
+  color: rgb(var(--ocean-surface));
+  transition: transform 0.3s var(--ease-smooth);
 }
 
 .settings-toggle-btn:hover .toggle-icon-wrapper {
@@ -596,19 +609,20 @@ function updateSetting(key: string, value: number) {
 
 .toggle-arrow {
   color: rgba(255, 255, 255, 0.4);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s var(--ease-smooth);
 }
 
 .settings-toggle-btn.is-open .toggle-arrow {
-  color: #a78bfa;
+  color: rgb(var(--ocean-surface));
 }
 
-/* Settings Card */
+/* Settings Card - 海洋风格 */
 .settings-card {
   margin-top: 24px;
-  background: rgba(30, 30, 46, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 10px !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.1) !important;
+  border-radius: var(--radius-xl) !important;
   overflow: hidden;
   position: relative;
 }
@@ -622,10 +636,9 @@ function updateSetting(key: string, value: number) {
   position: absolute;
   top: 0;
   right: 0;
-  width: 128px;
-  height: 128px;
-  background: linear-gradient(225deg, rgba(139, 92, 246, 0.1), transparent);
-  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%);
   filter: blur(40px);
   pointer-events: none;
 }
@@ -647,12 +660,12 @@ function updateSetting(key: string, value: number) {
 .title-icon {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.1));
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.1));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #a78bfa;
+  color: rgb(var(--ocean-surface));
 }
 
 /* Settings Grid Layout */
@@ -684,13 +697,13 @@ function updateSetting(key: string, value: number) {
   white-space: nowrap;
 }
 
-/* Custom Stepper Control */
+/* Custom Stepper Control - 海洋风格 */
 .stepper-control {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -704,17 +717,17 @@ function updateSetting(key: string, value: number) {
   border: none;
   cursor: pointer;
   color: rgba(255, 255, 255, 0.6);
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-smooth);
   flex-shrink: 0;
 }
 
 .stepper-btn:hover {
-  background: rgba(139, 92, 246, 0.2);
-  color: #a78bfa;
+  background: rgba(56, 189, 248, 0.2);
+  color: rgb(var(--ocean-surface));
 }
 
 .stepper-btn:active {
-  background: rgba(139, 92, 246, 0.3);
+  background: rgba(56, 189, 248, 0.3);
 }
 
 .stepper-icon {
@@ -748,9 +761,9 @@ function updateSetting(key: string, value: number) {
 
 .training-summary {
   margin-top: 20px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1)) !important;
-  border: 1px solid rgba(139, 92, 246, 0.2) !important;
-  border-radius: 8px !important;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(14, 165, 233, 0.05)) !important;
+  border: 1px solid rgba(56, 189, 248, 0.2) !important;
+  border-radius: var(--radius-lg) !important;
 }
 
 .training-summary :deep(.el-alert__title) {
@@ -768,7 +781,7 @@ function updateSetting(key: string, value: number) {
 }
 
 .summary-label {
-  color: #a78bfa;
+  color: rgb(var(--ocean-surface));
   font-weight: 500;
 }
 
@@ -786,12 +799,12 @@ function updateSetting(key: string, value: number) {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Tips Section */
+/* Tips Section - 潮汐阶段 */
 .tips-section {
   margin-top: 48px;
   opacity: 0;
   transform: translateY(16px);
-  transition: all 0.7s ease 0.3s;
+  transition: all 0.7s var(--ease-smooth) 0.3s;
 }
 
 .tips-section.mounted {
@@ -804,22 +817,23 @@ function updateSetting(key: string, value: number) {
   flex-direction: row;
   align-items: center;
   gap: 14px;
-  padding: 14px 16px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.2s ease;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  transition: all 0.3s var(--ease-smooth);
   margin-bottom: 16px;
 }
 
 .tip-card:hover {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(56, 189, 248, 0.2);
+  transform: translateY(-2px);
 }
 
 .tip-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -827,15 +841,18 @@ function updateSetting(key: string, value: number) {
 }
 
 .tip-contract .tip-icon {
-  background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(236, 72, 153, 0.1));
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.05));
+  border: 1px solid rgba(244, 63, 94, 0.2);
 }
 
 .tip-hold .tip-icon {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(249, 115, 22, 0.1));
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05));
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .tip-relax .tip-icon {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(20, 184, 166, 0.1));
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .tip-content {
@@ -845,9 +862,9 @@ function updateSetting(key: string, value: number) {
 
 .tip-title {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: #fff;
-  margin: 0 0 2px;
+  margin: 0 0 4px;
 }
 
 .tip-desc {
@@ -856,16 +873,16 @@ function updateSetting(key: string, value: number) {
   margin: 0;
 }
 
-/* Result Dialog */
+/* Result Dialog - 海洋风格 */
 .result-dialog :deep(.el-dialog) {
-  background: rgba(30, 30, 46, 0.95) !important;
+  background: var(--glass-bg) !important;
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px !important;
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: var(--radius-2xl) !important;
 }
 
 .result-dialog :deep(.el-dialog__body) {
-  padding: 40px;
+  padding: 48px;
 }
 
 .result-content {
@@ -883,11 +900,25 @@ function updateSetting(key: string, value: number) {
 }
 
 .result-icon.success {
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid)));
+  box-shadow: 0 10px 30px rgba(14, 165, 233, 0.3);
+}
+
+.result-wave-svg {
+  width: 40px;
+  height: 40px;
+  color: white;
+  animation: wave-flow 2s ease-in-out infinite;
+}
+
+@keyframes wave-flow {
+  0%, 100% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
 }
 
 .result-icon.error {
   background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .result-title {
@@ -907,28 +938,28 @@ function updateSetting(key: string, value: number) {
 }
 
 .result-stat {
-  padding: 16px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 18px 16px;
+  border-radius: var(--radius-lg);
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.1);
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .stat-value.orange {
-  color: #fb923c;
+  color: rgb(var(--sunset-amber));
 }
 
 .stat-value.purple {
-  color: #a78bfa;
+  color: rgb(var(--ocean-surface));
 }
 
 .stat-value.green {
-  color: #34d399;
+  color: rgb(var(--seaweed-green));
 }
 
 .stat-label {
@@ -937,17 +968,23 @@ function updateSetting(key: string, value: number) {
 }
 
 .login-link {
-  color: #a78bfa;
+  color: rgb(var(--ocean-surface));
   text-decoration: none;
+  transition: color 0.2s var(--ease-smooth);
 }
 
 .login-link:hover {
-  color: #c4b5fd;
+  color: rgb(var(--aqua-glow));
 }
 
 .result-btn {
-  padding: 12px 32px !important;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
+  padding: 14px 36px !important;
+  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid))) !important;
   border: none !important;
+  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
+}
+
+.result-btn:hover {
+  box-shadow: 0 8px 30px rgba(14, 165, 233, 0.4);
 }
 </style>

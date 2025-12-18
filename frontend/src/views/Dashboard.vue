@@ -4,7 +4,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import Heatmap from '@/components/Heatmap.vue'
 import { useUserStore } from '@/store/user'
 import { getHeatmap, getHistory, type CheckinRecord } from '@/api/checkin'
-import { Timer, Calendar, Clock, CircleCheck, ArrowRight, Pointer, Trophy, Aim, StarFilled } from '@element-plus/icons-vue'
+import { Timer, Calendar, Clock, CircleCheck, ArrowRight, Pointer, Trophy, Aim } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
 
@@ -13,15 +13,15 @@ const recentHistory = ref<CheckinRecord[]>([])
 const loading = ref(true)
 const mounted = ref(false)
 
-// 计算用户等级
+// 计算用户等级 - 海洋主题
 const userLevel = computed(() => {
   const total = userStore.user?.total_checkin || 0
-  if (total >= 365) return { name: '传奇', color: '#fbbf24', bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(249, 115, 22, 0.1))' }
-  if (total >= 180) return { name: '大师', color: '#a78bfa', bg: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.1))' }
-  if (total >= 90) return { name: '专家', color: '#22d3ee', bg: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(34, 211, 238, 0.1))' }
-  if (total >= 30) return { name: '进阶', color: '#34d399', bg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.1))' }
-  if (total >= 7) return { name: '新手', color: '#f472b6', bg: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(244, 114, 182, 0.1))' }
-  return { name: '初学者', color: 'rgba(255, 255, 255, 0.6)', bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))' }
+  if (total >= 365) return { name: '深海传奇', color: '#fbbf24', bg: 'linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(245, 158, 11, 0.1))', icon: '🌊' }
+  if (total >= 180) return { name: '海洋大师', color: '#38bdf8', bg: 'linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(14, 165, 233, 0.1))', icon: '🐋' }
+  if (total >= 90) return { name: '浪潮专家', color: '#22d3ee', bg: 'linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(6, 182, 212, 0.1))', icon: '🐬' }
+  if (total >= 30) return { name: '潮汐进阶', color: '#34d399', bg: 'linear-gradient(135deg, rgba(52, 211, 153, 0.25), rgba(16, 185, 129, 0.1))', icon: '🐠' }
+  if (total >= 7) return { name: '入海新手', color: '#0ea5e9', bg: 'linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(2, 132, 199, 0.1))', icon: '🐟' }
+  return { name: '初探海域', color: 'rgba(255, 255, 255, 0.6)', bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))', icon: '🐚' }
 })
 
 onMounted(async () => {
@@ -92,13 +92,18 @@ function getRelativeTime(dateStr: string): string {
       <!-- Profile Header -->
       <section class="profile-section" :class="{ mounted }">
         <el-card class="profile-card" shadow="never">
-          <!-- Decorative background -->
+          <!-- Decorative background - 海洋主题 -->
           <div class="profile-decoration profile-decoration-1"></div>
           <div class="profile-decoration profile-decoration-2"></div>
+          <div class="profile-wave"></div>
 
           <div class="profile-content">
-            <!-- Avatar with level badge -->
+            <!-- Avatar with level badge - 海洋风格 -->
             <div class="avatar-wrapper">
+              <div class="avatar-rings">
+                <div class="avatar-ring avatar-ring-1"></div>
+                <div class="avatar-ring avatar-ring-2"></div>
+              </div>
               <div class="avatar">
                 {{ userStore.user?.username?.[0]?.toUpperCase() || '?' }}
               </div>
@@ -107,6 +112,7 @@ function getRelativeTime(dateStr: string): string {
                 class="level-badge"
                 :style="{ background: userLevel.bg, color: userLevel.color }"
               >
+                <span class="level-icon">{{ userLevel.icon }}</span>
                 {{ userLevel.name }}
               </div>
             </div>
@@ -115,17 +121,21 @@ function getRelativeTime(dateStr: string): string {
             <div class="user-info">
               <div class="user-name">
                 <h1>{{ userStore.user?.username }}</h1>
-                <el-icon :size="20" color="#fbbf24"><StarFilled /></el-icon>
+                <div class="wave-icon">
+                  <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+                    <path d="M2 12C2 12 5 8 8 12C11 16 14 8 17 12C20 16 22 12 22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
               </div>
-              <p class="user-motto">坚持就是胜利，每天进步一点点</p>
+              <p class="user-motto">如潮汐般坚持，如海浪般前进</p>
 
-              <!-- Quick stats inline -->
+              <!-- Quick stats inline - 海洋色彩 -->
               <div class="inline-stats">
-                <span class="inline-stat orange">
+                <span class="inline-stat ocean">
                   <el-icon><Pointer /></el-icon>
                   {{ userStore.user?.streak || 0 }} 天连续
                 </span>
-                <span class="inline-stat purple">
+                <span class="inline-stat aqua">
                   <el-icon><Trophy /></el-icon>
                   {{ userStore.user?.max_streak || 0 }} 最高
                 </span>
@@ -143,45 +153,58 @@ function getRelativeTime(dateStr: string): string {
         </el-card>
       </section>
 
-      <!-- Stats Cards -->
+      <!-- Stats Cards - 海洋主题 -->
       <section class="stats-section" :class="{ mounted }">
         <el-row :gutter="16">
           <el-col :xs="24" :sm="8">
-            <div class="stat-card stat-orange">
+            <div class="stat-card stat-ocean">
+              <div class="stat-glow"></div>
               <div class="stat-icon">
-                <el-icon :size="28" color="#fb923c"><Pointer /></el-icon>
+                <el-icon :size="28" color="#38bdf8"><Pointer /></el-icon>
               </div>
               <div class="stat-value">{{ userStore.user?.streak || 0 }}</div>
               <div class="stat-label">连续打卡</div>
+              <div class="stat-unit">天</div>
             </div>
           </el-col>
           <el-col :xs="24" :sm="8">
-            <div class="stat-card stat-purple">
+            <div class="stat-card stat-aqua">
+              <div class="stat-glow"></div>
               <div class="stat-icon">
-                <el-icon :size="28" color="#a78bfa"><Trophy /></el-icon>
+                <el-icon :size="28" color="#22d3ee"><Trophy /></el-icon>
               </div>
               <div class="stat-value">{{ userStore.user?.max_streak || 0 }}</div>
               <div class="stat-label">最高记录</div>
+              <div class="stat-unit">天</div>
             </div>
           </el-col>
           <el-col :xs="24" :sm="8">
             <div class="stat-card stat-green">
+              <div class="stat-glow"></div>
               <div class="stat-icon">
                 <el-icon :size="28" color="#34d399"><Aim /></el-icon>
               </div>
               <div class="stat-value">{{ userStore.user?.total_checkin || 0 }}</div>
               <div class="stat-label">累计打卡</div>
+              <div class="stat-unit">次</div>
             </div>
           </el-col>
         </el-row>
       </section>
 
-      <!-- Heatmap Section -->
+      <!-- Heatmap Section - 海洋主题 -->
       <section class="heatmap-section" :class="{ mounted }">
         <el-card class="section-card" shadow="never">
+          <div class="card-decoration"></div>
+
           <div class="section-header">
-            <el-icon :size="20" color="#a78bfa"><Calendar /></el-icon>
-            <h2>我的打卡热力图</h2>
+            <div class="header-icon">
+              <el-icon :size="20" color="#38bdf8"><Calendar /></el-icon>
+            </div>
+            <div class="header-text">
+              <h2>我的打卡热力图</h2>
+              <p>记录每一次潮汐的痕迹</p>
+            </div>
           </div>
 
           <div v-if="loading" class="loading-content">
@@ -191,12 +214,19 @@ function getRelativeTime(dateStr: string): string {
         </el-card>
       </section>
 
-      <!-- Recent History -->
+      <!-- Recent History - 海洋主题 -->
       <section class="history-section" :class="{ mounted }">
         <el-card class="section-card" shadow="never">
+          <div class="card-decoration"></div>
+
           <div class="section-header">
-            <el-icon :size="20" color="#a78bfa"><Clock /></el-icon>
-            <h2>最近打卡记录</h2>
+            <div class="header-icon">
+              <el-icon :size="20" color="#22d3ee"><Clock /></el-icon>
+            </div>
+            <div class="header-text">
+              <h2>最近打卡记录</h2>
+              <p>浪花般的训练足迹</p>
+            </div>
           </div>
 
           <div v-if="loading" class="loading-content">
@@ -211,10 +241,19 @@ function getRelativeTime(dateStr: string): string {
 
           <div v-else-if="recentHistory.length === 0" class="empty-state">
             <div class="empty-icon">
-              <el-icon :size="32" color="rgba(255, 255, 255, 0.3)"><Timer /></el-icon>
+              <svg viewBox="0 0 48 48" fill="none" width="48" height="48">
+                <circle cx="24" cy="24" r="20" stroke="rgba(56, 189, 248, 0.3)" stroke-width="2" fill="none"/>
+                <path d="M12 24C12 24 16 18 20 24C24 30 28 18 32 24C36 30 40 24 40 24" stroke="rgba(56, 189, 248, 0.5)" stroke-width="2" stroke-linecap="round"/>
+              </svg>
             </div>
             <p class="empty-title">暂无打卡记录</p>
-            <p class="empty-desc">完成训练后，记录将显示在这里</p>
+            <p class="empty-desc">完成训练后，浪花将汇聚于此</p>
+            <RouterLink to="/train">
+              <el-button type="primary" class="empty-btn">
+                <el-icon><Timer /></el-icon>
+                开始第一次训练
+              </el-button>
+            </RouterLink>
           </div>
 
           <div v-else class="history-list">
@@ -231,7 +270,9 @@ function getRelativeTime(dateStr: string): string {
                 <div class="history-info">
                   <div class="history-time">{{ getRelativeTime(record.checked_at) }}</div>
                   <div class="history-detail">
-                    {{ record.cycles }} 个循环 · {{ formatDuration(record.duration) }}
+                    <span class="detail-cycles">{{ record.cycles }} 个循环</span>
+                    <span class="detail-dot">·</span>
+                    <span class="detail-duration">{{ formatDuration(record.duration) }}</span>
                   </div>
                 </div>
                 <div class="history-date">
@@ -251,13 +292,15 @@ function getRelativeTime(dateStr: string): string {
   display: flex;
   flex-direction: column;
   gap: 32px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-/* Profile Section */
+/* ===== Profile Section - 海洋主题 ===== */
 .profile-section {
   opacity: 0;
   transform: translateY(16px);
-  transition: all 0.7s ease;
+  transition: all 0.7s var(--ease-smooth);
 }
 
 .profile-section.mounted {
@@ -266,9 +309,10 @@ function getRelativeTime(dateStr: string): string {
 }
 
 .profile-card {
-  background: rgba(30, 30, 46, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 16px !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.1) !important;
+  border-radius: var(--radius-2xl) !important;
   overflow: hidden;
   position: relative;
 }
@@ -280,24 +324,42 @@ function getRelativeTime(dateStr: string): string {
 .profile-decoration {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
+  filter: blur(80px);
   pointer-events: none;
 }
 
 .profile-decoration-1 {
-  top: 0;
-  right: 0;
-  width: 256px;
-  height: 256px;
-  background: linear-gradient(225deg, rgba(139, 92, 246, 0.1), transparent);
+  top: -50px;
+  right: -50px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.2), transparent 70%);
 }
 
 .profile-decoration-2 {
+  bottom: -50px;
+  left: -50px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.15), transparent 70%);
+}
+
+.profile-wave {
+  position: absolute;
   bottom: 0;
   left: 0;
-  width: 192px;
-  height: 192px;
-  background: linear-gradient(45deg, rgba(236, 72, 153, 0.1), transparent);
+  right: 0;
+  height: 80px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 100'%3E%3Cpath fill='rgba(56, 189, 248, 0.05)' d='M0,50 C360,100 720,0 1080,50 C1260,75 1380,25 1440,50 L1440,100 L0,100 Z'/%3E%3C/svg%3E");
+  background-size: 1440px 100px;
+  background-repeat: repeat-x;
+  animation: wave-move 15s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes wave-move {
+  0% { background-position-x: 0; }
+  100% { background-position-x: 1440px; }
 }
 
 .profile-content {
@@ -320,29 +382,71 @@ function getRelativeTime(dateStr: string): string {
   flex-shrink: 0;
 }
 
+.avatar-rings {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+}
+
+.avatar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  border: 2px solid;
+  animation: ring-pulse 3s ease-in-out infinite;
+}
+
+.avatar-ring-1 {
+  border-color: rgba(56, 189, 248, 0.3);
+  animation-delay: 0s;
+}
+
+.avatar-ring-2 {
+  inset: -6px;
+  border-radius: 34px;
+  border-color: rgba(34, 211, 238, 0.2);
+  animation-delay: 0.5s;
+}
+
+@keyframes ring-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
 .avatar {
   width: 112px;
   height: 112px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid)));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 48px;
   font-weight: 700;
   color: #fff;
-  box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+  box-shadow:
+    0 20px 40px rgba(14, 165, 233, 0.3),
+    0 0 60px rgba(56, 189, 248, 0.2);
+  position: relative;
 }
 
 .level-badge {
   position: absolute;
-  bottom: -8px;
-  right: -8px;
-  padding: 4px 12px;
-  border-radius: 20px;
+  bottom: -10px;
+  right: -10px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  backdrop-filter: blur(10px);
+}
+
+.level-icon {
+  font-size: 14px;
 }
 
 .user-info {
@@ -360,7 +464,7 @@ function getRelativeTime(dateStr: string): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 4px;
 }
 
@@ -371,23 +475,34 @@ function getRelativeTime(dateStr: string): string {
 }
 
 .user-name h1 {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: #fff;
   margin: 0;
 }
 
+.wave-icon {
+  color: rgb(var(--ocean-surface));
+  animation: wave-flow 2s ease-in-out infinite;
+}
+
+@keyframes wave-flow {
+  0%, 100% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+}
+
 .user-motto {
   color: rgba(255, 255, 255, 0.5);
-  margin: 0 0 8px;
+  margin: 0 0 12px;
+  font-size: 14px;
 }
 
 .inline-stats {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 20px;
+  margin-bottom: 20px;
   font-size: 14px;
 }
 
@@ -400,38 +515,48 @@ function getRelativeTime(dateStr: string): string {
 .inline-stat {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.15);
 }
 
-.inline-stat.orange {
-  color: #fb923c;
+.inline-stat.ocean {
+  color: rgb(var(--ocean-surface));
 }
 
-.inline-stat.purple {
-  color: #a78bfa;
+.inline-stat.aqua {
+  color: rgb(var(--aqua-glow));
 }
 
 .train-btn {
-  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
+  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid))) !important;
   border: none !important;
-  padding: 12px 28px !important;
-  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.25);
+  padding: 14px 32px !important;
+  box-shadow: 0 10px 30px rgba(14, 165, 233, 0.3);
+  transition: all 0.3s var(--ease-smooth) !important;
+}
+
+.train-btn:hover {
+  box-shadow: 0 15px 40px rgba(14, 165, 233, 0.4);
+  transform: translateY(-2px);
 }
 
 .train-btn .arrow-icon {
   margin-left: 8px;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s var(--ease-smooth);
 }
 
 .train-btn:hover .arrow-icon {
   transform: translateX(4px);
 }
 
-/* Stats Section */
+/* ===== Stats Section - 海洋主题 ===== */
 .stats-section {
   opacity: 0;
   transform: translateY(16px);
-  transition: all 0.7s ease 0.1s;
+  transition: all 0.7s var(--ease-smooth) 0.1s;
 }
 
 .stats-section.mounted {
@@ -441,16 +566,49 @@ function getRelativeTime(dateStr: string): string {
 
 .stat-card {
   text-align: center;
-  padding: 24px;
-  border-radius: 16px;
-  background: rgba(30, 30, 46, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 28px 24px;
+  border-radius: var(--radius-xl);
+  background: var(--glass-bg);
+  border: 1px solid rgba(56, 189, 248, 0.1);
   margin-bottom: 16px;
-  transition: all 0.3s ease;
+  transition: all 0.4s var(--ease-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-smooth);
+  pointer-events: none;
+}
+
+.stat-ocean .stat-glow {
+  background: rgba(56, 189, 248, 0.3);
+}
+
+.stat-aqua .stat-glow {
+  background: rgba(34, 211, 238, 0.3);
+}
+
+.stat-green .stat-glow {
+  background: rgba(52, 211, 153, 0.3);
 }
 
 .stat-card:hover {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(56, 189, 248, 0.2);
+  transform: translateY(-4px);
+}
+
+.stat-card:hover .stat-glow {
+  opacity: 1;
 }
 
 .stat-card:hover .stat-icon {
@@ -458,73 +616,126 @@ function getRelativeTime(dateStr: string): string {
 }
 
 .stat-icon {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   margin: 0 auto 16px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s var(--ease-smooth);
+  position: relative;
 }
 
-.stat-orange .stat-icon {
-  background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(251, 146, 60, 0.1));
+.stat-ocean .stat-icon {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.1));
+  border: 1px solid rgba(56, 189, 248, 0.2);
 }
 
-.stat-purple .stat-icon {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.1));
+.stat-aqua .stat-icon {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(6, 182, 212, 0.1));
+  border: 1px solid rgba(34, 211, 238, 0.2);
 }
 
 .stat-green .stat-icon {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.1));
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(16, 185, 129, 0.1));
+  border: 1px solid rgba(52, 211, 153, 0.2);
 }
 
 .stat-value {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
   color: #fff;
   margin-bottom: 4px;
+  line-height: 1;
 }
 
 .stat-label {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 2px;
 }
 
-/* Heatmap Section */
-.heatmap-section {
+.stat-unit {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== Heatmap & History Section - 海洋主题 ===== */
+.heatmap-section,
+.history-section {
   opacity: 0;
   transform: translateY(16px);
-  transition: all 0.5s ease 0.2s;
+  transition: all 0.7s var(--ease-smooth);
 }
 
-.heatmap-section.mounted {
+.heatmap-section {
+  transition-delay: 0.2s;
+}
+
+.history-section {
+  transition-delay: 0.3s;
+}
+
+.heatmap-section.mounted,
+.history-section.mounted {
   opacity: 1;
   transform: translateY(0);
 }
 
 .section-card {
-  background: rgba(30, 30, 46, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 16px !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.1) !important;
+  border-radius: var(--radius-xl) !important;
+  position: relative;
+  overflow: hidden;
 }
 
 .section-card :deep(.el-card__body) {
-  padding: 24px;
+  padding: 28px;
+}
+
+.card-decoration {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
 }
 
 .section-header {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 14px;
   margin-bottom: 24px;
 }
 
-.section-header h2 {
+.header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.1));
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.header-text h2 {
   font-size: 18px;
   font-weight: 600;
   color: #fff;
+  margin: 0 0 4px;
+}
+
+.header-text p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
   margin: 0;
 }
 
@@ -532,25 +743,14 @@ function getRelativeTime(dateStr: string): string {
   padding: 32px 0;
 }
 
-/* History Section */
-.history-section {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: all 0.5s ease 0.3s;
-}
-
-.history-section.mounted {
-  opacity: 1;
-  transform: translateY(0);
-}
-
+/* ===== History List ===== */
 .history-skeleton {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 16px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  background: rgba(56, 189, 248, 0.05);
   margin-bottom: 12px;
 }
 
@@ -567,25 +767,31 @@ function getRelativeTime(dateStr: string): string {
 }
 
 .empty-icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 16px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin: 0 auto 20px;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 .empty-title {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
   margin: 0 0 8px;
 }
 
 .empty-desc {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.3);
-  margin: 0;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 0 24px;
+}
+
+.empty-btn {
+  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid))) !important;
+  border: none !important;
+  padding: 12px 24px !important;
 }
 
 .history-list {
@@ -598,21 +804,25 @@ function getRelativeTime(dateStr: string): string {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  background: rgba(56, 189, 248, 0.04);
+  border: 1px solid rgba(56, 189, 248, 0.08);
+  transition: all 0.3s var(--ease-smooth);
 }
 
 .history-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.15);
+  transform: translateX(4px);
 }
 
 .history-icon {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(20, 184, 166, 0.2));
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(16, 185, 129, 0.1));
+  border: 1px solid rgba(52, 211, 153, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -625,28 +835,33 @@ function getRelativeTime(dateStr: string): string {
 }
 
 .history-time {
-  font-weight: 500;
+  font-weight: 600;
   color: #fff;
+  margin-bottom: 4px;
 }
 
 .history-detail {
-  font-size: 14px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.5);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-dot {
+  color: rgba(56, 189, 248, 0.4);
 }
 
 .history-date {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.35);
   flex-shrink: 0;
 }
 
 /* List transition */
 .list-enter-active,
 .list-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.4s var(--ease-smooth);
 }
 
 .list-enter-from,
@@ -654,5 +869,4 @@ function getRelativeTime(dateStr: string): string {
   opacity: 0;
   transform: translateX(-20px);
 }
-
 </style>
