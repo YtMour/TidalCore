@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { useScrollLock } from '@vueuse/core'
@@ -12,12 +12,46 @@ const mobileMenuOpen = ref(false)
 const scrollLock = useScrollLock(document.body)
 const scrolled = ref(false)
 
+// 生成气泡
+const bubbles = ref<Array<{ id: number; size: number; left: number; delay: number; duration: number }>>([])
+let bubbleId = 0
+
+function createBubble() {
+  const bubble = {
+    id: bubbleId++,
+    size: Math.random() * 20 + 8,
+    left: Math.random() * 100,
+    delay: Math.random() * 2,
+    duration: Math.random() * 10 + 15
+  }
+  bubbles.value.push(bubble)
+
+  // 移除旧气泡
+  setTimeout(() => {
+    bubbles.value = bubbles.value.filter(b => b.id !== bubble.id)
+  }, (bubble.duration + bubble.delay) * 1000)
+}
+
+let bubbleInterval: number
+
 onMounted(() => {
   const handleScroll = () => {
     scrolled.value = window.scrollY > 20
   }
   window.addEventListener('scroll', handleScroll)
+
+  // 定期创建气泡
+  bubbleInterval = window.setInterval(createBubble, 3000)
+  // 初始气泡
+  for (let i = 0; i < 5; i++) {
+    setTimeout(createBubble, i * 600)
+  }
+
   return () => window.removeEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  if (bubbleInterval) clearInterval(bubbleInterval)
 })
 
 watch(mobileMenuOpen, (open) => {
@@ -42,21 +76,40 @@ const navLinks = [
 
 <template>
   <div class="main-layout">
-    <!-- 海洋主题背景系统 -->
+    <!-- 全屏海洋背景系统 -->
     <div class="ocean-bg"></div>
     <div class="ocean-gradient"></div>
     <div class="animated-bg"></div>
     <div class="particles-bg"></div>
     <div class="noise-overlay"></div>
 
-    <!-- 海浪动画层 -->
+    <!-- 全屏海浪动画层 -->
     <div class="wave-layer">
       <div class="wave wave-1"></div>
       <div class="wave wave-2"></div>
       <div class="wave wave-3"></div>
     </div>
 
-    <!-- Navigation -->
+    <!-- 涟漪层 -->
+    <div class="ripple-layer"></div>
+
+    <!-- 动态气泡 -->
+    <div class="bubbles-container">
+      <div
+        v-for="bubble in bubbles"
+        :key="bubble.id"
+        class="bubble"
+        :style="{
+          width: bubble.size + 'px',
+          height: bubble.size + 'px',
+          left: bubble.left + '%',
+          animationDelay: bubble.delay + 's',
+          animationDuration: bubble.duration + 's'
+        }"
+      ></div>
+    </div>
+
+    <!-- Navigation - 透明悬浮 -->
     <header class="main-header" :class="{ scrolled }">
       <div class="header-content">
         <!-- Logo -->
@@ -170,46 +223,31 @@ const navLinks = [
       </div>
     </el-drawer>
 
-    <!-- Main Content -->
+    <!-- Main Content - 全屏无边界 -->
     <main class="main-content">
       <slot />
     </main>
 
-    <!-- Footer -->
+    <!-- Footer - 简化透明 -->
     <footer class="main-footer">
       <div class="footer-content">
-        <div class="footer-top">
-          <div class="footer-brand">
-            <div class="footer-logo">
-              <div class="logo-wave-icon small">
-                <svg viewBox="0 0 32 32" fill="none" class="wave-svg">
-                  <defs>
-                    <linearGradient id="footerWaveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="#38bdf8" />
-                      <stop offset="100%" stop-color="#0ea5e9" />
-                    </linearGradient>
-                  </defs>
-                  <circle cx="16" cy="16" r="14" fill="url(#footerWaveGradient)" opacity="0.15"/>
-                  <path d="M6 16C6 16 9 12 13 16C17 20 21 12 25 16" stroke="url(#footerWaveGradient)" stroke-width="2.5" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <span class="logo-text">TidalCore</span>
-            </div>
-            <p class="footer-tagline">开源盆底肌训练平台</p>
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <svg viewBox="0 0 32 32" fill="none" class="footer-wave-svg">
+              <path d="M6 16C6 16 9 12 13 16C17 20 21 12 25 16" stroke="rgba(56, 189, 248, 0.5)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="footer-logo-text">TidalCore</span>
           </div>
-
-          <div class="footer-links">
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="footer-link">
-              GitHub
-            </a>
-            <span class="footer-divider">·</span>
-            <span class="footer-license">MIT License</span>
-          </div>
+          <span class="footer-divider">·</span>
+          <span class="footer-tagline">开源盆底肌训练平台</span>
         </div>
 
-        <div class="footer-bottom">
-          <p>Made with <span class="heart">♥</span> for health</p>
-          <p>© 2024 TidalCore</p>
+        <div class="footer-links">
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+          <span class="footer-dot">·</span>
+          <span class="footer-license">MIT License</span>
+          <span class="footer-dot">·</span>
+          <span class="footer-copyright">© 2024</span>
         </div>
       </div>
     </footer>
@@ -224,28 +262,41 @@ const navLinks = [
   position: relative;
 }
 
-/* ===== Header - 海洋主题 ===== */
+/* ===== 气泡容器 ===== */
+.bubbles-container {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bubbles-container .bubble {
+  animation: bubble-rise linear forwards;
+}
+
+/* ===== Header - 完全透明悬浮 ===== */
 .main-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  height: 64px;
-  padding: 0 20px;
+  height: 72px;
+  padding: 0 24px;
   background: transparent;
-  border-bottom: 1px solid transparent;
   transition: all 0.4s var(--ease-smooth);
 }
 
 .main-header.scrolled {
-  background: rgba(8, 12, 21, 0.9);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom-color: rgba(56, 189, 248, 0.1);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  background: rgba(5, 8, 15, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.1);
 }
 
 .header-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   height: 100%;
   display: flex;
@@ -254,7 +305,7 @@ const navLinks = [
   gap: 24px;
 }
 
-/* ===== Logo - 海浪图标 ===== */
+/* ===== Logo ===== */
 .logo-link {
   display: flex;
   align-items: center;
@@ -270,11 +321,6 @@ const navLinks = [
   align-items: center;
   justify-content: center;
   transition: transform 0.4s var(--ease-smooth);
-}
-
-.logo-wave-icon.small {
-  width: 28px;
-  height: 28px;
 }
 
 .wave-svg {
@@ -311,7 +357,7 @@ const navLinks = [
   50% { background-position: 200% center; }
 }
 
-/* ===== Desktop Navigation - 海洋风格 ===== */
+/* ===== Desktop Navigation ===== */
 .desktop-nav {
   display: none;
   align-items: center;
@@ -386,7 +432,6 @@ const navLinks = [
   }
 }
 
-/* User Link */
 .user-link {
   display: flex;
   align-items: center;
@@ -413,7 +458,6 @@ const navLinks = [
   border-color: rgba(56, 189, 248, 0.2);
 }
 
-/* Logout Button */
 .logout-btn {
   display: flex;
   align-items: center;
@@ -434,7 +478,6 @@ const navLinks = [
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* Login Button - 海洋渐变 */
 .login-btn {
   display: flex;
   align-items: center;
@@ -482,9 +525,9 @@ const navLinks = [
   }
 }
 
-/* ===== Mobile Drawer - 海洋风格 ===== */
+/* ===== Mobile Drawer ===== */
 .mobile-drawer :deep(.el-drawer__body) {
-  background: linear-gradient(180deg, rgba(8, 12, 21, 0.98), rgba(11, 17, 32, 0.98));
+  background: linear-gradient(180deg, rgba(5, 8, 15, 0.98), rgba(8, 12, 22, 0.98));
   backdrop-filter: blur(20px);
   padding-top: 80px;
 }
@@ -532,46 +575,34 @@ const navLinks = [
   box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
 }
 
-/* ===== Main Content ===== */
+/* ===== Main Content - 全屏无边界 ===== */
 .main-content {
   flex: 1;
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
-  padding: 24px 20px;
+  padding-top: 72px;
   position: relative;
   z-index: 1;
 }
 
-@media (min-width: 768px) {
-  .main-content {
-    padding: 48px 24px;
-  }
-}
-
-/* ===== Footer - 海洋主题 ===== */
+/* ===== Footer - 简化透明 ===== */
 .main-footer {
-  border-top: 1px solid rgba(56, 189, 248, 0.1);
-  padding: 40px 20px;
+  padding: 24px;
   position: relative;
   z-index: 1;
-  background: linear-gradient(180deg, transparent 0%, rgba(8, 12, 21, 0.5) 100%);
+  background: transparent;
 }
 
 .footer-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-}
-
-.footer-top {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
 }
 
 @media (min-width: 768px) {
-  .footer-top {
+  .footer-content {
     flex-direction: row;
     justify-content: space-between;
   }
@@ -579,15 +610,10 @@ const navLinks = [
 
 .footer-brand {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
-}
-
-@media (min-width: 768px) {
-  .footer-brand {
-    align-items: flex-start;
-  }
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .footer-logo {
@@ -596,71 +622,51 @@ const navLinks = [
   gap: 8px;
 }
 
-.footer-logo .logo-text {
-  font-size: 16px;
+.footer-wave-svg {
+  width: 24px;
+  height: 24px;
 }
 
-.footer-tagline {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
-  margin: 0;
-}
-
-.footer-links {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 13px;
-}
-
-.footer-link {
-  color: rgba(255, 255, 255, 0.4);
-  text-decoration: none;
-  transition: all 0.3s var(--ease-smooth);
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-}
-
-.footer-link:hover {
-  color: rgb(var(--ocean-surface));
-  background: rgba(56, 189, 248, 0.08);
+.footer-logo-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .footer-divider {
   color: rgba(56, 189, 248, 0.3);
 }
 
-.footer-license {
+.footer-tagline {
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.4);
 }
 
-.footer-bottom {
-  margin-top: 28px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(56, 189, 248, 0.08);
+.footer-links {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.footer-link {
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: rgb(var(--ocean-surface));
+}
+
+.footer-dot {
+  color: rgba(56, 189, 248, 0.3);
+}
+
+.footer-license,
+.footer-copyright {
   color: rgba(255, 255, 255, 0.3);
-}
-
-@media (min-width: 768px) {
-  .footer-bottom {
-    flex-direction: row;
-    justify-content: space-between;
-  }
-}
-
-.footer-bottom .heart {
-  color: rgb(var(--coral-pink));
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
 }
 
 /* Element Plus Overrides */

@@ -1,9 +1,8 @@
 @import "tailwindcss";
 
-/* ===== TidalCore Design System - 潮汐海洋主题 ===== */
+/* ===== TidalCore Design System - 全屏沉浸式海洋主题 ===== */
 :root {
   /* ===== 海洋色系 - Ocean Palette ===== */
-  /* 主色调 - 深海蓝 */
   --ocean-surface: 56 189 248;        /* #38bdf8 - 海面蓝 */
   --ocean-shallow: 14 165 233;        /* #0ea5e9 - 浅海蓝 */
   --ocean-mid: 2 132 199;             /* #0284c7 - 中海蓝 */
@@ -11,11 +10,11 @@
   --ocean-abyss: 12 74 110;           /* #0c4a6e - 海渊蓝 */
 
   /* 海洋深色背景 */
-  --sea-darkest: 8 12 21;             /* 海洋深渊 */
-  --sea-darker: 11 17 32;             /* 深海夜色 */
-  --sea-dark: 15 23 42;               /* #0f172a */
-  --sea-mid: 23 37 63;                /* 中层海水 */
-  --sea-light: 30 58 95;              /* 浅层海水 */
+  --sea-darkest: 5 8 15;              /* 深海渊底 */
+  --sea-darker: 8 12 22;              /* 深海夜色 */
+  --sea-dark: 12 18 32;               /* 中层深海 */
+  --sea-mid: 18 28 48;                /* 海水层 */
+  --sea-light: 25 40 65;              /* 浅层海水 */
 
   /* 海洋强调色 */
   --foam-white: 240 249 255;          /* 海浪泡沫 */
@@ -27,9 +26,9 @@
 
   /* 训练相位色彩 */
   --phase-idle: var(--ocean-shallow);
-  --phase-contract: 244 63 94;        /* 张力红 */
-  --phase-hold: 245 158 11;           /* 蓄力金 */
-  --phase-relax: 16 185 129;          /* 舒缓绿 */
+  --phase-contract: 244 63 94;
+  --phase-hold: 245 158 11;
+  --phase-relax: 16 185 129;
 
   /* 语义色彩 */
   --success: 34 197 94;
@@ -38,11 +37,11 @@
   --info: 56 189 248;
 
   /* 玻璃效果 */
-  --glass-bg: rgba(15, 23, 42, 0.6);
-  --glass-bg-hover: rgba(15, 23, 42, 0.8);
-  --glass-border: rgba(56, 189, 248, 0.1);
-  --glass-border-hover: rgba(56, 189, 248, 0.2);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --glass-bg: rgba(8, 15, 30, 0.4);
+  --glass-bg-hover: rgba(8, 15, 30, 0.6);
+  --glass-border: rgba(56, 189, 248, 0.08);
+  --glass-border-hover: rgba(56, 189, 248, 0.15);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 
   /* 文本色彩 */
   --text-primary: 255 255 255;
@@ -87,174 +86,301 @@ body {
   overflow-x: hidden;
 }
 
-/* ===== 海洋背景系统 ===== */
+/* ===== 全屏海洋背景系统 ===== */
 .ocean-bg {
   position: fixed;
   inset: 0;
   z-index: -10;
   overflow: hidden;
+  /* 深海到海面的垂直渐变 */
   background: linear-gradient(
     180deg,
-    rgb(var(--sea-darkest)) 0%,
-    rgb(var(--sea-darker)) 30%,
-    rgb(var(--sea-dark)) 60%,
-    rgb(var(--sea-mid)) 100%
+    rgb(5, 8, 15) 0%,
+    rgb(8, 15, 28) 20%,
+    rgb(10, 22, 42) 40%,
+    rgb(12, 30, 55) 60%,
+    rgb(15, 40, 70) 80%,
+    rgb(18, 50, 85) 100%
   );
 }
 
-/* 海洋深度渐变层 */
+/* 海洋光线穿透效果 */
 .ocean-gradient {
   position: fixed;
   inset: 0;
   z-index: -9;
   background:
-    radial-gradient(ellipse 100% 70% at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(14, 165, 233, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 50% at 80% 30%, rgba(34, 211, 238, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 50% 100%, rgba(3, 105, 161, 0.15) 0%, transparent 50%);
+    /* 从上方照射的阳光 */
+    radial-gradient(ellipse 120% 50% at 50% -20%, rgba(56, 189, 248, 0.15) 0%, transparent 60%),
+    /* 左侧光线 */
+    radial-gradient(ellipse 60% 80% at -10% 40%, rgba(14, 165, 233, 0.1) 0%, transparent 50%),
+    /* 右侧光线 */
+    radial-gradient(ellipse 60% 80% at 110% 60%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
+    /* 底部深海微光 */
+    radial-gradient(ellipse 100% 40% at 50% 120%, rgba(3, 105, 161, 0.2) 0%, transparent 60%);
+  animation: light-shimmer 15s ease-in-out infinite;
 }
 
-/* 动态背景（从animated-bg继承） */
+@keyframes light-shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* 动态水体效果 */
 .animated-bg {
   position: fixed;
   inset: 0;
   z-index: -8;
-  background: linear-gradient(
-    180deg,
-    rgb(var(--sea-darkest)) 0%,
-    rgb(var(--sea-darker)) 30%,
-    rgb(var(--sea-dark)) 60%,
-    rgb(var(--sea-mid)) 100%
-  );
+  overflow: hidden;
 }
 
 .animated-bg::before {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: -50%;
   background:
-    radial-gradient(ellipse 100% 60% at 50% -10%, rgba(56, 189, 248, 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 80% 40% at 100% 20%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 40% at 0% 60%, rgba(14, 165, 233, 0.06) 0%, transparent 50%);
+    radial-gradient(circle at 20% 30%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(34, 211, 238, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 40% 80%, rgba(14, 165, 233, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 70% 20%, rgba(6, 182, 212, 0.04) 0%, transparent 40%);
+  animation: water-flow 30s linear infinite;
 }
 
-/* 海浪粒子效果 */
+@keyframes water-flow {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(2%, 1%) rotate(1deg); }
+  50% { transform: translate(0, 2%) rotate(0deg); }
+  75% { transform: translate(-2%, 1%) rotate(-1deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* 海洋光斑粒子 */
 .particles-bg {
   position: fixed;
   inset: 0;
   z-index: -7;
   pointer-events: none;
-  opacity: 0.5;
+  overflow: hidden;
+}
+
+.particles-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background-image:
-    radial-gradient(1.5px 1.5px at 10% 20%, rgba(56, 189, 248, 0.3), transparent),
-    radial-gradient(1px 1px at 30% 40%, rgba(255, 255, 255, 0.15), transparent),
-    radial-gradient(1.5px 1.5px at 50% 30%, rgba(34, 211, 238, 0.25), transparent),
-    radial-gradient(1px 1px at 70% 60%, rgba(255, 255, 255, 0.1), transparent),
-    radial-gradient(1.5px 1.5px at 90% 20%, rgba(56, 189, 248, 0.2), transparent),
-    radial-gradient(1px 1px at 20% 80%, rgba(255, 255, 255, 0.1), transparent),
-    radial-gradient(1.5px 1.5px at 60% 90%, rgba(34, 211, 238, 0.2), transparent),
-    radial-gradient(1px 1px at 80% 50%, rgba(255, 255, 255, 0.08), transparent);
-  background-size: 250px 250px;
-  animation: particles-drift 60s linear infinite;
+    radial-gradient(2px 2px at 10% 15%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(2px 2px at 25% 35%, rgba(56, 189, 248, 0.4), transparent),
+    radial-gradient(1.5px 1.5px at 40% 20%, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(2px 2px at 55% 45%, rgba(34, 211, 238, 0.35), transparent),
+    radial-gradient(1.5px 1.5px at 70% 25%, rgba(255, 255, 255, 0.25), transparent),
+    radial-gradient(2px 2px at 85% 55%, rgba(56, 189, 248, 0.3), transparent),
+    radial-gradient(1.5px 1.5px at 15% 65%, rgba(34, 211, 238, 0.25), transparent),
+    radial-gradient(2px 2px at 30% 80%, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(1.5px 1.5px at 60% 70%, rgba(56, 189, 248, 0.3), transparent),
+    radial-gradient(2px 2px at 80% 85%, rgba(34, 211, 238, 0.2), transparent),
+    radial-gradient(1.5px 1.5px at 95% 40%, rgba(255, 255, 255, 0.15), transparent),
+    radial-gradient(2px 2px at 5% 90%, rgba(56, 189, 248, 0.2), transparent);
+  background-size: 100% 100%;
+  animation: particles-float 20s ease-in-out infinite;
 }
 
-@keyframes particles-drift {
-  0% { transform: translateY(0) translateX(0); }
-  50% { transform: translateY(-20px) translateX(10px); }
-  100% { transform: translateY(0) translateX(0); }
+@keyframes particles-float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.8; }
+  50% { transform: translateY(-30px) scale(1.05); opacity: 1; }
 }
 
-/* 噪点纹理 */
+/* 噪点纹理 - 更微妙 */
 .noise-overlay {
   position: fixed;
   inset: 0;
   z-index: -6;
-  opacity: 0.015;
+  opacity: 0.02;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-/* ===== 海浪动画层 ===== */
+/* ===== 全屏海浪系统 ===== */
 .wave-layer {
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 200%;
-  height: 200px;
+  width: 100%;
+  height: 100%;
   z-index: -5;
   pointer-events: none;
+  overflow: hidden;
 }
 
+/* 多层海浪 */
 .wave {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 100%;
+  width: 200%;
   height: 100%;
-  background: linear-gradient(to top, rgba(14, 165, 233, 0.03), transparent);
-  animation: wave-sway 8s ease-in-out infinite;
 }
 
-.wave::before {
+/* 第一层海浪 - 最近 */
+.wave-1 {
+  background: linear-gradient(to top,
+    rgba(14, 165, 233, 0.08) 0%,
+    rgba(14, 165, 233, 0.04) 10%,
+    transparent 30%
+  );
+  animation: wave-move-1 25s ease-in-out infinite;
+}
+
+.wave-1::before {
   content: '';
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 60px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 100'%3E%3Cpath fill='rgba(56, 189, 248, 0.05)' d='M0,50 C360,100 720,0 1080,50 C1260,75 1380,25 1440,50 L1440,100 L0,100 Z'/%3E%3C/svg%3E");
-  background-size: 1440px 100px;
+  height: 150px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 150'%3E%3Cpath fill='rgba(56, 189, 248, 0.06)' d='M0,75 C240,150 480,0 720,75 C960,150 1200,0 1440,75 L1440,150 L0,150 Z'/%3E%3C/svg%3E");
+  background-size: 1440px 150px;
   background-repeat: repeat-x;
-  animation: wave-move 12s linear infinite;
+  animation: wave-scroll-1 20s linear infinite;
 }
 
-.wave-2 {
-  animation-delay: -2s;
-  opacity: 0.7;
+@keyframes wave-move-1 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-5%) translateY(-10px); }
 }
 
-.wave-2::before {
-  animation-delay: -4s;
-  animation-duration: 15s;
-}
-
-.wave-3 {
-  animation-delay: -4s;
-  opacity: 0.5;
-}
-
-.wave-3::before {
-  animation-delay: -8s;
-  animation-duration: 20s;
-}
-
-@keyframes wave-sway {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(-25%); }
-}
-
-@keyframes wave-move {
+@keyframes wave-scroll-1 {
   0% { background-position-x: 0; }
   100% { background-position-x: 1440px; }
 }
 
+/* 第二层海浪 - 中层 */
+.wave-2 {
+  background: linear-gradient(to top,
+    rgba(34, 211, 238, 0.06) 0%,
+    rgba(34, 211, 238, 0.03) 15%,
+    transparent 40%
+  );
+  animation: wave-move-2 30s ease-in-out infinite;
+}
+
+.wave-2::before {
+  content: '';
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 200'%3E%3Cpath fill='rgba(34, 211, 238, 0.04)' d='M0,100 C360,200 720,0 1080,100 C1260,150 1380,50 1440,100 L1440,200 L0,200 Z'/%3E%3C/svg%3E");
+  background-size: 1440px 200px;
+  background-repeat: repeat-x;
+  animation: wave-scroll-2 28s linear infinite;
+}
+
+@keyframes wave-move-2 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-8%) translateY(-15px); }
+}
+
+@keyframes wave-scroll-2 {
+  0% { background-position-x: 0; }
+  100% { background-position-x: -1440px; }
+}
+
+/* 第三层海浪 - 远层 */
+.wave-3 {
+  background: linear-gradient(to top,
+    rgba(6, 182, 212, 0.04) 0%,
+    rgba(6, 182, 212, 0.02) 20%,
+    transparent 50%
+  );
+  animation: wave-move-3 35s ease-in-out infinite;
+}
+
+.wave-3::before {
+  content: '';
+  position: absolute;
+  bottom: 120px;
+  left: 0;
+  width: 100%;
+  height: 250px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 250'%3E%3Cpath fill='rgba(6, 182, 212, 0.03)' d='M0,125 C480,250 960,0 1440,125 L1440,250 L0,250 Z'/%3E%3C/svg%3E");
+  background-size: 1440px 250px;
+  background-repeat: repeat-x;
+  animation: wave-scroll-3 35s linear infinite;
+}
+
+@keyframes wave-move-3 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-3%) translateY(-8px); }
+}
+
+@keyframes wave-scroll-3 {
+  0% { background-position-x: 0; }
+  100% { background-position-x: 1440px; }
+}
+
+/* ===== 水面涟漪层 ===== */
+.ripple-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ripple-layer::before,
+.ripple-layer::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  animation: ripple-expand 8s ease-out infinite;
+}
+
+.ripple-layer::before {
+  width: 500px;
+  height: 500px;
+  top: 20%;
+  left: 30%;
+  animation-delay: 0s;
+}
+
+.ripple-layer::after {
+  width: 400px;
+  height: 400px;
+  top: 60%;
+  right: 20%;
+  animation-delay: 4s;
+}
+
+@keyframes ripple-expand {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
 /* ===== 滚动条 ===== */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.3);
-  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.4);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.5);
+  background: rgba(56, 189, 248, 0.6);
 }
 
 /* ===== 选择 ===== */
@@ -378,7 +504,6 @@ body {
 }
 
 /* ===== 动画效果 ===== */
-/* 浮动动画 */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-15px); }
@@ -397,7 +522,6 @@ body {
   animation: float-slow 6s ease-in-out infinite;
 }
 
-/* 脉冲动画 */
 @keyframes pulse-glow {
   0%, 100% {
     box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
@@ -411,7 +535,6 @@ body {
   animation: pulse-glow 3s ease-in-out infinite;
 }
 
-/* 潮汐呼吸动画 */
 @keyframes tidal-breath {
   0%, 100% {
     transform: scale(1);
@@ -427,7 +550,6 @@ body {
   animation: tidal-breath 4s var(--ease-tidal) infinite;
 }
 
-/* 涟漪动画 */
 @keyframes ripple {
   0% {
     transform: scale(0.8);
@@ -493,7 +615,7 @@ body {
 .input-ocean {
   width: 100%;
   padding: 14px 18px;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(8, 15, 30, 0.6);
   border: 1px solid rgba(56, 189, 248, 0.15);
   border-radius: var(--radius-lg);
   color: white;
@@ -637,29 +759,30 @@ body {
   border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
-/* ===== 气泡效果 ===== */
+/* ===== 气泡上升效果 ===== */
 @keyframes bubble-rise {
   0% {
-    transform: translateY(100%) scale(0);
+    transform: translateY(100vh) scale(0);
     opacity: 0;
   }
-  20% {
-    opacity: 1;
-    transform: translateY(80%) scale(1);
+  10% {
+    opacity: 0.6;
+    transform: translateY(90vh) scale(1);
   }
   100% {
-    transform: translateY(-100vh) scale(0.5);
+    transform: translateY(-10vh) scale(0.5);
     opacity: 0;
   }
 }
 
 .bubble {
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%,
-    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.4),
     rgba(56, 189, 248, 0.1));
-  animation: bubble-rise linear infinite;
+  pointer-events: none;
+  z-index: -3;
 }
 
 /* ===== 减少动画（无障碍） ===== */
@@ -723,81 +846,6 @@ body {
 
 .feature-card:hover::before {
   opacity: 1;
-}
-
-/* ===== 统计卡片 ===== */
-.stat-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg,
-    rgb(var(--ocean-shallow)),
-    rgb(var(--aqua-glow)),
-    rgb(var(--ocean-shallow)));
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s var(--ease-smooth);
-}
-
-.stat-card:hover::before {
-  transform: scaleX(1);
-}
-
-/* ===== 进度环 ===== */
-.progress-ring {
-  transition: stroke-dashoffset 0.6s var(--ease-smooth);
-}
-
-/* ===== 数字动画 ===== */
-@keyframes count-up {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.count-animate {
-  animation: count-up 0.5s var(--ease-smooth) forwards;
-}
-
-/* ===== 旋转边框 ===== */
-@keyframes rotate-border {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.rotating-border {
-  position: relative;
-  overflow: hidden;
-}
-
-.rotating-border::before {
-  content: '';
-  position: absolute;
-  inset: -50%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    rgb(var(--ocean-surface)) 60deg,
-    rgb(var(--aqua-glow)) 120deg,
-    rgb(var(--ocean-shallow)) 180deg,
-    transparent 240deg
-  );
-  animation: rotate-border 6s linear infinite;
-}
-
-.rotating-border::after {
-  content: '';
-  position: absolute;
-  inset: 2px;
-  background: rgb(var(--sea-dark));
-  border-radius: inherit;
 }
 
 /* ===== 状态指示器 ===== */

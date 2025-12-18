@@ -208,6 +208,8 @@ const top3Users = computed(() => users.value.slice(0, 3))
   gap: 48px;
   max-width: 900px;
   margin: 0 auto;
+  padding: 40px 24px 80px;
+  min-height: calc(100vh - 72px);
 }
 
 /* ===== Header Section - 海洋主题 ===== */

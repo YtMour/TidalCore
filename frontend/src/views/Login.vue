@@ -144,11 +144,11 @@ async function handleSubmit() {
 
 <style scoped>
 .login-container {
-  min-height: 70vh;
+  min-height: calc(100vh - 72px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px 16px;
+  padding: 48px 24px;
   position: relative;
 }
 

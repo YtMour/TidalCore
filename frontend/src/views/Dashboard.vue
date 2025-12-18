@@ -294,6 +294,8 @@ function getRelativeTime(dateStr: string): string {
   gap: 32px;
   max-width: 900px;
   margin: 0 auto;
+  padding: 40px 24px 80px;
+  min-height: calc(100vh - 72px);
 }
 
 /* ===== Profile Section - 海洋主题 ===== */

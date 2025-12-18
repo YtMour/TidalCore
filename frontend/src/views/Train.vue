@@ -395,8 +395,9 @@ function updateSetting(key: string, value: number) {
 .train-page {
   max-width: 768px;
   margin: 0 auto;
+  padding: 40px 24px 80px;
   position: relative;
-  min-height: 100vh;
+  min-height: calc(100vh - 72px);
 }
 
 /* Header - 海洋主题 */
