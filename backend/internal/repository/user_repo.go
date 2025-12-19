@@ -52,3 +52,32 @@ func (r *UserRepository) ExistsByUsername(username string) (bool, error) {
 	err := r.db.Model(&model.User{}).Where("username = ?", username).Count(&count).Error
 	return count > 0, err
 }
+
+// GetAllUsers 获取所有用户（分页）
+func (r *UserRepository) GetAllUsers(page, pageSize int) ([]model.User, int64, error) {
+	var users []model.User
+	var total int64
+
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+
+	offset := (page - 1) * pageSize
+
+	// 获取总数
+	if err := r.db.Model(&model.User{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 获取分页数据
+	err := r.db.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&users).Error
+	return users, total, err
+}
+
+// Delete 删除用户（软删除）
+func (r *UserRepository) Delete(id uint) error {
+	return r.db.Delete(&model.User{}, id).Error
+}

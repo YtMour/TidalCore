@@ -48,11 +48,24 @@ func SetupRouter(mode string) *gin.Engine {
 		{
 			// 用户相关
 			protected.GET("/user/profile", userHandler.GetProfile)
+			protected.PUT("/user/profile", userHandler.UpdateProfile)
+			protected.PUT("/user/username", userHandler.UpdateUsername)
+			protected.PUT("/user/password", userHandler.UpdatePassword)
 
 			// 打卡相关
 			protected.POST("/checkin", checkinHandler.Checkin)
 			protected.GET("/checkin/history", checkinHandler.GetHistory)
 			protected.GET("/checkin/heatmap", checkinHandler.GetHeatmap)
+		}
+
+		// 管理员接口
+		admin := v1.Group("/admin")
+		admin.Use(middleware.JWTAuthWithAdmin())
+		admin.Use(middleware.AdminAuth())
+		{
+			admin.GET("/users", userHandler.GetAllUsers)
+			admin.DELETE("/users/:id", userHandler.DeleteUser)
+			admin.PUT("/users/:id/admin", userHandler.SetUserAdmin)
 		}
 	}
 

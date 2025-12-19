@@ -13,6 +13,12 @@ type Config struct {
 	Server   ServerConfig   `mapstructure:"server"`
 	Database DatabaseConfig `mapstructure:"database"`
 	JWT      JWTConfig      `mapstructure:"jwt"`
+	Admin    AdminConfig    `mapstructure:"admin"`
+}
+
+type AdminConfig struct {
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
 }
 
 type ServerConfig struct {
@@ -106,6 +112,14 @@ func loadFromEnv() {
 	}
 	if v := os.Getenv("TIMEZONE"); v != "" {
 		appConfig.Server.Timezone = v
+	}
+
+	// 管理员配置
+	if v := os.Getenv("ADMIN_USERNAME"); v != "" {
+		appConfig.Admin.Username = v
+	}
+	if v := os.Getenv("ADMIN_PASSWORD"); v != "" {
+		appConfig.Admin.Password = v
 	}
 }
 

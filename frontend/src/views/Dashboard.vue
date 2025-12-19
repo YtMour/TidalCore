@@ -4,7 +4,9 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import Heatmap from '@/components/Heatmap.vue'
 import { useUserStore } from '@/store/user'
 import { getHeatmap, getHistory, type CheckinRecord } from '@/api/checkin'
-import { Timer, Calendar, Clock, CircleCheck, ArrowRight, Pointer, Trophy, Aim } from '@element-plus/icons-vue'
+import { updateProfile, updateUsername, updatePassword } from '@/api/auth'
+import { Timer, Calendar, Clock, CircleCheck, ArrowRight, Pointer, Trophy, Aim, Edit, Lock, User, Setting } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
 
@@ -12,6 +14,105 @@ const heatmapData = ref<Record<string, number>>({})
 const recentHistory = ref<CheckinRecord[]>([])
 const loading = ref(true)
 const mounted = ref(false)
+
+// 设置相关
+const showSettingsDialog = ref(false)
+const activeSettingTab = ref('profile')
+const settingsLoading = ref(false)
+
+// 表单数据
+const profileForm = ref({
+  display_name: ''
+})
+const usernameForm = ref({
+  username: ''
+})
+const passwordForm = ref({
+  old_password: '',
+  new_password: '',
+  confirm_password: ''
+})
+
+// 打开设置对话框
+function openSettings() {
+  profileForm.value.display_name = userStore.user?.display_name || ''
+  usernameForm.value.username = userStore.user?.username || ''
+  passwordForm.value = { old_password: '', new_password: '', confirm_password: '' }
+  showSettingsDialog.value = true
+}
+
+// 更新显示名称
+async function handleUpdateProfile() {
+  if (!profileForm.value.display_name.trim()) {
+    ElMessage.warning('请输入显示名称')
+    return
+  }
+  settingsLoading.value = true
+  try {
+    await updateProfile({ display_name: profileForm.value.display_name })
+    await userStore.refreshUser()
+    ElMessage.success('显示名称更新成功')
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.msg || '更新失败')
+  } finally {
+    settingsLoading.value = false
+  }
+}
+
+// 更新用户名
+async function handleUpdateUsername() {
+  if (!usernameForm.value.username.trim()) {
+    ElMessage.warning('请输入用户名')
+    return
+  }
+  if (!/^[a-zA-Z0-9_]+$/.test(usernameForm.value.username)) {
+    ElMessage.warning('用户名只能包含字母、数字和下划线')
+    return
+  }
+  settingsLoading.value = true
+  try {
+    await updateUsername({ username: usernameForm.value.username })
+    await userStore.refreshUser()
+    ElMessage.success('用户名更新成功')
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.msg || '更新失败')
+  } finally {
+    settingsLoading.value = false
+  }
+}
+
+// 更新密码
+async function handleUpdatePassword() {
+  if (!passwordForm.value.old_password) {
+    ElMessage.warning('请输入原密码')
+    return
+  }
+  if (!passwordForm.value.new_password) {
+    ElMessage.warning('请输入新密码')
+    return
+  }
+  if (passwordForm.value.new_password.length < 6) {
+    ElMessage.warning('新密码长度至少6位')
+    return
+  }
+  if (passwordForm.value.new_password !== passwordForm.value.confirm_password) {
+    ElMessage.warning('两次输入的密码不一致')
+    return
+  }
+  settingsLoading.value = true
+  try {
+    await updatePassword({
+      old_password: passwordForm.value.old_password,
+      new_password: passwordForm.value.new_password
+    })
+    ElMessage.success('密码更新成功')
+    passwordForm.value = { old_password: '', new_password: '', confirm_password: '' }
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.msg || '更新失败')
+  } finally {
+    settingsLoading.value = false
+  }
+}
 
 // 计算用户等级 - 海洋主题
 const userLevel = computed(() => {
@@ -120,14 +221,17 @@ function getRelativeTime(dateStr: string): string {
             <!-- User Info -->
             <div class="user-info">
               <div class="user-name">
-                <h1>{{ userStore.user?.username }}</h1>
+                <h1>{{ userStore.user?.display_name || userStore.user?.username }}</h1>
                 <div class="wave-icon">
                   <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
                     <path d="M2 12C2 12 5 8 8 12C11 16 14 8 17 12C20 16 22 12 22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                   </svg>
                 </div>
+                <el-button class="settings-btn" circle size="small" @click="openSettings">
+                  <el-icon :size="14"><Setting /></el-icon>
+                </el-button>
               </div>
-              <p class="user-motto">如潮汐般坚持，如海浪般前进</p>
+              <p class="user-motto">@{{ userStore.user?.username }}</p>
 
               <!-- Quick stats inline - 海洋色彩 -->
               <div class="inline-stats">
@@ -141,13 +245,21 @@ function getRelativeTime(dateStr: string): string {
                 </span>
               </div>
 
-              <RouterLink to="/train">
-                <el-button type="primary" size="large" round class="train-btn">
-                  <el-icon><Timer /></el-icon>
-                  开始今日训练
-                  <el-icon class="arrow-icon"><ArrowRight /></el-icon>
-                </el-button>
-              </RouterLink>
+              <div class="action-buttons">
+                <RouterLink to="/train">
+                  <el-button type="primary" size="large" round class="train-btn">
+                    <el-icon><Timer /></el-icon>
+                    开始今日训练
+                    <el-icon class="arrow-icon"><ArrowRight /></el-icon>
+                  </el-button>
+                </RouterLink>
+                <RouterLink v-if="userStore.user?.is_admin" to="/admin">
+                  <el-button size="large" round class="admin-btn">
+                    <el-icon><Setting /></el-icon>
+                    管理后台
+                  </el-button>
+                </RouterLink>
+              </div>
             </div>
           </div>
         </el-card>
@@ -284,6 +396,108 @@ function getRelativeTime(dateStr: string): string {
         </el-card>
       </section>
     </div>
+
+    <!-- 设置对话框 -->
+    <el-dialog
+      v-model="showSettingsDialog"
+      title="账号设置"
+      width="500px"
+      class="settings-dialog"
+      :close-on-click-modal="false"
+    >
+      <el-tabs v-model="activeSettingTab" class="settings-tabs">
+        <el-tab-pane label="显示名称" name="profile">
+          <div class="setting-form">
+            <p class="setting-desc">显示名称将在排行榜和个人主页中展示</p>
+            <el-input
+              v-model="profileForm.display_name"
+              placeholder="请输入显示名称"
+              maxlength="50"
+              show-word-limit
+            >
+              <template #prefix>
+                <el-icon><User /></el-icon>
+              </template>
+            </el-input>
+            <el-button
+              type="primary"
+              :loading="settingsLoading"
+              @click="handleUpdateProfile"
+              class="setting-submit-btn"
+            >
+              保存修改
+            </el-button>
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane label="用户名" name="username">
+          <div class="setting-form">
+            <p class="setting-desc">用户名用于登录，只能包含字母、数字和下划线</p>
+            <el-input
+              v-model="usernameForm.username"
+              placeholder="请输入新用户名"
+              maxlength="50"
+            >
+              <template #prefix>
+                <el-icon><Edit /></el-icon>
+              </template>
+            </el-input>
+            <el-button
+              type="primary"
+              :loading="settingsLoading"
+              @click="handleUpdateUsername"
+              class="setting-submit-btn"
+            >
+              保存修改
+            </el-button>
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane label="修改密码" name="password">
+          <div class="setting-form">
+            <p class="setting-desc">为了账号安全，请定期更换密码</p>
+            <el-input
+              v-model="passwordForm.old_password"
+              type="password"
+              placeholder="请输入原密码"
+              show-password
+            >
+              <template #prefix>
+                <el-icon><Lock /></el-icon>
+              </template>
+            </el-input>
+            <el-input
+              v-model="passwordForm.new_password"
+              type="password"
+              placeholder="请输入新密码（至少6位）"
+              show-password
+            >
+              <template #prefix>
+                <el-icon><Lock /></el-icon>
+              </template>
+            </el-input>
+            <el-input
+              v-model="passwordForm.confirm_password"
+              type="password"
+              placeholder="请再次输入新密码"
+              show-password
+            >
+              <template #prefix>
+                <el-icon><Lock /></el-icon>
+              </template>
+            </el-input>
+            <el-button
+              type="primary"
+              :loading="settingsLoading"
+              @click="handleUpdatePassword"
+              class="setting-submit-btn"
+            >
+              修改密码
+            </el-button>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </el-dialog>
   </MainLayout>
 </template>
 
@@ -870,5 +1084,127 @@ function getRelativeTime(dateStr: string): string {
 .list-leave-to {
   opacity: 0;
   transform: translateX(-20px);
+}
+
+/* ===== Settings Button ===== */
+.settings-btn {
+  background: rgba(56, 189, 248, 0.1) !important;
+  border: 1px solid rgba(56, 189, 248, 0.2) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.3s var(--ease-smooth) !important;
+}
+
+.settings-btn:hover {
+  background: rgba(56, 189, 248, 0.2) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+  color: #fff !important;
+}
+
+/* ===== Action Buttons ===== */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 640px) {
+  .action-buttons {
+    justify-content: flex-start;
+  }
+}
+
+.admin-btn {
+  background: rgba(251, 191, 36, 0.1) !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+  color: #fbbf24 !important;
+}
+
+.admin-btn:hover {
+  background: rgba(251, 191, 36, 0.2) !important;
+  border-color: rgba(251, 191, 36, 0.4) !important;
+}
+
+/* ===== Settings Dialog ===== */
+.settings-dialog :deep(.el-dialog) {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  border-radius: var(--radius-xl);
+}
+
+.settings-dialog :deep(.el-dialog__header) {
+  border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+  padding: 20px 24px;
+}
+
+.settings-dialog :deep(.el-dialog__title) {
+  color: #fff;
+  font-weight: 600;
+}
+
+.settings-dialog :deep(.el-dialog__body) {
+  padding: 24px;
+}
+
+.settings-tabs :deep(.el-tabs__header) {
+  margin-bottom: 24px;
+}
+
+.settings-tabs :deep(.el-tabs__nav-wrap::after) {
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.settings-tabs :deep(.el-tabs__item) {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.settings-tabs :deep(.el-tabs__item.is-active) {
+  color: rgb(var(--ocean-surface));
+}
+
+.settings-tabs :deep(.el-tabs__active-bar) {
+  background: rgb(var(--ocean-surface));
+}
+
+.setting-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setting-desc {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 14px;
+  margin: 0;
+}
+
+.setting-form :deep(.el-input__wrapper) {
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  box-shadow: none;
+}
+
+.setting-form :deep(.el-input__wrapper:hover) {
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.setting-form :deep(.el-input__wrapper.is-focus) {
+  border-color: rgb(var(--ocean-surface));
+}
+
+.setting-form :deep(.el-input__inner) {
+  color: #fff;
+}
+
+.setting-form :deep(.el-input__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.setting-submit-btn {
+  margin-top: 8px;
+  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid))) !important;
+  border: none !important;
 }
 </style>

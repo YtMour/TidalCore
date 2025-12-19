@@ -8,6 +8,7 @@ import (
 	"tidalcore-backend/api"
 	"tidalcore-backend/config"
 	"tidalcore-backend/internal/model"
+	"tidalcore-backend/internal/service"
 	"tidalcore-backend/pkg/database"
 )
 
@@ -33,6 +34,16 @@ func main() {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 	log.Printf("Database migration completed")
+
+	// 初始化管理员账号
+	if cfg.Admin.Username != "" && cfg.Admin.Password != "" {
+		userService := service.NewUserService()
+		if err := userService.InitAdmin(cfg.Admin.Username, cfg.Admin.Password); err != nil {
+			log.Printf("Warning: Failed to init admin account: %v", err)
+		} else {
+			log.Printf("Admin account initialized: %s", cfg.Admin.Username)
+		}
+	}
 
 	// 启动服务器
 	r := api.SetupRouter(cfg.Server.Mode)

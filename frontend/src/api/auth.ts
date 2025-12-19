@@ -18,6 +18,20 @@ export interface UserInfo {
   streak: number
   max_streak: number
   total_checkin: number
+  is_admin: boolean
+}
+
+export interface UpdateProfileRequest {
+  display_name: string
+}
+
+export interface UpdateUsernameRequest {
+  username: string
+}
+
+export interface UpdatePasswordRequest {
+  old_password: string
+  new_password: string
 }
 
 export interface AuthResponse {
@@ -35,4 +49,16 @@ export function register(data: RegisterRequest): Promise<AuthResponse> {
 
 export function getProfile(): Promise<UserInfo> {
   return request.get('/user/profile')
+}
+
+export function updateProfile(data: UpdateProfileRequest): Promise<UserInfo> {
+  return request.put('/user/profile', data)
+}
+
+export function updateUsername(data: UpdateUsernameRequest): Promise<UserInfo> {
+  return request.put('/user/username', data)
+}
+
+export function updatePassword(data: UpdatePasswordRequest): Promise<void> {
+  return request.put('/user/password', data)
 }

@@ -17,16 +17,22 @@ var (
 type Claims struct {
 	UserID   uint   `json:"user_id"`
 	Username string `json:"username"`
+	IsAdmin  bool   `json:"is_admin"`
 	jwt.RegisteredClaims
 }
 
 func GenerateToken(userID uint, username string) (string, error) {
+	return GenerateTokenWithAdmin(userID, username, false)
+}
+
+func GenerateTokenWithAdmin(userID uint, username string, isAdmin bool) (string, error) {
 	cfg := config.Get().JWT
 	expireTime := time.Now().Add(time.Duration(cfg.ExpireHour) * time.Hour)
 
 	claims := Claims{
 		UserID:   userID,
 		Username: username,
+		IsAdmin:  isAdmin,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expireTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

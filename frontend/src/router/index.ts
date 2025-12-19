@@ -38,13 +38,19 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: () => import('@/views/Dashboard.vue'),
-      meta: { requiresAuth: true, title: '我的 - TidalCore' }
+      meta: { requiresAuth: true, title: '用户中心 - TidalCore' }
     },
     {
       path: '/leaderboard',
       name: 'leaderboard',
       component: () => import('@/views/Leaderboard.vue'),
       meta: { title: '排行榜 - TidalCore' }
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('@/views/Admin.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: '管理后台 - TidalCore' }
     },
     {
       path: '/:pathMatch(.*)*',

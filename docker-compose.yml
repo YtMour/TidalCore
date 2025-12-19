@@ -48,6 +48,9 @@ services:
       JWT_SECRET: your-jwt-secret-change-this  # 请修改为随机字符串
       # CORS 允许的域名
       ALLOWED_ORIGINS: https://yourdomain.com  # 请修改为你的域名
+      # 管理员账号配置
+      ADMIN_USERNAME: admin                    # 管理员用户名
+      ADMIN_PASSWORD: admin123456              # 管理员密码，请修改为强密码
     ports:
       - "127.0.0.1:8080:8080"  # 只监听本地，宝塔反向代理访问
     networks:

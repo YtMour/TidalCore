@@ -149,7 +149,7 @@ const navLinks = [
           <template v-if="userStore.isLoggedIn">
             <RouterLink to="/dashboard" class="user-link" :class="{ active: route.path === '/dashboard' }">
               <el-icon :size="16"><User /></el-icon>
-              <span>我的</span>
+              <span>用户中心</span>
             </RouterLink>
             <button @click="handleLogout" class="logout-btn">
               <el-icon :size="16"><SwitchButton /></el-icon>
@@ -204,7 +204,7 @@ const navLinks = [
             :class="{ active: route.path === '/dashboard' }"
           >
             <el-icon :size="20"><User /></el-icon>
-            <span>我的</span>
+            <span>用户中心</span>
           </RouterLink>
           <div class="mobile-nav-item" @click="handleLogout">
             <el-icon :size="20"><SwitchButton /></el-icon>
