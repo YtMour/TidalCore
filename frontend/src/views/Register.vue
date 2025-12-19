@@ -12,6 +12,7 @@ const userStore = useUserStore()
 const formRef = ref<FormInstance>()
 const form = reactive({
   username: '',
+  displayName: '',
   password: '',
   confirmPassword: ''
 })
@@ -27,10 +28,23 @@ const validateConfirmPassword = (_rule: unknown, value: string, callback: (error
   }
 }
 
+const validateUsername = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+  if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+    callback(new Error('用户名只能包含字母、数字和下划线'))
+  } else {
+    callback()
+  }
+}
+
 const rules = reactive<FormRules>({
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 50, message: '用户名长度为3-50个字符', trigger: 'blur' }
+    { min: 3, max: 50, message: '用户名长度为3-50个字符', trigger: 'blur' },
+    { validator: validateUsername, trigger: 'blur' }
+  ],
+  displayName: [
+    { required: true, message: '请输入显示名称', trigger: 'blur' },
+    { min: 1, max: 50, message: '显示名称长度为1-50个字符', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
@@ -53,7 +67,11 @@ async function handleSubmit() {
     loading.value = true
     error.value = ''
     try {
-      await userStore.register({ username: form.username, password: form.password })
+      await userStore.register({
+        username: form.username,
+        display_name: form.displayName,
+        password: form.password
+      })
       router.push('/')
     } catch (e) {
       error.value = e instanceof Error ? e.message : '注册失败'
@@ -120,8 +138,12 @@ async function handleSubmit() {
           </div>
 
           <el-form ref="formRef" :model="form" :rules="rules" label-position="top" size="large" @submit.prevent="handleSubmit">
+            <el-form-item label="显示名称" prop="displayName">
+              <el-input v-model="form.displayName" placeholder="支持中文、符号，用于展示" :prefix-icon="User" />
+            </el-form-item>
+
             <el-form-item label="用户名" prop="username">
-              <el-input v-model="form.username" placeholder="3-50个字符" :prefix-icon="User" />
+              <el-input v-model="form.username" placeholder="仅字母、数字、下划线，用于登录" :prefix-icon="User" />
             </el-form-item>
 
             <el-form-item label="密码" prop="password">

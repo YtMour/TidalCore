@@ -103,12 +103,12 @@ const top3Users = computed(() => users.value.slice(0, 3))
           <div class="podium-item second">
             <div class="podium-ring"></div>
             <div class="podium-avatar silver">
-              {{ top3Users[1]?.username?.[0]?.toUpperCase() || '?' }}
+              {{ (top3Users[1]?.display_name || top3Users[1]?.username)?.[0]?.toUpperCase() || '?' }}
             </div>
             <div class="podium-medal silver">
               <el-icon :size="18"><Medal /></el-icon>
             </div>
-            <div class="podium-name">{{ top3Users[1]?.username }}</div>
+            <div class="podium-name">{{ top3Users[1]?.display_name || top3Users[1]?.username }}</div>
             <div class="podium-streak">{{ top3Users[1]?.streak }} 天</div>
             <div class="podium-bar silver"></div>
           </div>
@@ -121,12 +121,12 @@ const top3Users = computed(() => users.value.slice(0, 3))
             </div>
             <div class="podium-ring gold"></div>
             <div class="podium-avatar gold">
-              {{ top3Users[0]?.username?.[0]?.toUpperCase() || '?' }}
+              {{ (top3Users[0]?.display_name || top3Users[0]?.username)?.[0]?.toUpperCase() || '?' }}
             </div>
             <div class="podium-medal gold">
               <el-icon :size="18"><Trophy /></el-icon>
             </div>
-            <div class="podium-name gold">{{ top3Users[0]?.username }}</div>
+            <div class="podium-name gold">{{ top3Users[0]?.display_name || top3Users[0]?.username }}</div>
             <div class="podium-streak gold">{{ top3Users[0]?.streak }} 天</div>
             <div class="podium-bar gold"></div>
           </div>
@@ -135,12 +135,12 @@ const top3Users = computed(() => users.value.slice(0, 3))
           <div class="podium-item third">
             <div class="podium-ring"></div>
             <div class="podium-avatar bronze">
-              {{ top3Users[2]?.username?.[0]?.toUpperCase() || '?' }}
+              {{ (top3Users[2]?.display_name || top3Users[2]?.username)?.[0]?.toUpperCase() || '?' }}
             </div>
             <div class="podium-medal bronze">
               <el-icon :size="18"><Medal /></el-icon>
             </div>
-            <div class="podium-name">{{ top3Users[2]?.username }}</div>
+            <div class="podium-name">{{ top3Users[2]?.display_name || top3Users[2]?.username }}</div>
             <div class="podium-streak">{{ top3Users[2]?.streak }} 天</div>
             <div class="podium-bar bronze"></div>
           </div>

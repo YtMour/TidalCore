@@ -45,6 +45,7 @@ export function getGlobalHeatmap(days = 365): Promise<Record<string, number>> {
 export interface LeaderboardUser {
   id: number
   username: string
+  display_name: string
   streak: number
   max_streak: number
   total_checkin: number

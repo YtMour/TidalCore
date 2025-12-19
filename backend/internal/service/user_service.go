@@ -32,8 +32,9 @@ func NewUserService() *UserService {
 }
 
 type RegisterRequest struct {
-	Username string `json:"username" binding:"required,min=3,max=50"`
-	Password string `json:"password" binding:"required,min=6,max=50"`
+	Username    string `json:"username" binding:"required,min=3,max=50"`
+	DisplayName string `json:"display_name" binding:"required,min=1,max=50"`
+	Password    string `json:"password" binding:"required,min=6,max=50"`
 }
 
 type LoginRequest struct {
@@ -52,6 +53,11 @@ func (s *UserService) Register(req *RegisterRequest) (*AuthResponse, error) {
 		return nil, ErrInvalidUsername
 	}
 
+	displayName := strings.TrimSpace(req.DisplayName)
+	if displayName == "" {
+		displayName = username // 如果未提供显示名称，默认使用用户名
+	}
+
 	exists, err := s.userRepo.ExistsByUsername(username)
 	if err != nil {
 		return nil, err
@@ -67,6 +73,7 @@ func (s *UserService) Register(req *RegisterRequest) (*AuthResponse, error) {
 
 	user := &model.User{
 		Username:     username,
+		DisplayName:  displayName,
 		PasswordHash: hashedPassword,
 	}
 

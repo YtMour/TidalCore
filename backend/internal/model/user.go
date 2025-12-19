@@ -9,6 +9,7 @@ import (
 type User struct {
 	ID           uint           `gorm:"primaryKey" json:"id"`
 	Username     string         `gorm:"uniqueIndex;size:50;not null" json:"username"`
+	DisplayName  string         `gorm:"size:50;not null" json:"display_name"` // 显示名称，支持中文和符号
 	PasswordHash string         `gorm:"size:255;not null" json:"-"`
 	Streak       int            `gorm:"default:0" json:"streak"`
 	MaxStreak    int            `gorm:"default:0" json:"max_streak"`

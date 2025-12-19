@@ -30,11 +30,9 @@ function getMedalBg(index: number): string {
   return bgs[index] || 'rgba(255, 255, 255, 0.08)'
 }
 
-function maskUsername(username: string): string {
-  if (!username || username.length === 0) return '***'
-  if (username.length === 1) return username[0] + '**'
-  if (username.length === 2) return username[0] + '*' + username[1]
-  return username[0] + '*'.repeat(Math.min(username.length - 2, 5)) + username[username.length - 1]
+// 获取显示名称（优先使用 display_name）
+function getDisplayName(user: LeaderboardUser): string {
+  return user.display_name || user.username || '未知用户'
 }
 
 function getStreakColor(streak: number): string {
@@ -88,9 +86,9 @@ function getStreakColor(streak: number): string {
             class="user-avatar"
             :style="{ background: index < 3 ? getMedalBg(index) : undefined }"
           >
-            {{ user.username?.[0]?.toUpperCase() || '?' }}
+            {{ getDisplayName(user)?.[0]?.toUpperCase() || '?' }}
           </div>
-          <span class="user-name">{{ maskUsername(user.username) }}</span>
+          <span class="user-name">{{ getDisplayName(user) }}</span>
         </div>
 
         <!-- Stats -->
