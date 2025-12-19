@@ -494,7 +494,7 @@ function getRelativeTime(dateStr: string): string {
 }
 
 .user-motto {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.65);
   margin: 0 0 12px;
   font-size: 14px;
 }
@@ -654,13 +654,13 @@ function getRelativeTime(dateStr: string): string {
 
 .stat-label {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   margin-bottom: 2px;
 }
 
 .stat-unit {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* ===== Heatmap & History Section - 海洋主题 ===== */
@@ -737,7 +737,7 @@ function getRelativeTime(dateStr: string): string {
 
 .header-text p {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.55);
   margin: 0;
 }
 
@@ -786,7 +786,7 @@ function getRelativeTime(dateStr: string): string {
 
 .empty-desc {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.55);
   margin: 0 0 24px;
 }
 
@@ -844,7 +844,7 @@ function getRelativeTime(dateStr: string): string {
 
 .history-detail {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -856,7 +856,7 @@ function getRelativeTime(dateStr: string): string {
 
 .history-date {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.5);
   flex-shrink: 0;
 }
 

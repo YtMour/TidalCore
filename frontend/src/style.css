@@ -43,11 +43,11 @@
   --glass-border-hover: rgba(56, 189, 248, 0.15);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 
-  /* 文本色彩 */
+  /* 文本色彩 - 提高对比度 */
   --text-primary: 255 255 255;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-tertiary: rgba(255, 255, 255, 0.5);
-  --text-muted: rgba(255, 255, 255, 0.3);
+  --text-secondary: rgba(255, 255, 255, 0.75);
+  --text-tertiary: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.45);
 
   /* 动画曲线 */
   --ease-wave: cubic-bezier(0.36, 0.45, 0.63, 0.53);
@@ -401,30 +401,38 @@ body {
   opacity: 1;
 }
 
-/* ===== 海洋渐变文本 ===== */
+/* ===== 海洋渐变文本 - 柔和顺滑动画 ===== */
 .gradient-text {
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    90deg,
     rgb(var(--ocean-surface)) 0%,
-    rgb(var(--aqua-glow)) 50%,
-    rgb(var(--ocean-surface)) 100%);
-  background-size: 200% auto;
+    rgb(var(--aqua-glow)) 25%,
+    rgb(var(--ocean-surface)) 50%,
+    rgb(var(--aqua-glow)) 75%,
+    rgb(var(--ocean-surface)) 100%
+  );
+  background-size: 400% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: gradient-flow 4s ease-in-out infinite;
+  animation: gradient-flow 10s ease-in-out infinite;
 }
 
 .gradient-text-ocean {
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    90deg,
     rgb(var(--ocean-surface)) 0%,
-    rgb(var(--ocean-shallow)) 30%,
-    rgb(var(--aqua-glow)) 60%,
-    rgb(var(--ocean-surface)) 100%);
-  background-size: 300% auto;
+    rgb(var(--ocean-shallow)) 20%,
+    rgb(var(--aqua-glow)) 40%,
+    rgb(var(--ocean-shallow)) 60%,
+    rgb(var(--ocean-surface)) 80%,
+    rgb(var(--ocean-shallow)) 100%
+  );
+  background-size: 400% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: ocean-flow 6s ease-in-out infinite;
+  animation: ocean-flow 12s ease-in-out infinite;
 }
 
 .gradient-text-static {
@@ -437,13 +445,21 @@ body {
 }
 
 @keyframes gradient-flow {
-  0%, 100% { background-position: 0% center; }
-  50% { background-position: 200% center; }
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes ocean-flow {
-  0%, 100% { background-position: 0% center; }
-  50% { background-position: 300% center; }
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 /* ===== 按钮 ===== */
@@ -602,7 +618,7 @@ body {
 }
 
 .input-ocean::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .input-ocean:hover {

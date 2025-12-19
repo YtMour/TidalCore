@@ -769,22 +769,37 @@ onUnmounted(() => {
   padding: 16px 40px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, #8b5cf6, #a855f7, #ec4899);
-  background-size: 200% 200%;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
   cursor: pointer;
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow:
-    0 4px 20px rgba(139, 92, 246, 0.4),
+    0 4px 20px rgba(14, 165, 233, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.start-btn::before {
+  content: '';
+  position: absolute;
+  bottom: -100%;
+  left: -10%;
+  right: -10%;
+  height: 200%;
+  background: linear-gradient(180deg, transparent 40%, rgba(56, 189, 248, 0.3) 48%, rgba(34, 211, 238, 0.5) 52%, rgba(56, 189, 248, 0.3) 56%, transparent 64%);
+  animation: btn-ocean-wave 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes btn-ocean-wave {
+  0%, 100% { transform: translateY(30%); }
+  50% { transform: translateY(20%); }
 }
 
 .start-btn:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 8px 30px rgba(139, 92, 246, 0.5),
+    0 8px 30px rgba(14, 165, 233, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.15) inset;
-  background-position: 100% 0;
 }
 
 .start-btn:active,
@@ -808,7 +823,7 @@ onUnmounted(() => {
 .btn-glow {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }

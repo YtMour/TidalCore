@@ -143,7 +143,7 @@ onMounted(async () => {
 
           <!-- 标题 -->
           <h1 class="hero-title" :class="{ mounted }">
-            <span class="title-tidal">Tidal</span><span class="title-core">Core</span>
+            <span class="title-tidalcore">TidalCore</span>
           </h1>
 
           <p class="hero-tagline" :class="{ mounted }">潮汐核心 · 盆底肌训练平台</p>
@@ -199,7 +199,11 @@ onMounted(async () => {
       <section class="features-section">
         <div class="section-container">
           <div class="section-header">
-            <span class="section-eyebrow">核心功能</span>
+            <div class="section-eyebrow">
+              <span class="eyebrow-line"></span>
+              <span class="eyebrow-text">核心功能</span>
+              <span class="eyebrow-line"></span>
+            </div>
             <h2 class="section-title">为什么选择 TidalCore</h2>
             <p class="section-desc">如潮汐般自然的训练体验</p>
           </div>
@@ -220,7 +224,11 @@ onMounted(async () => {
       <section class="heatmap-section">
         <div class="section-container">
           <div class="section-header">
-            <span class="section-eyebrow">社区动态</span>
+            <div class="section-eyebrow">
+              <span class="eyebrow-line"></span>
+              <span class="eyebrow-text">社区动态</span>
+              <span class="eyebrow-line"></span>
+            </div>
             <h2 class="section-title">全站打卡热力图</h2>
             <p class="section-desc">社区成员的坚持轨迹</p>
           </div>
@@ -254,7 +262,11 @@ onMounted(async () => {
       <section class="steps-section">
         <div class="section-container">
           <div class="section-header">
-            <span class="section-eyebrow">快速上手</span>
+            <div class="section-eyebrow">
+              <span class="eyebrow-line"></span>
+              <span class="eyebrow-text">快速上手</span>
+              <span class="eyebrow-line"></span>
+            </div>
             <h2 class="section-title">三步开启潮汐之旅</h2>
             <p class="section-desc">无需复杂设置，跟随潮汐节奏</p>
           </div>
@@ -531,32 +543,41 @@ export default {
   transform: translateY(0);
 }
 
-.title-tidal {
-  background: linear-gradient(135deg, #38bdf8, #22d3ee, #0ea5e9);
-  background-size: 200% auto;
+.title-tidalcore {
+  background: linear-gradient(
+    90deg,
+    #60c8f8 0%,
+    #7dd8fc 12%,
+    #45d0ee 25%,
+    #7dd8fc 37%,
+    #60c8f8 50%,
+    #7dd8fc 62%,
+    #45d0ee 75%,
+    #7dd8fc 87%,
+    #60c8f8 100%
+  );
+  background-size: 300% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: shimmer 4s ease-in-out infinite;
+  animation: title-wave 12s ease-in-out infinite;
 }
 
-.title-core {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7, #0369a1);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 4s ease-in-out infinite 0.5s;
-}
-
-@keyframes shimmer {
-  0%, 100% { background-position: 0% center; }
-  50% { background-position: 200% center; }
+@keyframes title-wave {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .hero-tagline {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.65);
   margin-bottom: 24px;
   letter-spacing: 0.15em;
   opacity: 0;
@@ -575,11 +596,11 @@ export default {
   gap: 12px;
   padding: 12px 20px;
   border-radius: var(--radius-full);
-  background: rgba(56, 189, 248, 0.1);
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
   margin-bottom: 28px;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.85);
   opacity: 0;
   transform: translateY(30px);
   transition: all 0.8s var(--ease-smooth) 0.25s;
@@ -606,7 +627,7 @@ export default {
 
 .hero-subtitle {
   font-size: 18px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
   max-width: 500px;
   margin: 0 auto 48px;
   line-height: 1.8;
@@ -737,13 +758,13 @@ export default {
 
 .stat-suffix {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
   margin-left: 2px;
 }
 
 .stat-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* 滚动指示器 */
@@ -756,7 +777,7 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.55);
   font-size: 12px;
   opacity: 0;
   transition: opacity 1s var(--ease-smooth) 1s;
@@ -804,13 +825,32 @@ export default {
 }
 
 .section-eyebrow {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.section-eyebrow .eyebrow-line {
+  width: 50px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(var(--ocean-surface)));
+}
+
+.section-eyebrow .eyebrow-line:last-child {
+  background: linear-gradient(90deg, rgb(var(--ocean-surface)), transparent);
+}
+
+.section-eyebrow .eyebrow-text {
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 3px;
-  color: rgb(var(--aqua-glow));
-  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgb(var(--ocean-surface)), rgb(var(--aqua-glow)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .section-title {
@@ -822,7 +862,7 @@ export default {
 
 .section-desc {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* ===== Features Section ===== */
@@ -877,7 +917,7 @@ export default {
 
 .feature-desc {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   line-height: 1.6;
   margin: 0;
 }
@@ -916,7 +956,7 @@ export default {
 
 .hm-label {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .hm-divider {
@@ -1013,7 +1053,7 @@ export default {
 
 .step-desc {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   max-width: 180px;
   margin: 0 auto;
 }
@@ -1140,7 +1180,7 @@ export default {
 
 .cta-desc {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.65);
   margin: 0 0 36px;
 }
 

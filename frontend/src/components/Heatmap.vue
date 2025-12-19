@@ -288,7 +288,7 @@ const totalWeeks = computed(() => weeks.value.length)
 .month-label {
   position: absolute;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   white-space: nowrap;
   transform: translateX(0);
 }
@@ -311,7 +311,7 @@ const totalWeeks = computed(() => weeks.value.length)
   height: 14px;
   line-height: 14px;
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.55);
   text-align: right;
   padding-right: 6px;
 }
@@ -417,7 +417,7 @@ const totalWeeks = computed(() => weeks.value.length)
 
 .tip-count {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .tip-count.active {
@@ -453,7 +453,7 @@ const totalWeeks = computed(() => weeks.value.length)
 
 .lg-text {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .lg-items {

@@ -331,7 +331,7 @@ async function handleSubmit() {
 }
 
 .login-subtitle {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.65);
   font-size: 14px;
   margin: 0;
 }
@@ -397,7 +397,7 @@ async function handleSubmit() {
 /* ===== 底部链接 ===== */
 .login-footer {
   text-align: center;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -441,7 +441,7 @@ async function handleSubmit() {
 }
 
 :deep(.el-input__inner::placeholder) {
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 :deep(.el-input__prefix) {

@@ -640,7 +640,7 @@ const navLinks = [
 
 .footer-tagline {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .footer-links {
@@ -648,11 +648,11 @@ const navLinks = [
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .footer-link {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
   transition: color 0.2s;
 }
@@ -667,7 +667,7 @@ const navLinks = [
 
 .footer-license,
 .footer-copyright {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 /* Element Plus Overrides */

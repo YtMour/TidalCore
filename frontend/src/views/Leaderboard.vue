@@ -208,20 +208,43 @@ const top3Users = computed(() => users.value.slice(0, 3))
 
           <div class="cta-content">
             <div class="cta-icon">
-              <svg viewBox="0 0 32 32" fill="none" width="28" height="28">
-                <path d="M4 16C4 16 8 10 14 16C20 22 26 10 28 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <svg viewBox="0 0 60 60" fill="none" class="cta-wave-svg">
+                <defs>
+                  <linearGradient id="ctaLeaderGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#0284c7" />
+                    <stop offset="100%" stop-color="#38bdf8" />
+                  </linearGradient>
+                  <clipPath id="ctaLeaderClip">
+                    <rect x="4" y="4" width="52" height="52" rx="12" />
+                  </clipPath>
+                </defs>
+                <!-- 海浪涌动填充 -->
+                <g clip-path="url(#ctaLeaderClip)">
+                  <rect x="4" y="4" width="52" height="52" rx="12" fill="rgba(255,255,255,0.1)"/>
+                  <path class="cta-wave-fill cta-wave-1" d="M0 32 Q15 26, 30 32 T60 32 L60 60 L0 60 Z" fill="url(#ctaLeaderGrad)" opacity="0.8"/>
+                  <path class="cta-wave-fill cta-wave-2" d="M0 38 Q15 32, 30 38 T60 38 L60 60 L0 60 Z" fill="#22d3ee" opacity="0.5"/>
+                  <path class="cta-wave-fill cta-wave-3" d="M0 44 Q15 38, 30 44 T60 44 L60 60 L0 60 Z" fill="#0ea5e9" opacity="0.3"/>
+                </g>
+                <!-- 波浪线条 -->
+                <path class="cta-wave-line" d="M8 28 Q22 20, 36 28 T52 28" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.9"/>
               </svg>
             </div>
             <h3 class="cta-title">想要潜入深海排行榜？</h3>
             <p class="cta-text">
               每天坚持训练如潮汐般规律，你也能成为深海王者！
             </p>
-            <RouterLink to="/train">
-              <el-button type="primary" size="large" round class="cta-btn">
-                <el-icon><Timer /></el-icon>
-                开始训练，冲击深海
-                <el-icon class="arrow-icon"><TrendCharts /></el-icon>
-              </el-button>
+            <RouterLink to="/train" class="cta-btn-wrapper">
+              <button class="cta-btn-ocean">
+                <span class="btn-bg"></span>
+                <span class="btn-wave"></span>
+                <span class="btn-content">
+                  <el-icon><Timer /></el-icon>
+                  <span>开始训练，冲击深海</span>
+                  <svg viewBox="0 0 24 24" fill="none" class="btn-arrow">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </button>
             </RouterLink>
           </div>
         </el-card>
@@ -400,12 +423,25 @@ const top3Users = computed(() => users.value.slice(0, 3))
 }
 
 .gradient-text-ocean {
-  background: linear-gradient(135deg, rgb(var(--ocean-surface)), rgb(var(--aqua-glow)), #fbbf24);
-  background-size: 200% auto;
+  background: linear-gradient(
+    90deg,
+    #38bdf8 0%,
+    #5cc8f5 10%,
+    #22d3ee 20%,
+    #60d0e8 30%,
+    #fbbf24 40%,
+    #f5c842 50%,
+    #fbbf24 60%,
+    #60d0e8 70%,
+    #22d3ee 80%,
+    #5cc8f5 90%,
+    #38bdf8 100%
+  );
+  background-size: 300% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: ocean-shimmer 4s ease-in-out infinite;
+  animation: ocean-shimmer 12s ease-in-out infinite;
 }
 
 @keyframes ocean-shimmer {
@@ -839,16 +875,67 @@ const top3Users = computed(() => users.value.slice(0, 3))
 }
 
 .cta-icon {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   margin: 0 auto 24px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid)));
+  background: linear-gradient(180deg, #0c4a6e, #0369a1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
   box-shadow: 0 15px 35px rgba(14, 165, 233, 0.3);
+  overflow: hidden;
+  position: relative;
+}
+
+.cta-wave-svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+/* CTA海浪涌动动画 */
+.cta-wave-svg .cta-wave-1 {
+  animation: cta-surge-1 3s ease-in-out infinite;
+}
+
+.cta-wave-svg .cta-wave-2 {
+  animation: cta-surge-2 3.5s ease-in-out infinite;
+}
+
+.cta-wave-svg .cta-wave-3 {
+  animation: cta-surge-3 4s ease-in-out infinite;
+}
+
+.cta-wave-svg .cta-wave-line {
+  animation: cta-line-surge 2.5s ease-in-out infinite;
+}
+
+@keyframes cta-surge-1 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes cta-surge-2 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes cta-surge-3 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes cta-line-surge {
+  0%, 100% {
+    transform: translateY(0);
+    d: path("M8 28 Q22 20, 36 28 T52 28");
+  }
+  50% {
+    transform: translateY(-2px);
+    d: path("M8 28 Q22 36, 36 28 T52 28");
+  }
 }
 
 .cta-title {
@@ -864,26 +951,90 @@ const top3Users = computed(() => users.value.slice(0, 3))
   font-size: 15px;
 }
 
-.cta-btn {
-  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid))) !important;
-  border: none !important;
-  padding: 14px 40px !important;
-  font-size: 16px !important;
-  box-shadow: 0 10px 30px rgba(14, 165, 233, 0.3);
-  transition: all 0.3s var(--ease-smooth) !important;
+.cta-btn-wrapper {
+  text-decoration: none;
+  display: inline-block;
 }
 
-.cta-btn:hover {
-  box-shadow: 0 15px 40px rgba(14, 165, 233, 0.4);
-  transform: translateY(-2px);
+.cta-btn-ocean {
+  position: relative;
+  padding: 16px 36px;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  overflow: hidden;
+  background: transparent;
+  isolation: isolate;
 }
 
-.cta-btn .arrow-icon {
-  margin-left: 8px;
-  transition: transform 0.2s var(--ease-smooth);
+.cta-btn-ocean .btn-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  border-radius: inherit;
+  z-index: -2;
+  transition: transform 0.3s var(--ease-smooth);
 }
 
-.cta-btn:hover .arrow-icon {
+.cta-btn-ocean .btn-wave {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.cta-btn-ocean .btn-wave::before {
+  content: '';
+  position: absolute;
+  bottom: -100%;
+  left: -10%;
+  right: -10%;
+  height: 200%;
+  background: linear-gradient(180deg, transparent 45%, rgba(56, 189, 248, 0.4) 50%, rgba(34, 211, 238, 0.6) 55%, rgba(56, 189, 248, 0.3) 60%, transparent 65%);
+  animation: btn-wave-rise 3s ease-in-out infinite;
+}
+
+@keyframes btn-wave-rise {
+  0%, 100% { transform: translateY(25%); }
+  50% { transform: translateY(15%); }
+}
+
+.cta-btn-ocean .btn-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  z-index: 1;
+}
+
+.cta-btn-ocean .btn-arrow {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s var(--ease-smooth);
+}
+
+.cta-btn-ocean:hover .btn-arrow {
   transform: translateX(4px);
+}
+
+.cta-btn-ocean:hover .btn-bg {
+  transform: scale(1.02);
+}
+
+.cta-btn-ocean::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 8px 32px rgba(14, 165, 233, 0.4);
+  transition: box-shadow 0.3s var(--ease-smooth);
+}
+
+.cta-btn-ocean:hover::after {
+  box-shadow: 0 12px 40px rgba(14, 165, 233, 0.5);
 }
 </style>

@@ -162,7 +162,7 @@ function getStreakColor(streak: number): string {
 
 .empty-desc {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.55);
   margin: 0;
 }
 
@@ -242,7 +242,7 @@ function getStreakColor(streak: number): string {
 .rank-num {
   font-size: 14px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* User Info */
@@ -305,7 +305,7 @@ function getStreakColor(streak: number): string {
 
 .stat-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .stat-divider {

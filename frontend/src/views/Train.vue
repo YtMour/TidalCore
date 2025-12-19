@@ -656,12 +656,23 @@ function updateSetting(key: string, value: number) {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, rgb(var(--ocean-surface)), rgb(var(--aqua-glow)), rgb(var(--ocean-shallow)));
-  background-size: 200% auto;
+  background: linear-gradient(
+    90deg,
+    #38bdf8 0%,
+    #5dd3f5 12%,
+    #22d3ee 25%,
+    #45c8e8 37%,
+    #38bdf8 50%,
+    #5dd3f5 62%,
+    #22d3ee 75%,
+    #45c8e8 87%,
+    #38bdf8 100%
+  );
+  background-size: 300% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: ocean-shimmer 4s ease-in-out infinite;
+  animation: ocean-shimmer 10s ease-in-out infinite;
 }
 
 @keyframes ocean-shimmer {
@@ -670,7 +681,7 @@ function updateSetting(key: string, value: number) {
 }
 
 .train-subtitle {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.65);
   margin: 0 0 24px;
 }
 
@@ -686,7 +697,7 @@ function updateSetting(key: string, value: number) {
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.6);
   padding: 8px 14px;
   border-radius: var(--radius-md);
   background: rgba(56, 189, 248, 0.05);
@@ -795,7 +806,7 @@ function updateSetting(key: string, value: number) {
 }
 
 .toggle-arrow {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.55);
   transition: transform 0.2s var(--ease-smooth);
 }
 
@@ -942,7 +953,7 @@ function updateSetting(key: string, value: number) {
 
 .value-unit {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   flex-shrink: 0;
 }
 
@@ -983,7 +994,7 @@ function updateSetting(key: string, value: number) {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* Tips Section - 潮汐阶段 */
@@ -1056,7 +1067,7 @@ function updateSetting(key: string, value: number) {
 
 .tip-desc {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.55);
   margin: 0;
 }
 
@@ -1116,7 +1127,7 @@ function updateSetting(key: string, value: number) {
 }
 
 .result-subtitle {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.65);
   margin: 0 0 24px;
 }
 
@@ -1150,8 +1161,8 @@ function updateSetting(key: string, value: number) {
 }
 
 .stat-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .login-link {
