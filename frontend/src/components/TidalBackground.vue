@@ -154,29 +154,33 @@ const waveFragmentShader = `
   varying float vDepth;
 
   void main() {
-    // 基于高度的颜色混合
-    float mixStrength = (vElevation + 0.5) * 0.6;
+    // 基于高度的颜色混合 - 增强亮度
+    float mixStrength = (vElevation + 0.5) * 0.7;
     vec3 color = mix(uSecondaryColor, uPrimaryColor, mixStrength);
 
-    // 中心高亮效果
-    float centerGlow = smoothstep(3.0, 0.0, vDepth) * 0.3;
+    // 整体提亮
+    color *= 1.2;
+
+    // 中心高亮效果 - 增强
+    float centerGlow = smoothstep(3.5, 0.0, vDepth) * 0.4;
     color = mix(color, uAccentColor, centerGlow);
 
-    // 波光粼粼效果
-    float shimmer = sin(vUv.x * 30.0 + uTime * 1.5) * sin(vUv.y * 30.0 + uTime * 1.2) * 0.08;
-    shimmer += sin(vDepth * 5.0 - uTime * 2.0) * 0.05;
+    // 波光粼粼效果 - 增强
+    float shimmer = sin(vUv.x * 30.0 + uTime * 1.5) * sin(vUv.y * 30.0 + uTime * 1.2) * 0.12;
+    shimmer += sin(vDepth * 5.0 - uTime * 2.0) * 0.08;
     color += shimmer * uAccentColor;
 
-    // 能量脉冲线
+    // 能量脉冲线 - 增强
     float pulse = sin(vDepth * 3.0 - uTime * 1.5) * 0.5 + 0.5;
     pulse = smoothstep(0.7, 1.0, pulse) * smoothstep(4.0, 1.0, vDepth);
-    color += pulse * uAccentColor * 0.3;
+    color += pulse * uAccentColor * 0.4;
 
-    // 边缘渐变淡出
-    float edgeFade = smoothstep(0.0, 0.25, vUv.x) * smoothstep(1.0, 0.75, vUv.x) *
-                     smoothstep(0.0, 0.25, vUv.y) * smoothstep(1.0, 0.75, vUv.y);
+    // 边缘渐变淡出 - 稍微扩大可见区域
+    float edgeFade = smoothstep(0.0, 0.2, vUv.x) * smoothstep(1.0, 0.8, vUv.x) *
+                     smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.8, vUv.y);
 
-    float alpha = 0.2 * edgeFade;
+    // 增加透明度让波浪更明显
+    float alpha = 0.35 * edgeFade;
 
     gl_FragColor = vec4(color, alpha);
   }
@@ -214,22 +218,22 @@ const coreFragmentShader = `
   varying float vPulse;
 
   void main() {
-    // 菲涅尔边缘发光
+    // 菲涅尔边缘发光 - 增强
     vec3 viewDir = normalize(cameraPosition - vPosition);
-    float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 3.0);
+    float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 2.5);
 
-    // 核心渐变
-    vec3 color = mix(uPrimaryColor * 0.3, uAccentColor, fresnel);
+    // 核心渐变 - 提亮
+    vec3 color = mix(uPrimaryColor * 0.5, uAccentColor, fresnel);
 
-    // 能量脉冲
+    // 能量脉冲 - 增强
     float energyPulse = sin(uTime * 3.0) * 0.5 + 0.5;
-    color += uAccentColor * energyPulse * 0.2;
+    color += uAccentColor * energyPulse * 0.35;
 
-    // 内部发光
-    float innerGlow = smoothstep(1.0, 0.0, length(vPosition)) * 0.5;
+    // 内部发光 - 增强
+    float innerGlow = smoothstep(1.0, 0.0, length(vPosition)) * 0.65;
     color += uAccentColor * innerGlow;
 
-    float alpha = 0.6 + fresnel * 0.4;
+    float alpha = 0.7 + fresnel * 0.3;
 
     gl_FragColor = vec4(color, alpha);
   }
@@ -289,15 +293,15 @@ const particleFragmentShader = `
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
 
-    // 柔和边缘
-    float alpha = smoothstep(0.5, 0.1, dist) * vAlpha * 0.7;
+    // 柔和边缘 - 增强透明度
+    float alpha = smoothstep(0.5, 0.1, dist) * vAlpha * 0.9;
 
-    // 颜色混合
-    vec3 color = mix(uColor, uAccentColor, vGlow * 0.5);
+    // 颜色混合 - 更亮
+    vec3 color = mix(uColor, uAccentColor, vGlow * 0.6);
 
-    // 中心发光
+    // 中心发光 - 增强
     float centerGlow = smoothstep(0.3, 0.0, dist) * vGlow;
-    color += uAccentColor * centerGlow * 0.5;
+    color += uAccentColor * centerGlow * 0.7;
 
     gl_FragColor = vec4(color, alpha);
   }
@@ -312,10 +316,10 @@ function initThree() {
   // Scene
   scene = new THREE.Scene()
 
-  // Camera - 调整视角以更好展示潮汐核心
-  camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 100)
-  camera.position.z = 4
-  camera.position.y = 1.5
+  // Camera - 调整视角以更好展示潮汐核心和大海浪
+  camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 100)
+  camera.position.z = 5
+  camera.position.y = 2.5
 
   // Renderer
   renderer = new THREE.WebGLRenderer({
@@ -345,8 +349,8 @@ function initThree() {
 }
 
 function createWavePlane() {
-  // 更大的波浪平面，更高的细分度
-  waveGeometry = new THREE.PlaneGeometry(12, 12, 160, 160)
+  // 更大的波浪平面 - 增大尺寸覆盖更多区域
+  waveGeometry = new THREE.PlaneGeometry(20, 20, 200, 200)
 
   const waveMaterial = new THREE.ShaderMaterial({
     vertexShader: waveVertexShader,
@@ -365,7 +369,7 @@ function createWavePlane() {
 
   waveMesh = new THREE.Mesh(waveGeometry, waveMaterial)
   waveMesh.rotation.x = -Math.PI / 2.2
-  waveMesh.position.y = -1.2
+  waveMesh.position.y = -1.8
   scene.add(waveMesh)
 }
 
@@ -391,19 +395,19 @@ function createTidalCore() {
   scene.add(coreMesh)
 }
 
-// 创建能量环 - 围绕核心的同心圆环
+// 创建能量环 - 围绕核心的同心圆环 - 增大尺寸
 function createEnergyRings() {
-  const ringCount = 3
-  const ringColors = [0x38bdf8, 0x0ea5e9, 0x0284c7]
+  const ringCount = 4
+  const ringColors = [0x38bdf8, 0x22d3ee, 0x0ea5e9, 0x0284c7]
 
   for (let i = 0; i < ringCount; i++) {
-    const radius = 0.5 + i * 0.25
-    const ringGeometry = new THREE.TorusGeometry(radius, 0.01, 16, 100)
+    const radius = 0.6 + i * 0.35
+    const ringGeometry = new THREE.TorusGeometry(radius, 0.015, 16, 100)
 
     const ringMaterial = new THREE.MeshBasicMaterial({
       color: ringColors[i],
       transparent: true,
-      opacity: 0.4 - i * 0.1
+      opacity: 0.5 - i * 0.08
     })
 
     const ring = new THREE.Mesh(ringGeometry, ringMaterial)
@@ -416,7 +420,7 @@ function createEnergyRings() {
 }
 
 function createParticles() {
-  const particleCount = 300 // 增加粒子数量
+  const particleCount = 450 // 增加粒子数量
   const positions = new Float32Array(particleCount * 3)
   const scales = new Float32Array(particleCount)
   const speeds = new Float32Array(particleCount)
@@ -424,19 +428,19 @@ function createParticles() {
   const orbits = new Float32Array(particleCount)
 
   for (let i = 0; i < particleCount; i++) {
-    // 以核心为中心分布
+    // 以核心为中心分布 - 扩大范围
     const theta = Math.random() * Math.PI * 2
     const phi = Math.random() * Math.PI
-    const radius = 0.5 + Math.random() * 3
+    const radius = 0.8 + Math.random() * 5
 
     positions[i * 3] = Math.sin(phi) * Math.cos(theta) * radius
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 4
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 6
     positions[i * 3 + 2] = Math.sin(phi) * Math.sin(theta) * radius
 
-    scales[i] = Math.random() * 0.6 + 0.4
+    scales[i] = Math.random() * 0.8 + 0.5
     speeds[i] = Math.random() * 0.4 + 0.3
     offsets[i] = Math.random() * Math.PI * 2
-    orbits[i] = Math.random() * 2 + 0.5
+    orbits[i] = Math.random() * 3 + 0.8
   }
 
   const particleGeometry = new THREE.BufferGeometry()

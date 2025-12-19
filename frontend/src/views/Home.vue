@@ -381,7 +381,7 @@ export default {
   margin: 0 auto;
 }
 
-/* 涟漪效果 - 从中心向外扩散 */
+/* 涟漪效果 - 从中心向外扩散 - 速度减慢，解决加载重叠 */
 .logo-ripples {
   position: absolute;
   inset: 0;
@@ -392,29 +392,33 @@ export default {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 2px solid rgba(56, 189, 248, 0.4);
-  animation: ripple-out 3s ease-out infinite;
+  border: 2px solid rgba(56, 189, 248, 0.35);
+  opacity: 0;
+  animation: ripple-out 6s ease-out infinite;
 }
 
 .logo-ripples .ripple-1 {
-  animation-delay: 0s;
+  animation-delay: 0.5s;
 }
 
 .logo-ripples .ripple-2 {
-  animation-delay: 1s;
+  animation-delay: 2.5s;
 }
 
 .logo-ripples .ripple-3 {
-  animation-delay: 2s;
+  animation-delay: 4.5s;
 }
 
 @keyframes ripple-out {
   0% {
-    transform: scale(0.6);
-    opacity: 0.8;
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
   }
   100% {
-    transform: scale(1.5);
+    transform: scale(1.6);
     opacity: 0;
   }
 }

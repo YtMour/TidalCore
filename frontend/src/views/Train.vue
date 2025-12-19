@@ -2,7 +2,6 @@
 import { ref, watch, onMounted, computed } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Timer from '@/components/Timer.vue'
-import TidalBackground from '@/components/TidalBackground.vue'
 import { useTrainingStore } from '@/store/training'
 import { useUserStore } from '@/store/user'
 import { checkin } from '@/api/checkin'
@@ -94,12 +93,24 @@ function updateSetting(key: string, value: number) {
 <template>
   <MainLayout>
     <div class="train-page">
-      <!-- Three.js Tidal Background -->
-      <TidalBackground
-        :phase="trainingStore.phase"
-        :intensity="trainingStore.isRunning ? 1.2 : 0.8"
-        :is-active="trainingStore.isRunning"
-      />
+      <!-- 全屏训练特效背景 - 不受限制 -->
+      <div class="train-effect-layer" :class="{ active: trainingStore.isRunning }">
+        <!-- 训练时的脉冲光环 -->
+        <div class="pulse-ring pulse-ring-1" :class="trainingStore.phase"></div>
+        <div class="pulse-ring pulse-ring-2" :class="trainingStore.phase"></div>
+        <div class="pulse-ring pulse-ring-3" :class="trainingStore.phase"></div>
+
+        <!-- 中央能量核心 -->
+        <div class="energy-core" :class="trainingStore.phase">
+          <div class="core-inner"></div>
+          <div class="core-glow"></div>
+        </div>
+
+        <!-- 粒子效果 -->
+        <div class="particles-layer" :class="{ active: trainingStore.isRunning }">
+          <div v-for="n in 20" :key="n" class="particle" :style="{ '--i': n }"></div>
+        </div>
+      </div>
 
       <!-- Header with decorative elements -->
       <div class="train-header" :class="{ mounted }">
@@ -392,12 +403,187 @@ function updateSetting(key: string, value: number) {
 </template>
 
 <style scoped>
+/* ===== 全屏训练特效层 ===== */
+.train-effect-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.3;
+  transition: opacity 0.5s ease;
+}
+
+.train-effect-layer.active {
+  opacity: 1;
+}
+
+/* 脉冲光环 */
+.pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  border: 2px solid rgba(56, 189, 248, 0.3);
+  transform: translate(-50%, -50%) scale(0.5);
+  opacity: 0;
+  transition: border-color 0.5s ease;
+}
+
+.train-effect-layer.active .pulse-ring {
+  animation: pulse-expand 4s ease-out infinite;
+}
+
+.pulse-ring-1 { animation-delay: 0s; }
+.pulse-ring-2 { animation-delay: 1.3s; }
+.pulse-ring-3 { animation-delay: 2.6s; }
+
+@keyframes pulse-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+  }
+}
+
+/* 根据训练阶段改变颜色 */
+.pulse-ring.contract {
+  border-color: rgba(244, 63, 94, 0.5);
+}
+
+.pulse-ring.hold {
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.pulse-ring.relax {
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+/* 中央能量核心 */
+.energy-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  transform: translate(-50%, -50%);
+  opacity: 0.4;
+  transition: opacity 0.5s ease;
+}
+
+.train-effect-layer.active .energy-core {
+  opacity: 1;
+}
+
+.core-inner {
+  position: absolute;
+  inset: 30%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.4) 0%, transparent 70%);
+  animation: core-pulse 2s ease-in-out infinite;
+}
+
+.core-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 60%);
+  filter: blur(30px);
+  animation: glow-breathe 3s ease-in-out infinite;
+}
+
+/* 根据阶段改变核心颜色 */
+.energy-core.contract .core-inner {
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.5) 0%, transparent 70%);
+}
+
+.energy-core.contract .core-glow {
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.2) 0%, transparent 60%);
+}
+
+.energy-core.hold .core-inner {
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.5) 0%, transparent 70%);
+}
+
+.energy-core.hold .core-glow {
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, transparent 60%);
+}
+
+.energy-core.relax .core-inner {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.5) 0%, transparent 70%);
+}
+
+.energy-core.relax .core-glow {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 60%);
+}
+
+@keyframes core-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+
+@keyframes glow-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+
+/* 粒子效果 */
+.particles-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.particles-layer.active {
+  opacity: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(56, 189, 248, 0.6);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  opacity: 0;
+}
+
+.particles-layer.active .particle {
+  animation: particle-float 8s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.3s);
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translate(-50%, -50%) rotate(calc(var(--i) * 18deg)) translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(calc(var(--i) * 18deg)) translateY(-300px);
+    opacity: 0;
+  }
+}
+
 .train-page {
   max-width: 768px;
   margin: 0 auto;
   padding: 40px 24px 80px;
   position: relative;
   min-height: calc(100vh - 72px);
+  z-index: 1;
 }
 
 /* Header - 海洋主题 */
