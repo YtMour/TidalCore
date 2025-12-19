@@ -5,7 +5,8 @@ import Timer from '@/components/Timer.vue'
 import { useTrainingStore } from '@/store/training'
 import { useUserStore } from '@/store/user'
 import { checkin } from '@/api/checkin'
-import { Setting, Clock, Aim, TrendCharts, WarningFilled, ArrowUp, ArrowDown, Lightning } from '@element-plus/icons-vue'
+import { Setting, Clock, Aim, TrendCharts, WarningFilled, Lightning, Refresh } from '@element-plus/icons-vue'
+import { DIFFICULTY_PRESETS } from '@/store/training'
 import confetti from 'canvas-confetti'
 
 const trainingStore = useTrainingStore()
@@ -13,7 +14,13 @@ const userStore = useUserStore()
 
 const mounted = ref(false)
 const showSettings = ref(false)
+const showDifficulty = ref(false)
 const showResultModal = ref(false)
+
+// 难度选择
+function selectDifficulty(level: string) {
+  trainingStore.setDifficulty(level as any)
+}
 
 onMounted(() => {
   setTimeout(() => {
@@ -128,26 +135,9 @@ function updateSetting(key: string, value: number) {
       <div class="timer-wrapper" :class="{ mounted }">
         <!-- Ambient glow behind timer -->
         <div class="timer-glow" :class="{ active: trainingStore.isRunning }"></div>
-        <Timer />
+        <Timer v-model:showSettings="showSettings" v-model:showDifficulty="showDifficulty" />
       </div>
 
-      <!-- Settings Toggle -->
-      <div class="settings-toggle" :class="{ mounted }">
-        <button
-          @click="showSettings = !showSettings"
-          class="settings-toggle-btn"
-          :class="{ 'is-open': showSettings }"
-        >
-          <span class="toggle-icon-wrapper">
-            <el-icon :size="18"><Setting /></el-icon>
-          </span>
-          <span class="toggle-text">训练设置</span>
-          <el-icon class="toggle-arrow" :size="14">
-            <ArrowUp v-if="showSettings" />
-            <ArrowDown v-else />
-          </el-icon>
-        </button>
-      </div>
 
       <!-- Settings Panel -->
       <el-collapse-transition>
@@ -274,6 +264,89 @@ function updateSetting(key: string, value: number) {
                 </div>
               </template>
             </el-alert>
+          </div>
+        </el-card>
+      </el-collapse-transition>
+
+      <!-- Difficulty Panel -->
+      <el-collapse-transition>
+        <el-card v-if="showDifficulty" class="settings-card difficulty-card" shadow="never">
+          <div class="settings-decoration"></div>
+
+          <div class="settings-content">
+            <h3 class="settings-title">
+              <div class="title-icon difficulty-title-icon">
+                <span>🎯</span>
+              </div>
+              选择训练难度
+            </h3>
+
+            <div class="difficulty-grid">
+              <!-- 预设难度 -->
+              <button
+                v-for="preset in DIFFICULTY_PRESETS"
+                :key="preset.id"
+                class="difficulty-option"
+                :class="{ active: trainingStore.difficulty === preset.id }"
+                @click="selectDifficulty(preset.id)"
+              >
+                <span class="difficulty-option-icon">{{ preset.icon }}</span>
+                <div class="difficulty-option-content">
+                  <span class="difficulty-option-name">{{ preset.name }}</span>
+                  <span class="difficulty-option-desc">{{ preset.description }}</span>
+                </div>
+                <div class="difficulty-option-params">
+                  <span>{{ preset.settings.contractTime }}-{{ preset.settings.holdTime }}-{{ preset.settings.relaxTime }}s</span>
+                  <span>{{ preset.settings.cycles }}次</span>
+                </div>
+              </button>
+
+              <!-- 随机难度 -->
+              <button
+                class="difficulty-option random-option"
+                :class="{ active: trainingStore.difficulty === 'random' }"
+                @click="selectDifficulty('random')"
+              >
+                <span class="difficulty-option-icon">🎲</span>
+                <div class="difficulty-option-content">
+                  <span class="difficulty-option-name">随机挑战</span>
+                  <span class="difficulty-option-desc">每次随机生成参数</span>
+                </div>
+                <div class="difficulty-option-params">
+                  <el-icon :size="16"><Refresh /></el-icon>
+                </div>
+              </button>
+            </div>
+
+            <!-- 当前参数预览 -->
+            <div class="difficulty-preview">
+              <div class="preview-label">当前训练参数</div>
+              <div class="preview-params">
+                <div class="preview-param">
+                  <span class="param-label">收缩</span>
+                  <span class="param-value">{{ trainingStore.settings.contractTime }}s</span>
+                </div>
+                <div class="preview-divider">→</div>
+                <div class="preview-param">
+                  <span class="param-label">保持</span>
+                  <span class="param-value">{{ trainingStore.settings.holdTime }}s</span>
+                </div>
+                <div class="preview-divider">→</div>
+                <div class="preview-param">
+                  <span class="param-label">放松</span>
+                  <span class="param-value">{{ trainingStore.settings.relaxTime }}s</span>
+                </div>
+                <div class="preview-divider">×</div>
+                <div class="preview-param">
+                  <span class="param-label">循环</span>
+                  <span class="param-value">{{ trainingStore.settings.cycles }}</span>
+                </div>
+              </div>
+            </div>
+
+            <p class="difficulty-tip">
+              💡 选择难度后会自动应用对应参数，也可在「训练设置」中自定义调整
+            </p>
           </div>
         </el-card>
       </el-collapse-transition>
@@ -547,78 +620,6 @@ function updateSetting(key: string, value: number) {
 @keyframes tidal-pulse {
   0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
   50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
-}
-
-/* Settings Toggle - 海洋风格 */
-.settings-toggle {
-  display: flex;
-  justify-content: center;
-  margin-top: 48px;
-  opacity: 0;
-  transform: translateY(16px);
-  transition: all 0.7s var(--ease-smooth) 0.2s;
-}
-
-.settings-toggle.mounted {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.settings-toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 24px;
-  border: 1px solid rgba(56, 189, 248, 0.15);
-  border-radius: var(--radius-lg);
-  background: rgba(56, 189, 248, 0.05);
-  cursor: pointer;
-  transition: all 0.3s var(--ease-smooth);
-}
-
-.settings-toggle-btn:hover {
-  background: rgba(56, 189, 248, 0.1);
-  border-color: rgba(56, 189, 248, 0.25);
-}
-
-.settings-toggle-btn.is-open {
-  background: rgba(56, 189, 248, 0.12);
-  border-color: rgba(56, 189, 248, 0.3);
-}
-
-.toggle-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.1));
-  color: rgb(var(--ocean-surface));
-  transition: transform 0.3s var(--ease-smooth);
-}
-
-.settings-toggle-btn:hover .toggle-icon-wrapper {
-  transform: rotate(45deg);
-}
-
-.toggle-text {
-  font-size: 15px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.settings-toggle-btn:hover .toggle-text {
-  color: #fff;
-}
-
-.toggle-arrow {
-  color: rgba(255, 255, 255, 0.55);
-  transition: transform 0.2s var(--ease-smooth);
-}
-
-.settings-toggle-btn.is-open .toggle-arrow {
-  color: rgb(var(--ocean-surface));
 }
 
 /* Settings Card - 海洋风格 */
@@ -991,5 +992,197 @@ function updateSetting(key: string, value: number) {
 
 .result-btn:hover {
   box-shadow: 0 8px 30px rgba(14, 165, 233, 0.4);
+}
+
+/* Difficulty Card */
+.difficulty-card .title-icon {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1));
+}
+
+.difficulty-title-icon span {
+  font-size: 16px;
+}
+
+/* Difficulty Grid */
+.difficulty-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.difficulty-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: rgba(56, 189, 248, 0.03);
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  cursor: pointer;
+  transition: all 0.3s var(--ease-smooth);
+  text-align: left;
+}
+
+.difficulty-option:hover {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.2);
+  transform: translateX(4px);
+}
+
+.difficulty-option.active {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+}
+
+.difficulty-option-icon {
+  font-size: 24px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.difficulty-option.active .difficulty-option-icon {
+  background: rgba(56, 189, 248, 0.15);
+}
+
+.difficulty-option-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.difficulty-option-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.difficulty-option-desc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.difficulty-option-params {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  flex-shrink: 0;
+}
+
+.difficulty-option.active .difficulty-option-params {
+  color: rgb(var(--ocean-surface));
+}
+
+/* Random Option */
+.random-option {
+  border-style: dashed;
+}
+
+.random-option .difficulty-option-icon {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.05));
+}
+
+.random-option.active {
+  border-color: rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.random-option .difficulty-option-params {
+  color: rgba(251, 191, 36, 0.7);
+}
+
+/* Difficulty Preview */
+.difficulty-preview {
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  margin-bottom: 16px;
+}
+
+.preview-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.preview-params {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preview-param {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.param-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.param-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgb(var(--ocean-surface));
+}
+
+.preview-divider {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 14px;
+}
+
+/* Difficulty Tip */
+.difficulty-tip {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 480px) {
+  .difficulty-option {
+    padding: 12px 14px;
+  }
+
+  .difficulty-option-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+  }
+
+  .preview-params {
+    gap: 4px;
+  }
+
+  .preview-param {
+    padding: 6px 8px;
+  }
+
+  .param-value {
+    font-size: 16px;
+  }
 }
 </style>

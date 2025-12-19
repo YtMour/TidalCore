@@ -1,12 +1,44 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useTrainingStore } from '@/store/training'
-import { Play, Square, RotateCcw } from 'lucide-vue-next'
+import { useTrainingStore, DIFFICULTY_PRESETS, type DifficultyLevel } from '@/store/training'
+import { Play, Square, RotateCcw, Settings, ChevronDown } from 'lucide-vue-next'
 import confetti from 'canvas-confetti'
 import gsap from 'gsap'
 import FluidBall from './FluidBall.vue'
 
 const trainingStore = useTrainingStore()
+
+// 设置和难度面板状态
+const showSettings = defineModel<boolean>('showSettings', { default: false })
+const showDifficulty = defineModel<boolean>('showDifficulty', { default: false })
+
+// 获取难度显示名称
+function getDifficultyName(level: DifficultyLevel): string {
+  if (level === 'custom') return '自定义'
+  if (level === 'random') return '随机'
+  const preset = DIFFICULTY_PRESETS.find(p => p.id === level)
+  return preset?.name || '未知'
+}
+
+// 获取难度图标
+function getDifficultyIcon(level: DifficultyLevel): string {
+  if (level === 'custom') return '⚙️'
+  if (level === 'random') return '🎲'
+  const preset = DIFFICULTY_PRESETS.find(p => p.id === level)
+  return preset?.icon || '🌊'
+}
+
+// 切换设置面板
+function toggleSettings() {
+  showSettings.value = !showSettings.value
+  if (showSettings.value) showDifficulty.value = false
+}
+
+// 切换难度面板
+function toggleDifficulty() {
+  showDifficulty.value = !showDifficulty.value
+  if (showDifficulty.value) showSettings.value = false
+}
 
 // Refs for DOM elements
 const countdownNumber = ref<HTMLElement | null>(null)
@@ -191,35 +223,62 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Control Buttons -->
-    <div class="control-buttons">
+    <!-- Control Buttons with Settings -->
+    <div class="control-row">
+      <!-- 左侧：训练设置按钮 -->
       <button
-        v-if="!trainingStore.isRunning"
-        @click="handleStart"
-        class="start-btn"
-        :class="{ 'is-animating': isAnimating }"
+        class="side-btn settings-btn"
+        :class="{ active: showSettings }"
+        @click="toggleSettings"
+        :disabled="trainingStore.isRunning"
       >
-        <span class="btn-glow" />
-        <span class="btn-content">
-          <Play class="btn-icon" />
-          <span class="btn-text">开始训练</span>
-        </span>
+        <Settings class="side-btn-icon" />
+        <span class="side-btn-text">训练设置</span>
+        <ChevronDown class="side-btn-arrow" :class="{ rotated: showSettings }" />
       </button>
 
-      <template v-else>
-        <button @click="handleStop" class="stop-btn">
-          <Square class="btn-icon filled" />
-          <span class="btn-text">结束训练</span>
+      <!-- 中间：开始/结束按钮 -->
+      <div class="center-buttons">
+        <button
+          v-if="!trainingStore.isRunning"
+          @click="handleStart"
+          class="start-btn"
+          :class="{ 'is-animating': isAnimating }"
+        >
+          <span class="btn-glow" />
+          <span class="btn-content">
+            <Play class="btn-icon" />
+            <span class="btn-text">开始训练</span>
+          </span>
         </button>
-      </template>
 
+        <template v-else>
+          <button @click="handleStop" class="stop-btn">
+            <Square class="btn-icon filled" />
+            <span class="btn-text">结束训练</span>
+          </button>
+        </template>
+
+        <button
+          v-if="trainingStore.currentCycle > 0 && !trainingStore.isRunning"
+          @click="handleReset"
+          class="reset-btn"
+          title="重置"
+        >
+          <RotateCcw class="reset-icon" />
+        </button>
+      </div>
+
+      <!-- 右侧：难度选择按钮 -->
       <button
-        v-if="trainingStore.currentCycle > 0 && !trainingStore.isRunning"
-        @click="handleReset"
-        class="reset-btn"
-        title="重置"
+        class="side-btn difficulty-btn"
+        :class="{ active: showDifficulty }"
+        @click="toggleDifficulty"
+        :disabled="trainingStore.isRunning"
       >
-        <RotateCcw class="reset-icon" />
+        <span class="difficulty-emoji">{{ getDifficultyIcon(trainingStore.difficulty) }}</span>
+        <span class="side-btn-text">{{ getDifficultyName(trainingStore.difficulty) }}</span>
+        <ChevronDown class="side-btn-arrow" :class="{ rotated: showDifficulty }" />
       </button>
     </div>
   </div>
@@ -479,5 +538,119 @@ onUnmounted(() => {
 
 .reset-btn:hover .reset-icon {
   color: #fff;
+}
+
+/* Control Row - 三列布局 */
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 680px;
+}
+
+.center-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Side Buttons - 训练设置和难度按钮 */
+.side-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.side-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.side-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.side-btn.active {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.side-btn-icon {
+  width: 18px;
+  height: 18px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.side-btn.active .side-btn-icon {
+  color: rgb(56, 189, 248);
+}
+
+.side-btn-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.side-btn.active .side-btn-text {
+  color: #fff;
+}
+
+.side-btn-arrow {
+  width: 14px;
+  height: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  transition: transform 0.2s ease;
+}
+
+.side-btn-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+.side-btn.active .side-btn-arrow {
+  color: rgb(56, 189, 248);
+}
+
+/* Difficulty Button */
+.difficulty-btn .difficulty-emoji {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* 响应式布局 */
+@media (max-width: 640px) {
+  .control-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .side-btn {
+    width: 100%;
+    max-width: 200px;
+    justify-content: center;
+  }
+
+  .center-buttons {
+    order: -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .side-btn {
+    padding: 10px 14px;
+  }
+
+  .side-btn-text {
+    font-size: 13px;
+  }
 }
 </style>

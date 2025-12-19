@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export type TrainingPhase = 'idle' | 'contract' | 'hold' | 'relax'
+export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'random' | 'custom'
 
 export interface TrainingSettings {
   contractTime: number
@@ -9,6 +10,46 @@ export interface TrainingSettings {
   relaxTime: number
   cycles: number
 }
+
+export interface DifficultyPreset {
+  id: DifficultyLevel
+  name: string
+  description: string
+  icon: string
+  settings: TrainingSettings
+}
+
+// 基于凯格尔训练健康建议的难度预设
+export const DIFFICULTY_PRESETS: DifficultyPreset[] = [
+  {
+    id: 'beginner',
+    name: '入门',
+    description: '适合初学者，轻松上手',
+    icon: '🌊',
+    settings: { contractTime: 3, holdTime: 2, relaxTime: 4, cycles: 8 }
+  },
+  {
+    id: 'easy',
+    name: '简单',
+    description: '基础训练，循序渐进',
+    icon: '🌴',
+    settings: { contractTime: 4, holdTime: 3, relaxTime: 4, cycles: 10 }
+  },
+  {
+    id: 'medium',
+    name: '中等',
+    description: '标准训练，稳步提升',
+    icon: '⚡',
+    settings: { contractTime: 5, holdTime: 5, relaxTime: 5, cycles: 12 }
+  },
+  {
+    id: 'hard',
+    name: '困难',
+    description: '进阶挑战，强化训练',
+    icon: '🔥',
+    settings: { contractTime: 8, holdTime: 8, relaxTime: 6, cycles: 15 }
+  }
+]
 
 const DEFAULT_SETTINGS: TrainingSettings = {
   contractTime: 3,
@@ -18,6 +59,7 @@ const DEFAULT_SETTINGS: TrainingSettings = {
 }
 
 const STORAGE_KEY = 'tidalcore_training_settings'
+const DIFFICULTY_KEY = 'tidalcore_difficulty'
 
 function loadSettings(): TrainingSettings {
   try {
@@ -40,8 +82,39 @@ function saveSettings(settings: TrainingSettings) {
   }
 }
 
+function loadDifficulty(): DifficultyLevel {
+  try {
+    const saved = localStorage.getItem(DIFFICULTY_KEY)
+    if (saved && ['beginner', 'easy', 'medium', 'hard', 'random', 'custom'].includes(saved)) {
+      return saved as DifficultyLevel
+    }
+  } catch {
+    // ignore
+  }
+  return 'easy' // 默认简单难度
+}
+
+function saveDifficulty(difficulty: DifficultyLevel) {
+  try {
+    localStorage.setItem(DIFFICULTY_KEY, difficulty)
+  } catch {
+    // ignore
+  }
+}
+
+function generateRandomSettings(): TrainingSettings {
+  // 随机生成合理范围内的训练参数
+  return {
+    contractTime: Math.floor(Math.random() * 6) + 3, // 3-8秒
+    holdTime: Math.floor(Math.random() * 6) + 2,     // 2-7秒
+    relaxTime: Math.floor(Math.random() * 4) + 3,    // 3-6秒
+    cycles: Math.floor(Math.random() * 8) + 8        // 8-15次
+  }
+}
+
 export const useTrainingStore = defineStore('training', () => {
   const settings = ref<TrainingSettings>(loadSettings())
+  const difficulty = ref<DifficultyLevel>(loadDifficulty())
   const phase = ref<TrainingPhase>('idle')
   const countdown = ref(0)
   const currentCycle = ref(0)
@@ -51,6 +124,14 @@ export const useTrainingStore = defineStore('training', () => {
 
   let timer: ReturnType<typeof setInterval> | null = null
   let durationTimer: ReturnType<typeof setInterval> | null = null
+
+  // 当前难度的预设信息
+  const currentPreset = computed(() => {
+    if (difficulty.value === 'custom' || difficulty.value === 'random') {
+      return null
+    }
+    return DIFFICULTY_PRESETS.find(p => p.id === difficulty.value) || null
+  })
 
   const progress = computed(() => {
     if (settings.value.cycles === 0) return 0
@@ -171,10 +252,38 @@ export const useTrainingStore = defineStore('training', () => {
 
     settings.value = updated
     saveSettings(updated)
+
+    // 用户手动修改设置时，切换到自定义模式
+    difficulty.value = 'custom'
+    saveDifficulty('custom')
+  }
+
+  function setDifficulty(level: DifficultyLevel) {
+    if (isRunning.value) return
+
+    difficulty.value = level
+    saveDifficulty(level)
+
+    if (level === 'random') {
+      // 随机模式：生成随机参数
+      const randomSettings = generateRandomSettings()
+      settings.value = randomSettings
+      saveSettings(randomSettings)
+    } else if (level !== 'custom') {
+      // 预设难度：应用预设参数
+      const preset = DIFFICULTY_PRESETS.find(p => p.id === level)
+      if (preset) {
+        settings.value = { ...preset.settings }
+        saveSettings(preset.settings)
+      }
+    }
+    // custom 模式保持当前设置不变
   }
 
   return {
     settings,
+    difficulty,
+    currentPreset,
     phase,
     countdown,
     currentCycle,
@@ -189,6 +298,7 @@ export const useTrainingStore = defineStore('training', () => {
     stop,
     reset,
     updateSettings,
+    setDifficulty,
     clearTimers
   }
 })
