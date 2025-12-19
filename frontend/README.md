@@ -10,9 +10,9 @@ TidalCore 前端应用 - 专业的盆底肌训练平台，采用全屏沉浸式�
 - **路由**: Vue Router 4
 - **UI 组件库**: Element Plus 2.x (深色海洋主题)
 - **样式**: Tailwind CSS 4 + 自定义海洋设计系统
-- **图标**: @element-plus/icons-vue
+- **图标**: @element-plus/icons-vue + Lucide Vue
 - **HTTP 客户端**: Axios
-- **动画**: Canvas Confetti, Three.js, GSAP
+- **动画**: Canvas Confetti, GSAP
 - **工具库**: VueUse
 
 ## 设计理念
@@ -20,9 +20,10 @@ TidalCore 前端应用 - 专业的盆底肌训练平台，采用全屏沉浸式�
 TidalCore 采用**全屏沉浸式海洋主题**设计，整个页面如同置身深海之中：
 
 - **全屏海洋背景**: 多层动态海浪、涟漪、气泡效果
-- **海浪涌动动画**: 波浪上下起伏，模拟真实海浪涌动
+- **海浪涌动动画**: 波浪平滑曲线，无缝循环流动
 - **玻璃态组件**: 透明背景，内容悬浮在海洋之上
 - **海洋色系**: 深海蓝到浅海青的渐变色调
+- **动态渐变文字**: 标题采用多色阶平滑渐变动画
 
 ## 主要特性
 
@@ -34,9 +35,25 @@ TidalCore 采用**全屏沉浸式海洋主题**设计，整个页面如同置身
 .ocean-gradient    /* 光线穿透效果 */
 .animated-bg       /* 动态水体效果 */
 .particles-bg      /* 海洋光斑粒子 */
-.wave-layer        /* 三层海浪动画 */
+.wave-layer        /* 五层海浪动画 - 平滑SVG曲线 */
 .ripple-layer      /* 涟漪效果 */
 .bubbles-container /* 上升气泡 */
+```
+
+### 自然海浪系统
+
+采用 SVG 平滑曲线和 `background-position-x` 动画实现无缝循环：
+
+```css
+/* 五层海浪 - 不同高度、速度、方向 */
+.wave-1 { animation: wave-flow-right 35s linear infinite; }
+.wave-2 { animation: wave-flow-left 28s linear infinite; }
+.wave-3 { animation: wave-flow-right 22s linear infinite; }
+.wave-4 { animation: wave-flow-left 42s linear infinite; }
+.wave-5 { animation: wave-flow-right 50s linear infinite; }
+
+/* SVG 平滑曲线路径 */
+d="M0,50 C240,20 480,80 720,50 C960,20 1200,80 1440,50 L1440,100 L0,100 Z"
 ```
 
 ### 海洋色系
@@ -60,7 +77,7 @@ TidalCore 采用**全屏沉浸式海洋主题**设计，整个页面如同置身
 
 ### 海浪涌动动画
 
-核心动画效果 - 波浪上下起伏而非左右移动：
+核心动画效果 - 海浪上下起伏与水平流动结合：
 
 ```css
 /* 海浪涌动 - 不同层次不同速度 */
@@ -69,14 +86,64 @@ TidalCore 采用**全屏沉浸式海洋主题**设计，整个页面如同置身
   50% { transform: translateY(-8px); }
 }
 
-@keyframes wave-surge-2 {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+/* 无缝水平流动 */
+@keyframes wave-flow-right {
+  0% { background-position-x: 0; }
+  100% { background-position-x: 1440px; }
 }
 
-@keyframes wave-surge-3 {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+@keyframes wave-flow-left {
+  0% { background-position-x: 0; }
+  100% { background-position-x: -1440px; }
+}
+```
+
+### 动态渐变标题
+
+多色阶平滑渐变动画，告别生硬的颜色切换：
+
+```css
+/* TidalCore 标题 - 9色阶渐变 */
+.title-tidalcore {
+  background: linear-gradient(
+    90deg,
+    #60c8f8 0%, #7dd8fc 12%, #45d0ee 25%,
+    #7dd8fc 37%, #60c8f8 50%, #7dd8fc 62%,
+    #45d0ee 75%, #7dd8fc 87%, #60c8f8 100%
+  );
+  background-size: 300% 100%;
+  animation: title-wave 12s ease-in-out infinite;
+}
+
+/* 深海排行榜 - 含金色过渡 */
+.gradient-text-ocean {
+  background: linear-gradient(
+    90deg,
+    #38bdf8 0%, #22d3ee 20%, #fbbf24 40%,
+    #f5c842 50%, #fbbf24 60%, #22d3ee 80%, #38bdf8 100%
+  );
+}
+```
+
+### 海洋按钮系统
+
+按钮内置海浪上升动画效果：
+
+```css
+/* 海洋按钮 - 波浪上升效果 */
+.cta-btn-ocean::before {
+  background: linear-gradient(180deg,
+    transparent 45%,
+    rgba(56, 189, 248, 0.4) 50%,
+    rgba(34, 211, 238, 0.6) 55%,
+    transparent 65%
+  );
+  animation: btn-wave-rise 3s ease-in-out infinite;
+}
+
+/* 开始训练按钮 */
+.start-btn::before {
+  animation: btn-ocean-wave 3s ease-in-out infinite;
 }
 ```
 
@@ -280,7 +347,9 @@ npm run build
 
 - 环形进度条显示当前阶段进度
 - 相位颜色：收缩(红)、保持(黄)、放松(绿)
-- 海洋主题按钮样式
+- 海洋主题按钮样式（内置波浪动画）
+- GSAP 驱动的平滑动画过渡
+- 训练完成海洋主题庆祝特效
 
 ### TidalBackground.vue
 
