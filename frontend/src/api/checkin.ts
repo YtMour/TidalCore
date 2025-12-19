@@ -53,3 +53,21 @@ export interface LeaderboardUser {
 export function getLeaderboard(limit = 20): Promise<LeaderboardUser[]> {
   return request.get('/leaderboard', { params: { limit } })
 }
+
+// 访问统计相关
+export interface VisitStats {
+  today_visits: number
+  total_visits: number
+}
+
+export function recordVisit(): Promise<{ today_visits: number }> {
+  return request.post('/visit')
+}
+
+export function getVisitStats(): Promise<VisitStats> {
+  return request.get('/visit/stats')
+}
+
+export function getVisitHeatmap(days = 365): Promise<Record<string, number>> {
+  return request.get('/visit/heatmap', { params: { days } })
+}

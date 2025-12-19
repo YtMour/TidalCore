@@ -50,5 +50,6 @@ func autoMigrate() error {
 	return db.AutoMigrate(
 		&model.User{},
 		&model.Checkin{},
+		&model.Visit{},
 	)
 }

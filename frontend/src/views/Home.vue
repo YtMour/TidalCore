@@ -1,13 +1,31 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Heatmap from '@/components/Heatmap.vue'
-import { getGlobalHeatmap, getLeaderboard } from '@/api/checkin'
-import { Timer, Pointer, Trophy, Lock, Lightning, StarFilled, User } from '@element-plus/icons-vue'
+import { getGlobalHeatmap, getLeaderboard, recordVisit, getVisitStats, getVisitHeatmap } from '@/api/checkin'
+import { Timer, Pointer, Trophy, Lock, Lightning, StarFilled, User, View } from '@element-plus/icons-vue'
 
-const heatmapData = ref<Record<string, number>>()
+const checkinHeatmapData = ref<Record<string, number>>()
+const visitHeatmapData = ref<Record<string, number>>()
+const heatmapType = ref<'checkin' | 'visit'>('checkin')
 const loading = ref(true)
 const mounted = ref(false)
+const scrolled = ref(false)
+const todayVisits = ref(0)
+
+// 当前显示的热力图数据
+const heatmapData = computed(() => {
+  return heatmapType.value === 'checkin' ? checkinHeatmapData.value : visitHeatmapData.value
+})
+
+// 滚动监听 - 隐藏滚动指示器
+function handleScroll() {
+  if (window.scrollY > 50) {
+    scrolled.value = true
+    // 滚动后移除监听器，不再需要
+    window.removeEventListener('scroll', handleScroll)
+  }
+}
 
 const features = [
   {
@@ -51,7 +69,8 @@ const features = [
 const stats = ref([
   { value: '-', label: '活跃用户', icon: User, suffix: '' },
   { value: '-', label: '累计打卡', icon: Pointer, suffix: '' },
-  { value: '-', label: '最长连续', icon: Trophy, suffix: '天' }
+  { value: '-', label: '最长连续', icon: Trophy, suffix: '天' },
+  { value: '-', label: '今日访问', icon: View, suffix: '' }
 ])
 
 function formatNumber(num: number): { value: string, suffix: string } {
@@ -68,13 +87,23 @@ onMounted(async () => {
     mounted.value = true
   }, 100)
 
+  // 添加滚动监听
+  window.addEventListener('scroll', handleScroll)
+
+  // 记录访问（静默执行）
+  recordVisit().catch(() => {})
+
   try {
-    const [heatmapResult, leaderboardResult] = await Promise.all([
+    const [heatmapResult, leaderboardResult, visitStatsResult, visitHeatmapResult] = await Promise.all([
       getGlobalHeatmap(365),
-      getLeaderboard(100)
+      getLeaderboard(100),
+      getVisitStats(),
+      getVisitHeatmap(365)
     ])
 
-    heatmapData.value = heatmapResult
+    checkinHeatmapData.value = heatmapResult
+    visitHeatmapData.value = visitHeatmapResult
+    todayVisits.value = visitStatsResult?.today_visits || 0
 
     const totalCheckins = Object.values(heatmapResult || {}).reduce((sum, count) => sum + count, 0)
     const activeUsers = leaderboardResult?.length || 0
@@ -84,17 +113,23 @@ onMounted(async () => {
 
     const formatted1 = formatNumber(activeUsers)
     const formatted2 = formatNumber(totalCheckins)
+    const formatted3 = formatNumber(todayVisits.value)
 
     stats.value = [
       { value: formatted1.value, label: '活跃用户', icon: User, suffix: formatted1.suffix },
       { value: formatted2.value, label: '累计打卡', icon: Pointer, suffix: formatted2.suffix },
-      { value: maxStreak.toString(), label: '最长连续', icon: Trophy, suffix: '天' }
+      { value: maxStreak.toString(), label: '最长连续', icon: Trophy, suffix: '天' },
+      { value: formatted3.value, label: '今日访问', icon: View, suffix: formatted3.suffix }
     ]
   } catch {
     // 静默处理错误
   } finally {
     loading.value = false
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -187,7 +222,7 @@ onMounted(async () => {
         </div>
 
         <!-- 向下滚动指示 -->
-        <div class="scroll-indicator" :class="{ mounted }">
+        <div class="scroll-indicator" :class="{ mounted, hidden: scrolled }">
           <div class="scroll-mouse">
             <div class="scroll-wheel"></div>
           </div>
@@ -229,24 +264,46 @@ onMounted(async () => {
               <span class="eyebrow-text">社区动态</span>
               <span class="eyebrow-line"></span>
             </div>
-            <h2 class="section-title">全站打卡热力图</h2>
-            <p class="section-desc">社区成员的坚持轨迹</p>
+            <h2 class="section-title">{{ heatmapType === 'checkin' ? '全站打卡热力图' : '站点访问热力图' }}</h2>
+            <p class="section-desc">{{ heatmapType === 'checkin' ? '社区成员的坚持轨迹' : '每日访客的足迹记录' }}</p>
           </div>
 
           <div class="heatmap-wrapper">
-            <div class="heatmap-stats" v-if="heatmapData">
-              <div class="hm-stat">
-                <span class="hm-value">{{ Object.values(heatmapData || {}).reduce((sum, count) => sum + count, 0) }}</span>
-                <span class="hm-label">次打卡</span>
+            <div class="heatmap-header">
+              <div class="heatmap-stats" v-if="heatmapData">
+                <div class="hm-stat">
+                  <span class="hm-value">{{ Object.values(heatmapData || {}).reduce((sum, count) => sum + count, 0) }}</span>
+                  <span class="hm-label">{{ heatmapType === 'checkin' ? '次打卡' : '次访问' }}</span>
+                </div>
+                <div class="hm-divider"></div>
+                <div class="hm-stat">
+                  <span class="hm-value">{{ Object.values(heatmapData || {}).filter(count => count > 0).length }}</span>
+                  <span class="hm-label">天活跃</span>
+                </div>
+                <div class="live-badge">
+                  <span class="live-dot"></span>
+                  实时
+                </div>
               </div>
-              <div class="hm-divider"></div>
-              <div class="hm-stat">
-                <span class="hm-value">{{ Object.values(heatmapData || {}).filter(count => count > 0).length }}</span>
-                <span class="hm-label">天活跃</span>
-              </div>
-              <div class="live-badge">
-                <span class="live-dot"></span>
-                实时
+
+              <!-- 热力图切换按钮 -->
+              <div class="heatmap-toggle">
+                <button
+                  class="toggle-btn"
+                  :class="{ active: heatmapType === 'checkin' }"
+                  @click="heatmapType = 'checkin'"
+                >
+                  <el-icon :size="14"><Pointer /></el-icon>
+                  打卡
+                </button>
+                <button
+                  class="toggle-btn"
+                  :class="{ active: heatmapType === 'visit' }"
+                  @click="heatmapType = 'visit'"
+                >
+                  <el-icon :size="14"><View /></el-icon>
+                  访问
+                </button>
               </div>
             </div>
 
@@ -787,6 +844,11 @@ export default {
   opacity: 1;
 }
 
+.scroll-indicator.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .scroll-mouse {
   width: 24px;
   height: 38px;
@@ -993,6 +1055,68 @@ export default {
 
 .heatmap-loading {
   padding: 40px 0;
+}
+
+/* Heatmap Header */
+.heatmap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.heatmap-stats {
+  margin-bottom: 0;
+}
+
+/* Heatmap Toggle */
+.heatmap-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  border-radius: var(--radius-lg);
+}
+
+.heatmap-toggle .toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.heatmap-toggle .toggle-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.heatmap-toggle .toggle-btn.active {
+  background: rgba(56, 189, 248, 0.15);
+  color: rgb(var(--ocean-surface));
+}
+
+@media (max-width: 640px) {
+  .heatmap-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .heatmap-toggle {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* ===== Steps Section ===== */

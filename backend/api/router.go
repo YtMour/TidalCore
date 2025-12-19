@@ -16,6 +16,7 @@ func SetupRouter(mode string) *gin.Engine {
 
 	userHandler := NewUserHandler()
 	checkinHandler := NewCheckinHandler()
+	visitHandler := NewVisitHandler()
 
 	// 健康检查
 	r.GET("/health", func(c *gin.Context) {
@@ -35,6 +36,11 @@ func SetupRouter(mode string) *gin.Engine {
 		// 公开数据
 		v1.GET("/leaderboard", userHandler.GetLeaderboard)
 		v1.GET("/heatmap/global", checkinHandler.GetGlobalHeatmap)
+
+		// 访问统计 (公开)
+		v1.POST("/visit", visitHandler.RecordVisit)
+		v1.GET("/visit/stats", visitHandler.GetStats)
+		v1.GET("/visit/heatmap", visitHandler.GetHeatmap)
 
 		// 需要认证的接口
 		protected := v1.Group("")
