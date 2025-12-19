@@ -92,15 +92,17 @@ body {
   inset: 0;
   z-index: -10;
   overflow: hidden;
-  /* 深海到海面的垂直渐变 - 亮度再提升2档 */
+  /* 深海到海面的垂直渐变 - 底部更亮，与波浪衔接 */
   background: linear-gradient(
     180deg,
     rgb(12, 20, 38) 0%,
-    rgb(18, 32, 58) 20%,
-    rgb(24, 45, 78) 40%,
-    rgb(32, 60, 98) 60%,
-    rgb(40, 75, 115) 80%,
-    rgb(48, 88, 130) 100%
+    rgb(16, 28, 52) 15%,
+    rgb(22, 40, 70) 30%,
+    rgb(28, 55, 90) 45%,
+    rgb(35, 70, 110) 60%,
+    rgb(42, 85, 128) 75%,
+    rgb(50, 100, 145) 90%,
+    rgb(55, 110, 155) 100%
   );
 }
 
@@ -116,8 +118,8 @@ body {
     radial-gradient(ellipse 60% 80% at -10% 40%, rgba(14, 165, 233, 0.22) 0%, transparent 50%),
     /* 右侧光线 - 再增强 */
     radial-gradient(ellipse 60% 80% at 110% 60%, rgba(34, 211, 238, 0.18) 0%, transparent 50%),
-    /* 底部深海微光 - 再增强 */
-    radial-gradient(ellipse 100% 40% at 50% 120%, rgba(3, 105, 161, 0.35) 0%, transparent 60%);
+    /* 底部海洋光 - 扩大范围，更亮 */
+    radial-gradient(ellipse 150% 60% at 50% 110%, rgba(45, 130, 190, 0.45) 0%, rgba(30, 100, 160, 0.25) 40%, transparent 70%);
   animation: light-shimmer 15s ease-in-out infinite;
 }
 
@@ -199,131 +201,100 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-/* ===== 全屏海浪系统 - 占据网页50%高度，动态海面 ===== */
+/* ===== 自然海浪系统 - 平滑曲线，无缝循环 ===== */
 .wave-layer {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 60vh;
+  inset: 0;
   z-index: -5;
   pointer-events: none;
   overflow: hidden;
 }
 
-/* 多层海浪 */
+/* 海浪基础样式 */
 .wave {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 200%;
+  width: 100%;
   height: 100%;
+  background-repeat: repeat-x;
+  background-position: 0 bottom;
 }
 
-/* 第一层海浪 - 最前层 */
+/* ===== 第一层海浪 - 深色基底层 ===== */
 .wave-1 {
-  background: linear-gradient(to top,
-    rgba(20, 70, 120, 0.45) 0%,
-    rgba(14, 165, 233, 0.30) 20%,
-    rgba(14, 165, 233, 0.15) 50%,
-    rgba(14, 165, 233, 0.05) 70%,
-    transparent 100%
-  );
-  animation: wave-move-1 25s ease-in-out infinite;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 100' preserveAspectRatio='none'%3E%3Cpath fill='rgba(22, 70, 115, 0.6)' d='M0,50 C240,20 480,80 720,50 C960,20 1200,80 1440,50 L1440,100 L0,100 Z'/%3E%3C/svg%3E");
+  background-size: 1440px 52vh;
+  animation: wave-flow-right 35s linear infinite;
+  z-index: 1;
 }
 
-.wave-1::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='rgba(56, 189, 248, 0.20)' d='M0,128 C180,200 360,60 540,128 C720,196 900,60 1080,128 C1260,196 1440,60 1440,128 L1440,320 L0,320 Z'/%3E%3Cpath fill='rgba(34, 211, 238, 0.15)' d='M0,160 C240,240 480,80 720,160 C960,240 1200,80 1440,160 L1440,320 L0,320 Z'/%3E%3Cpath fill='rgba(14, 165, 233, 0.12)' d='M0,200 C360,280 720,120 1080,200 C1260,240 1380,160 1440,200 L1440,320 L0,320 Z'/%3E%3C/svg%3E");
-  background-size: 1440px 100%;
-  background-repeat: repeat-x;
-  background-position: bottom;
-  animation: wave-scroll-1 18s linear infinite;
-}
-
-@keyframes wave-move-1 {
-  0%, 100% { transform: translateX(0) translateY(0); }
-  50% { transform: translateX(-3%) translateY(-8px); }
-}
-
-@keyframes wave-scroll-1 {
-  0% { background-position-x: 0, 0, 0; }
-  100% { background-position-x: 1440px, 1440px, 1440px; }
-}
-
-/* 第二层海浪 - 中层 */
+/* ===== 第二层海浪 - 中层（反向） ===== */
 .wave-2 {
-  background: linear-gradient(to top,
-    rgba(34, 211, 238, 0.25) 0%,
-    rgba(34, 211, 238, 0.15) 30%,
-    rgba(34, 211, 238, 0.05) 60%,
-    transparent 100%
-  );
-  animation: wave-move-2 30s ease-in-out infinite;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 100' preserveAspectRatio='none'%3E%3Cpath fill='rgba(28, 95, 150, 0.5)' d='M0,40 C360,70 720,10 1080,40 C1260,55 1350,25 1440,40 L1440,100 L0,100 Z'/%3E%3C/svg%3E");
+  background-size: 1440px 46vh;
+  animation: wave-flow-left 28s linear infinite;
+  z-index: 2;
 }
 
-.wave-2::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='rgba(34, 211, 238, 0.18)' d='M0,180 C240,260 480,100 720,180 C960,260 1200,100 1440,180 L1440,320 L0,320 Z'/%3E%3Cpath fill='rgba(6, 182, 212, 0.12)' d='M0,220 C360,300 720,140 1080,220 C1260,260 1380,180 1440,220 L1440,320 L0,320 Z'/%3E%3C/svg%3E");
-  background-size: 1440px 100%;
-  background-repeat: repeat-x;
-  background-position: bottom;
-  animation: wave-scroll-2 24s linear infinite;
-}
-
-@keyframes wave-move-2 {
-  0%, 100% { transform: translateX(0) translateY(0); }
-  50% { transform: translateX(-5%) translateY(-12px); }
-}
-
-@keyframes wave-scroll-2 {
-  0% { background-position-x: 0; }
-  100% { background-position-x: -1440px; }
-}
-
-/* 第三层海浪 - 远层 */
+/* ===== 第三层海浪 - 明亮层 ===== */
 .wave-3 {
-  background: linear-gradient(to top,
-    rgba(6, 182, 212, 0.18) 0%,
-    rgba(6, 182, 212, 0.10) 40%,
-    rgba(6, 182, 212, 0.03) 70%,
-    transparent 100%
-  );
-  animation: wave-move-3 35s ease-in-out infinite;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 100' preserveAspectRatio='none'%3E%3Cpath fill='rgba(38, 130, 185, 0.42)' d='M0,55 C180,30 360,70 540,45 C720,20 900,65 1080,40 C1260,15 1350,55 1440,55 L1440,100 L0,100 Z'/%3E%3C/svg%3E");
+  background-size: 1440px 40vh;
+  animation: wave-flow-right 22s linear infinite;
+  z-index: 3;
 }
 
-.wave-3::before {
+/* 波浪层伪元素 - 细节层（反向） */
+.wave-layer::before {
   content: '';
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='rgba(6, 182, 212, 0.12)' d='M0,200 C480,300 960,100 1440,200 L1440,320 L0,320 Z'/%3E%3C/svg%3E");
-  background-size: 1440px 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 100' preserveAspectRatio='none'%3E%3Cpath fill='rgba(50, 160, 210, 0.35)' d='M0,45 C320,65 640,25 960,45 C1120,55 1280,35 1440,45 L1440,100 L0,100 Z'/%3E%3C/svg%3E");
+  background-size: 1440px 34vh;
   background-repeat: repeat-x;
-  background-position: bottom;
-  animation: wave-scroll-3 32s linear infinite;
+  background-position: 0 bottom;
+  animation: wave-flow-left 42s linear infinite;
+  z-index: 4;
 }
 
-@keyframes wave-move-3 {
-  0%, 100% { transform: translateX(0) translateY(0); }
-  50% { transform: translateX(-2%) translateY(-6px); }
+/* 波浪层伪元素 - 前景高光层 */
+.wave-layer::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 100' preserveAspectRatio='none'%3E%3Cpath fill='rgba(75, 190, 240, 0.28)' d='M0,50 C200,35 400,65 600,50 C800,35 1000,65 1200,50 C1320,40 1380,55 1440,50 L1440,100 L0,100 Z'/%3E%3C/svg%3E");
+  background-size: 1440px 30vh;
+  background-repeat: repeat-x;
+  background-position: 0 bottom;
+  animation: wave-flow-right 50s linear infinite;
+  z-index: 5;
 }
 
-@keyframes wave-scroll-3 {
-  0% { background-position-x: 0; }
-  100% { background-position-x: 1440px; }
+/* 向右流动动画 - 无缝循环 */
+@keyframes wave-flow-right {
+  0% {
+    background-position-x: 0;
+  }
+  100% {
+    background-position-x: 1440px;
+  }
+}
+
+/* 向左流动动画 - 无缝循环 */
+@keyframes wave-flow-left {
+  0% {
+    background-position-x: 0;
+  }
+  100% {
+    background-position-x: -1440px;
+  }
 }
 
 /* ===== 水面涟漪层 - 增大尺寸 ===== */
