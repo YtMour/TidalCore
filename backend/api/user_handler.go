@@ -275,3 +275,31 @@ func (h *UserHandler) SetUserAdmin(c *gin.Context) {
 
 	response.SuccessWithMsg(c, "设置成功", nil)
 }
+
+// UpdateUserStats 更新用户统计数据（管理员）
+func (h *UserHandler) UpdateUserStats(c *gin.Context) {
+	userIDStr := c.Param("id")
+	userID, err := strconv.ParseUint(userIDStr, 10, 32)
+	if err != nil {
+		response.BadRequest(c, "无效的用户ID")
+		return
+	}
+
+	var req service.UpdateUserStatsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "请求参数无效")
+		return
+	}
+
+	user, err := h.userService.UpdateUserStats(uint(userID), &req)
+	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			response.NotFound(c, "用户不存在")
+			return
+		}
+		response.ServerError(c, "更新失败")
+		return
+	}
+
+	response.SuccessWithMsg(c, "更新成功", user)
+}

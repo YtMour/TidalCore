@@ -15,6 +15,7 @@ export interface UserInfo {
   id: number
   username: string
   display_name: string
+  title: string
   streak: number
   max_streak: number
   total_checkin: number

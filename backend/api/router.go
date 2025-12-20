@@ -66,6 +66,7 @@ func SetupRouter(mode string) *gin.Engine {
 			admin.GET("/users", userHandler.GetAllUsers)
 			admin.DELETE("/users/:id", userHandler.DeleteUser)
 			admin.PUT("/users/:id/admin", userHandler.SetUserAdmin)
+			admin.PUT("/users/:id/stats", userHandler.UpdateUserStats)
 		}
 	}
 

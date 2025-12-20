@@ -3,10 +3,10 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import { useUserStore } from '@/store/user'
-import { getUsers, deleteUser, setUserAdmin, type UsersResponse } from '@/api/admin'
+import { getUsers, deleteUser, setUserAdmin, updateUserStats, type UsersResponse } from '@/api/admin'
 import type { UserInfo } from '@/api/auth'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, Key, ArrowLeft, Search, Refresh } from '@element-plus/icons-vue'
+import { Delete, Key, ArrowLeft, Search, Refresh, Edit } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -17,6 +17,17 @@ const total = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(20)
 const searchQuery = ref('')
+
+// 编辑用户数据相关
+const showEditDialog = ref(false)
+const editLoading = ref(false)
+const editingUser = ref<UserInfo | null>(null)
+const editForm = ref({
+  streak: 0,
+  max_streak: 0,
+  total_checkin: 0,
+  title: ''
+})
 
 onMounted(async () => {
   await userStore.fetchProfile()
@@ -127,6 +138,74 @@ function formatDate(dateStr: string): string {
     day: 'numeric'
   })
 }
+
+// 称号配置
+const titleConfig = [
+  { min: 1000, name: '海神降临', color: '#f472b6', icon: '🔱' },
+  { min: 730, name: '深渊霸主', color: '#a78bfa', icon: '🦑' },
+  { min: 365, name: '深海传奇', color: '#fbbf24', icon: '🌊' },
+  { min: 180, name: '海洋大师', color: '#38bdf8', icon: '🐋' },
+  { min: 90, name: '浪潮专家', color: '#22d3ee', icon: '🐬' },
+  { min: 30, name: '潮汐进阶', color: '#34d399', icon: '🐠' },
+  { min: 7, name: '入海新手', color: '#0ea5e9', icon: '🐟' },
+  { min: 0, name: '初探海域', color: 'rgba(255, 255, 255, 0.6)', icon: '🐚' }
+]
+
+// 根据打卡次数获取称号
+function getTitleByCheckin(total: number) {
+  for (const title of titleConfig) {
+    if (total >= title.min) {
+      return title
+    }
+  }
+  // 默认返回最后一个（初探海域），因为 min: 0 总是会匹配
+  return titleConfig[titleConfig.length - 1]!
+}
+
+// 打开编辑对话框
+function openEditDialog(user: UserInfo) {
+  editingUser.value = user
+  editForm.value = {
+    streak: user.streak || 0,
+    max_streak: user.max_streak || 0,
+    total_checkin: user.total_checkin || 0,
+    title: user.title || ''
+  }
+  showEditDialog.value = true
+}
+
+// 保存用户数据
+async function handleSaveUserStats() {
+  if (!editingUser.value) return
+
+  editLoading.value = true
+  try {
+    await updateUserStats(editingUser.value.id, {
+      streak: editForm.value.streak,
+      max_streak: editForm.value.max_streak,
+      total_checkin: editForm.value.total_checkin,
+      title: editForm.value.title
+    })
+    ElMessage.success('用户数据更新成功')
+    showEditDialog.value = false
+    await loadUsers()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.msg || '更新失败')
+  } finally {
+    editLoading.value = false
+  }
+}
+
+// 计算编辑表单中的称号预览
+const previewTitle = computed(() => {
+  // 如果手动选择了称号，使用选择的称号
+  if (editForm.value.title) {
+    const selected = titleConfig.find(t => t.name === editForm.value.title)
+    if (selected) return selected
+  }
+  // 否则根据打卡次数自动计算
+  return getTitleByCheckin(editForm.value.total_checkin)
+})
 </script>
 
 <template>
@@ -207,9 +286,17 @@ function formatDate(dateStr: string): string {
               {{ formatDate(row.created_at) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="180" fixed="right">
+          <el-table-column label="操作" width="240" fixed="right">
             <template #default="{ row }">
               <div class="action-cell">
+                <el-button
+                  size="small"
+                  type="info"
+                  @click="openEditDialog(row)"
+                >
+                  <el-icon><Edit /></el-icon>
+                  编辑
+                </el-button>
                 <el-button
                   size="small"
                   :type="row.is_admin ? 'warning' : 'primary'"
@@ -244,6 +331,121 @@ function formatDate(dateStr: string): string {
         </div>
       </el-card>
     </div>
+
+    <!-- 编辑用户数据对话框 -->
+    <el-dialog
+      v-model="showEditDialog"
+      title=""
+      width="500px"
+      class="edit-dialog"
+      :close-on-click-modal="false"
+    >
+      <template #header>
+        <div class="edit-dialog-header">
+          <div class="edit-user-info" v-if="editingUser">
+            <div class="edit-user-avatar">
+              {{ editingUser.username?.[0]?.toUpperCase() || '?' }}
+            </div>
+            <div class="edit-user-text">
+              <h3>编辑用户数据</h3>
+              <p>{{ editingUser.display_name || editingUser.username }}</p>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <div class="edit-form">
+        <!-- 称号选择 -->
+        <div class="form-item">
+          <label>用户称号</label>
+          <el-select
+            v-model="editForm.title"
+            placeholder="自动（根据打卡次数）"
+            size="large"
+            clearable
+            class="title-select"
+          >
+            <el-option
+              value=""
+              label="自动（根据打卡次数）"
+            >
+              <span class="title-option">
+                <span class="title-option-icon">🔄</span>
+                <span>自动（根据打卡次数）</span>
+              </span>
+            </el-option>
+            <el-option
+              v-for="t in titleConfig"
+              :key="t.name"
+              :value="t.name"
+              :label="t.name"
+            >
+              <span class="title-option" :style="{ color: t.color }">
+                <span class="title-option-icon">{{ t.icon }}</span>
+                <span>{{ t.name }}</span>
+                <span class="title-option-min">({{ t.min }}+)</span>
+              </span>
+            </el-option>
+          </el-select>
+          <div class="form-hint">
+            选择"自动"则根据累计打卡次数自动计算称号
+          </div>
+        </div>
+
+        <!-- 称号预览 -->
+        <div class="title-preview">
+          <span class="preview-label">显示效果</span>
+          <span class="preview-title" :style="{ color: previewTitle.color }">
+            {{ previewTitle.icon }} {{ previewTitle.name }}
+          </span>
+        </div>
+
+        <div class="form-item">
+          <label>连续打卡天数</label>
+          <el-input-number
+            v-model="editForm.streak"
+            :min="0"
+            :max="9999"
+            size="large"
+            controls-position="right"
+          />
+        </div>
+
+        <div class="form-item">
+          <label>最高连续天数</label>
+          <el-input-number
+            v-model="editForm.max_streak"
+            :min="0"
+            :max="9999"
+            size="large"
+            controls-position="right"
+          />
+        </div>
+
+        <div class="form-item">
+          <label>累计打卡次数</label>
+          <el-input-number
+            v-model="editForm.total_checkin"
+            :min="0"
+            :max="99999"
+            size="large"
+            controls-position="right"
+          />
+          <div class="form-hint" v-if="!editForm.title">
+            当前自动称号：{{ getTitleByCheckin(editForm.total_checkin).icon }} {{ getTitleByCheckin(editForm.total_checkin).name }}
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="edit-dialog-footer">
+          <el-button @click="showEditDialog = false">取消</el-button>
+          <el-button type="primary" :loading="editLoading" @click="handleSaveUserStats">
+            保存修改
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </MainLayout>
 </template>
 
@@ -456,5 +658,179 @@ function formatDate(dateStr: string): string {
 
 .pagination-wrapper :deep(.el-pager li.is-active) {
   color: rgb(var(--ocean-surface));
+}
+
+/* ===== Edit Dialog ===== */
+.edit-dialog :deep(.el-dialog) {
+  background: linear-gradient(180deg, rgba(12, 20, 38, 0.98), rgba(8, 15, 30, 0.98)) !important;
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+  border-radius: 20px;
+}
+
+.edit-dialog :deep(.el-dialog__header) {
+  padding: 0;
+  margin: 0;
+}
+
+.edit-dialog :deep(.el-dialog__body) {
+  padding: 0 24px 24px;
+}
+
+.edit-dialog :deep(.el-dialog__footer) {
+  padding: 0 24px 24px;
+}
+
+.edit-dialog-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+}
+
+.edit-user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.edit-user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid)));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.edit-user-text h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.edit-user-text p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 20px;
+}
+
+.title-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  border-radius: 12px;
+}
+
+.preview-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.preview-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-item label {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.form-item :deep(.el-input-number) {
+  width: 100%;
+}
+
+.form-item :deep(.el-input-number .el-input__wrapper) {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  box-shadow: none;
+}
+
+.form-item :deep(.el-input-number .el-input__wrapper:hover) {
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.form-item :deep(.el-input-number .el-input__wrapper.is-focus) {
+  border-color: rgb(var(--ocean-surface));
+}
+
+.form-item :deep(.el-input-number .el-input__inner) {
+  color: #fff;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ===== Title Select ===== */
+.title-select {
+  width: 100%;
+}
+
+.title-select :deep(.el-select__wrapper) {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  box-shadow: none;
+}
+
+.title-select :deep(.el-select__wrapper:hover) {
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.title-select :deep(.el-select__wrapper.is-focused) {
+  border-color: rgb(var(--ocean-surface));
+}
+
+.title-select :deep(.el-select__selected-item) {
+  color: #fff;
+}
+
+.title-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-option-icon {
+  font-size: 16px;
+}
+
+.title-option-min {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.edit-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.edit-dialog-footer .el-button--primary {
+  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid))) !important;
+  border: none !important;
 }
 </style>

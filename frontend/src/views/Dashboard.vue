@@ -5,7 +5,7 @@ import Heatmap from '@/components/Heatmap.vue'
 import { useUserStore } from '@/store/user'
 import { getHeatmap, getHistory, type CheckinRecord } from '@/api/checkin'
 import { updateProfile, updateUsername, updatePassword } from '@/api/auth'
-import { Timer, Calendar, Clock, CircleCheck, ArrowRight, Pointer, Trophy, Aim, Edit, Lock, User, Setting } from '@element-plus/icons-vue'
+import { Timer, Calendar, Clock, CircleCheck, Pointer, Trophy, Aim, Edit, Lock, User, Setting } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
@@ -114,15 +114,61 @@ async function handleUpdatePassword() {
   }
 }
 
-// 计算用户等级 - 海洋主题
+// 称号配置 - 海洋主题（含特效）
+const titleConfig = [
+  { min: 1000, name: '海神降临', color: '#f472b6', bg: 'linear-gradient(135deg, rgba(244, 114, 182, 0.25), rgba(236, 72, 153, 0.1))', icon: '🔱', effect: 'effect-divine' },
+  { min: 730, name: '深渊霸主', color: '#a78bfa', bg: 'linear-gradient(135deg, rgba(167, 139, 250, 0.25), rgba(139, 92, 246, 0.1))', icon: '🦑', effect: 'effect-abyss' },
+  { min: 365, name: '深海传奇', color: '#fbbf24', bg: 'linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(245, 158, 11, 0.1))', icon: '🌊', effect: 'effect-legend' },
+  { min: 180, name: '海洋大师', color: '#38bdf8', bg: 'linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(14, 165, 233, 0.1))', icon: '🐋', effect: 'effect-master' },
+  { min: 90, name: '浪潮专家', color: '#22d3ee', bg: 'linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(6, 182, 212, 0.1))', icon: '🐬', effect: 'effect-expert' },
+  { min: 30, name: '潮汐进阶', color: '#34d399', bg: 'linear-gradient(135deg, rgba(52, 211, 153, 0.25), rgba(16, 185, 129, 0.1))', icon: '🐠', effect: 'effect-advanced' },
+  { min: 7, name: '入海新手', color: '#0ea5e9', bg: 'linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(2, 132, 199, 0.1))', icon: '🐟', effect: 'effect-beginner' },
+  { min: 0, name: '初探海域', color: 'rgba(255, 255, 255, 0.6)', bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))', icon: '🐚', effect: '' }
+]
+
+// 计算用户当前称号
 const userLevel = computed(() => {
+  // 优先使用数据库中存储的称号
+  const userTitle = userStore.user?.title
+  if (userTitle) {
+    const customTitle = titleConfig.find(t => t.name === userTitle)
+    if (customTitle) return customTitle
+  }
+  // 否则根据打卡次数自动计算
   const total = userStore.user?.total_checkin || 0
-  if (total >= 365) return { name: '深海传奇', color: '#fbbf24', bg: 'linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(245, 158, 11, 0.1))', icon: '🌊' }
-  if (total >= 180) return { name: '海洋大师', color: '#38bdf8', bg: 'linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(14, 165, 233, 0.1))', icon: '🐋' }
-  if (total >= 90) return { name: '浪潮专家', color: '#22d3ee', bg: 'linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(6, 182, 212, 0.1))', icon: '🐬' }
-  if (total >= 30) return { name: '潮汐进阶', color: '#34d399', bg: 'linear-gradient(135deg, rgba(52, 211, 153, 0.25), rgba(16, 185, 129, 0.1))', icon: '🐠' }
-  if (total >= 7) return { name: '入海新手', color: '#0ea5e9', bg: 'linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(2, 132, 199, 0.1))', icon: '🐟' }
-  return { name: '初探海域', color: 'rgba(255, 255, 255, 0.6)', bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))', icon: '🐚' }
+  for (const title of titleConfig) {
+    if (total >= title.min) {
+      return title
+    }
+  }
+  return titleConfig[titleConfig.length - 1]!
+})
+
+// 判断是否使用自定义称号
+const isCustomTitle = computed(() => {
+  return !!userStore.user?.title
+})
+
+// 计算下一个称号及进度
+const nextTitle = computed(() => {
+  // 如果是自定义称号，不显示下一个称号进度
+  if (isCustomTitle.value) {
+    return null
+  }
+  const total = userStore.user?.total_checkin || 0
+  const currentIndex = titleConfig.findIndex(t => total >= t.min)
+  if (currentIndex <= 0) {
+    return null // 已达最高称号
+  }
+  const next = titleConfig[currentIndex - 1]!
+  const current = titleConfig[currentIndex]!
+  const progress = ((total - current.min) / (next.min - current.min)) * 100
+  return {
+    ...next,
+    required: next.min,
+    progress: Math.min(progress, 100),
+    remaining: next.min - total
+  }
 })
 
 onMounted(async () => {
@@ -208,14 +254,6 @@ function getRelativeTime(dateStr: string): string {
               <div class="avatar">
                 {{ userStore.user?.username?.[0]?.toUpperCase() || '?' }}
               </div>
-              <!-- Level badge -->
-              <div
-                class="level-badge"
-                :style="{ background: userLevel.bg, color: userLevel.color }"
-              >
-                <span class="level-icon">{{ userLevel.icon }}</span>
-                {{ userLevel.name }}
-              </div>
             </div>
 
             <!-- User Info -->
@@ -227,9 +265,37 @@ function getRelativeTime(dateStr: string): string {
                     <path d="M2 12C2 12 5 8 8 12C11 16 14 8 17 12C20 16 22 12 22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                   </svg>
                 </div>
-                <el-button class="settings-btn" circle size="small" @click="openSettings">
-                  <el-icon :size="14"><Setting /></el-icon>
-                </el-button>
+                <!-- 称号徽章 -->
+                <el-tooltip
+                  :disabled="!nextTitle"
+                  placement="bottom"
+                  effect="dark"
+                >
+                  <template #content>
+                    <div class="title-tooltip" v-if="nextTitle">
+                      <div class="tooltip-header">
+                        <span>下一称号</span>
+                        <span class="next-title" :style="{ color: nextTitle.color }">
+                          {{ nextTitle.icon }} {{ nextTitle.name }}
+                        </span>
+                      </div>
+                      <div class="tooltip-progress">
+                        <div class="progress-bar">
+                          <div class="progress-fill" :style="{ width: nextTitle.progress + '%', background: nextTitle.color }"></div>
+                        </div>
+                        <span class="progress-text">还需 {{ nextTitle.remaining }} 次打卡</span>
+                      </div>
+                    </div>
+                  </template>
+                  <div
+                    class="title-badge"
+                    :class="userLevel.effect"
+                    :style="{ background: userLevel.bg, color: userLevel.color, borderColor: userLevel.color }"
+                  >
+                    <span class="title-icon">{{ userLevel.icon }}</span>
+                    <span class="title-name">{{ userLevel.name }}</span>
+                  </div>
+                </el-tooltip>
               </div>
               <p class="user-motto">@{{ userStore.user?.username }}</p>
 
@@ -243,20 +309,15 @@ function getRelativeTime(dateStr: string): string {
                   <el-icon><Trophy /></el-icon>
                   {{ userStore.user?.max_streak || 0 }} 最高
                 </span>
-              </div>
-
-              <div class="action-buttons">
-                <RouterLink to="/train">
-                  <el-button type="primary" size="large" round class="train-btn">
-                    <el-icon><Timer /></el-icon>
-                    开始今日训练
-                    <el-icon class="arrow-icon"><ArrowRight /></el-icon>
-                  </el-button>
-                </RouterLink>
+                <!-- 操作按钮 -->
+                <el-button class="inline-action-btn settings" size="small" @click="openSettings">
+                  <el-icon :size="14"><Setting /></el-icon>
+                  <span>账号设置</span>
+                </el-button>
                 <RouterLink v-if="userStore.user?.is_admin" to="/admin">
-                  <el-button size="large" round class="admin-btn">
-                    <el-icon><Setting /></el-icon>
-                    管理后台
+                  <el-button class="inline-action-btn admin" size="small">
+                    <el-icon :size="14"><Setting /></el-icon>
+                    <span>管理后台</span>
                   </el-button>
                 </RouterLink>
               </div>
@@ -397,106 +458,171 @@ function getRelativeTime(dateStr: string): string {
       </section>
     </div>
 
-    <!-- 设置对话框 -->
+    <!-- 设置对话框 - 重新设计 -->
     <el-dialog
       v-model="showSettingsDialog"
-      title="账号设置"
-      width="500px"
-      class="settings-dialog"
+      title=""
+      width="480px"
+      class="settings-dialog-new"
       :close-on-click-modal="false"
+      :show-close="true"
     >
-      <el-tabs v-model="activeSettingTab" class="settings-tabs">
-        <el-tab-pane label="显示名称" name="profile">
-          <div class="setting-form">
-            <p class="setting-desc">显示名称将在排行榜和个人主页中展示</p>
-            <el-input
-              v-model="profileForm.display_name"
-              placeholder="请输入显示名称"
-              maxlength="50"
-              show-word-limit
-            >
-              <template #prefix>
+      <template #header>
+        <div class="settings-header">
+          <div class="settings-header-icon">
+            <el-icon :size="24"><Setting /></el-icon>
+          </div>
+          <div class="settings-header-text">
+            <h3>账号设置</h3>
+            <p>管理您的个人信息和安全设置</p>
+          </div>
+        </div>
+      </template>
+
+      <div class="settings-content">
+        <el-tabs v-model="activeSettingTab" class="settings-tabs-new">
+          <el-tab-pane name="profile">
+            <template #label>
+              <div class="tab-label">
                 <el-icon><User /></el-icon>
-              </template>
-            </el-input>
-            <el-button
-              type="primary"
-              :loading="settingsLoading"
-              @click="handleUpdateProfile"
-              class="setting-submit-btn"
-            >
-              保存修改
-            </el-button>
-          </div>
-        </el-tab-pane>
+                <span>显示名称</span>
+              </div>
+            </template>
+            <div class="setting-form-new">
+              <div class="form-header">
+                <h4>修改显示名称</h4>
+                <p>显示名称将在排行榜和个人主页中展示</p>
+              </div>
+              <div class="form-field">
+                <label>显示名称</label>
+                <el-input
+                  v-model="profileForm.display_name"
+                  placeholder="请输入显示名称"
+                  maxlength="50"
+                  show-word-limit
+                  size="large"
+                >
+                  <template #prefix>
+                    <el-icon><User /></el-icon>
+                  </template>
+                </el-input>
+              </div>
+              <el-button
+                type="primary"
+                :loading="settingsLoading"
+                @click="handleUpdateProfile"
+                class="submit-btn-new"
+                size="large"
+              >
+                保存修改
+              </el-button>
+            </div>
+          </el-tab-pane>
 
-        <el-tab-pane label="用户名" name="username">
-          <div class="setting-form">
-            <p class="setting-desc">用户名用于登录，只能包含字母、数字和下划线</p>
-            <el-input
-              v-model="usernameForm.username"
-              placeholder="请输入新用户名"
-              maxlength="50"
-            >
-              <template #prefix>
+          <el-tab-pane name="username">
+            <template #label>
+              <div class="tab-label">
                 <el-icon><Edit /></el-icon>
-              </template>
-            </el-input>
-            <el-button
-              type="primary"
-              :loading="settingsLoading"
-              @click="handleUpdateUsername"
-              class="setting-submit-btn"
-            >
-              保存修改
-            </el-button>
-          </div>
-        </el-tab-pane>
+                <span>用户名</span>
+              </div>
+            </template>
+            <div class="setting-form-new">
+              <div class="form-header">
+                <h4>修改用户名</h4>
+                <p>用户名用于登录，只能包含字母、数字和下划线</p>
+              </div>
+              <div class="form-field">
+                <label>新用户名</label>
+                <el-input
+                  v-model="usernameForm.username"
+                  placeholder="请输入新用户名"
+                  maxlength="50"
+                  size="large"
+                >
+                  <template #prefix>
+                    <el-icon><Edit /></el-icon>
+                  </template>
+                </el-input>
+              </div>
+              <el-button
+                type="primary"
+                :loading="settingsLoading"
+                @click="handleUpdateUsername"
+                class="submit-btn-new"
+                size="large"
+              >
+                保存修改
+              </el-button>
+            </div>
+          </el-tab-pane>
 
-        <el-tab-pane label="修改密码" name="password">
-          <div class="setting-form">
-            <p class="setting-desc">为了账号安全，请定期更换密码</p>
-            <el-input
-              v-model="passwordForm.old_password"
-              type="password"
-              placeholder="请输入原密码"
-              show-password
-            >
-              <template #prefix>
+          <el-tab-pane name="password">
+            <template #label>
+              <div class="tab-label">
                 <el-icon><Lock /></el-icon>
-              </template>
-            </el-input>
-            <el-input
-              v-model="passwordForm.new_password"
-              type="password"
-              placeholder="请输入新密码（至少6位）"
-              show-password
-            >
-              <template #prefix>
-                <el-icon><Lock /></el-icon>
-              </template>
-            </el-input>
-            <el-input
-              v-model="passwordForm.confirm_password"
-              type="password"
-              placeholder="请再次输入新密码"
-              show-password
-            >
-              <template #prefix>
-                <el-icon><Lock /></el-icon>
-              </template>
-            </el-input>
-            <el-button
-              type="primary"
-              :loading="settingsLoading"
-              @click="handleUpdatePassword"
-              class="setting-submit-btn"
-            >
-              修改密码
-            </el-button>
-          </div>
-        </el-tab-pane>
-      </el-tabs>
+                <span>修改密码</span>
+              </div>
+            </template>
+            <div class="setting-form-new">
+              <div class="form-header">
+                <h4>修改密码</h4>
+                <p>为了账号安全，请定期更换密码</p>
+              </div>
+              <div class="form-field">
+                <label>原密码</label>
+                <el-input
+                  v-model="passwordForm.old_password"
+                  type="password"
+                  placeholder="请输入原密码"
+                  show-password
+                  size="large"
+                >
+                  <template #prefix>
+                    <el-icon><Lock /></el-icon>
+                  </template>
+                </el-input>
+              </div>
+              <div class="form-field">
+                <label>新密码</label>
+                <el-input
+                  v-model="passwordForm.new_password"
+                  type="password"
+                  placeholder="请输入新密码（至少6位）"
+                  show-password
+                  size="large"
+                >
+                  <template #prefix>
+                    <el-icon><Lock /></el-icon>
+                  </template>
+                </el-input>
+              </div>
+              <div class="form-field">
+                <label>确认新密码</label>
+                <el-input
+                  v-model="passwordForm.confirm_password"
+                  type="password"
+                  placeholder="请再次输入新密码"
+                  show-password
+                  size="large"
+                >
+                  <template #prefix>
+                    <el-icon><Lock /></el-icon>
+                  </template>
+                </el-input>
+              </div>
+              <el-button
+                type="primary"
+                :loading="settingsLoading"
+                @click="handleUpdatePassword"
+                class="submit-btn-new"
+                size="large"
+              >
+                修改密码
+              </el-button>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
     </el-dialog>
   </MainLayout>
 </template>
@@ -646,23 +772,267 @@ function getRelativeTime(dateStr: string): string {
   position: relative;
 }
 
-.level-badge {
-  position: absolute;
-  bottom: -10px;
-  right: -10px;
-  padding: 6px 14px;
+/* ===== Title Badge (称号徽章) ===== */
+.title-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
   border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 600;
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  border: 1px solid;
   backdrop-filter: blur(10px);
+  white-space: nowrap;
 }
 
-.level-icon {
-  font-size: 14px;
+.title-icon {
+  font-size: 12px;
+}
+
+.title-name {
+  font-size: 12px;
+}
+
+/* ===== Title Effects (称号特效) ===== */
+/* 海神降临 - 神圣光芒 + 彩虹流光 */
+.title-badge.effect-divine {
+  position: relative;
+  animation: divine-glow 2s ease-in-out infinite;
+  box-shadow: 0 0 15px rgba(244, 114, 182, 0.5), 0 0 30px rgba(244, 114, 182, 0.3);
+}
+
+.title-badge.effect-divine::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f472b6, #a78bfa, #38bdf8, #34d399, #fbbf24, #f472b6);
+  background-size: 300% 100%;
+  animation: rainbow-flow 3s linear infinite;
+  z-index: -1;
+  opacity: 0.8;
+}
+
+.title-badge.effect-divine .title-icon {
+  animation: divine-icon 1.5s ease-in-out infinite;
+}
+
+@keyframes divine-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(244, 114, 182, 0.5), 0 0 30px rgba(244, 114, 182, 0.3); }
+  50% { box-shadow: 0 0 25px rgba(244, 114, 182, 0.7), 0 0 50px rgba(244, 114, 182, 0.4); }
+}
+
+@keyframes rainbow-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+@keyframes divine-icon {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(10deg); }
+}
+
+/* 深渊霸主 - 暗紫脉动 + 触手波动 */
+.title-badge.effect-abyss {
+  position: relative;
+  animation: abyss-pulse 2.5s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.4), inset 0 0 8px rgba(139, 92, 246, 0.3);
+}
+
+.title-badge.effect-abyss::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 30% 50%, rgba(167, 139, 250, 0.3) 0%, transparent 50%);
+  animation: abyss-tentacle 3s ease-in-out infinite;
+}
+
+.title-badge.effect-abyss .title-icon {
+  animation: abyss-icon 2s ease-in-out infinite;
+}
+
+@keyframes abyss-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(167, 139, 250, 0.4), inset 0 0 8px rgba(139, 92, 246, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(167, 139, 250, 0.6), inset 0 0 15px rgba(139, 92, 246, 0.4); }
+}
+
+@keyframes abyss-tentacle {
+  0%, 100% { background-position: 30% 50%; opacity: 0.5; }
+  50% { background-position: 70% 50%; opacity: 0.8; }
+}
+
+@keyframes abyss-icon {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.1) rotate(-5deg); }
+  75% { transform: scale(1.1) rotate(5deg); }
+}
+
+/* 深海传奇 - 金色闪耀 + 波浪效果 */
+.title-badge.effect-legend {
+  position: relative;
+  animation: legend-shine 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
+.title-badge.effect-legend::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: legend-sweep 2.5s ease-in-out infinite;
+}
+
+.title-badge.effect-legend .title-icon {
+  animation: legend-wave 1.5s ease-in-out infinite;
+}
+
+@keyframes legend-shine {
+  0%, 100% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.4); }
+  50% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 30px rgba(251, 191, 36, 0.3); }
+}
+
+@keyframes legend-sweep {
+  0% { left: -100%; }
+  50%, 100% { left: 200%; }
+}
+
+@keyframes legend-wave {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+/* 海洋大师 - 水波纹扩散 */
+.title-badge.effect-master {
+  position: relative;
+  animation: master-glow 2s ease-in-out infinite;
+}
+
+.title-badge.effect-master::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  animation: master-ripple 2s ease-out infinite;
+}
+
+.title-badge.effect-master .title-icon {
+  animation: master-swim 3s ease-in-out infinite;
+}
+
+@keyframes master-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(56, 189, 248, 0.3); }
+  50% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.5); }
+}
+
+@keyframes master-ripple {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+@keyframes master-swim {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(2px); }
+}
+
+/* 浪潮专家 - 轻微波动 */
+.title-badge.effect-expert {
+  animation: expert-float 2.5s ease-in-out infinite;
+}
+
+.title-badge.effect-expert .title-icon {
+  animation: expert-jump 2s ease-in-out infinite;
+}
+
+@keyframes expert-float {
+  0%, 100% { transform: translateY(0); box-shadow: 0 0 6px rgba(34, 211, 238, 0.3); }
+  50% { transform: translateY(-1px); box-shadow: 0 0 12px rgba(34, 211, 238, 0.4); }
+}
+
+@keyframes expert-jump {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+
+/* 潮汐进阶 - 柔和呼吸 */
+.title-badge.effect-advanced {
+  animation: advanced-breathe 3s ease-in-out infinite;
+}
+
+.title-badge.effect-advanced .title-icon {
+  animation: advanced-swim 2.5s ease-in-out infinite;
+}
+
+@keyframes advanced-breathe {
+  0%, 100% { opacity: 0.9; box-shadow: 0 0 4px rgba(52, 211, 153, 0.2); }
+  50% { opacity: 1; box-shadow: 0 0 8px rgba(52, 211, 153, 0.3); }
+}
+
+@keyframes advanced-swim {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(1px); }
+}
+
+/* 入海新手 - 轻微闪烁 */
+.title-badge.effect-beginner {
+  animation: beginner-twinkle 3s ease-in-out infinite;
+}
+
+@keyframes beginner-twinkle {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+/* ===== Title Tooltip ===== */
+.title-tooltip {
+  padding: 4px 0;
+  min-width: 180px;
+}
+
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.tooltip-header > span:first-child {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.next-title {
+  font-weight: 600;
+}
+
+.tooltip-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: right;
 }
 
 .user-info {
@@ -746,26 +1116,40 @@ function getRelativeTime(dateStr: string): string {
   color: rgb(var(--aqua-glow));
 }
 
-.train-btn {
-  background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid))) !important;
-  border: none !important;
-  padding: 14px 32px !important;
-  box-shadow: 0 10px 30px rgba(14, 165, 233, 0.3);
+/* ===== Inline Action Buttons ===== */
+.inline-action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 12px !important;
+  border-radius: var(--radius-md) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  height: auto !important;
   transition: all 0.3s var(--ease-smooth) !important;
 }
 
-.train-btn:hover {
-  box-shadow: 0 15px 40px rgba(14, 165, 233, 0.4);
-  transform: translateY(-2px);
+.inline-action-btn.settings {
+  background: rgba(56, 189, 248, 0.08) !important;
+  border: 1px solid rgba(56, 189, 248, 0.15) !important;
+  color: rgb(var(--ocean-surface)) !important;
 }
 
-.train-btn .arrow-icon {
-  margin-left: 8px;
-  transition: transform 0.2s var(--ease-smooth);
+.inline-action-btn.settings:hover {
+  background: rgba(56, 189, 248, 0.15) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+  color: #fff !important;
 }
 
-.train-btn:hover .arrow-icon {
-  transform: translateX(4px);
+.inline-action-btn.admin {
+  background: rgba(251, 191, 36, 0.08) !important;
+  border: 1px solid rgba(251, 191, 36, 0.15) !important;
+  color: #fbbf24 !important;
+}
+
+.inline-action-btn.admin:hover {
+  background: rgba(251, 191, 36, 0.15) !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
 }
 
 /* ===== Stats Section - 海洋主题 ===== */
@@ -1086,125 +1470,263 @@ function getRelativeTime(dateStr: string): string {
   transform: translateX(-20px);
 }
 
-/* ===== Settings Button ===== */
-.settings-btn {
-  background: rgba(56, 189, 248, 0.1) !important;
-  border: 1px solid rgba(56, 189, 248, 0.2) !important;
-  color: rgba(255, 255, 255, 0.7) !important;
-  transition: all 0.3s var(--ease-smooth) !important;
+/* ===== Settings Dialog - 新设计 ===== */
+.settings-dialog-new :deep(.el-dialog) {
+  background: linear-gradient(180deg, rgba(12, 20, 38, 0.98), rgba(8, 15, 30, 0.98)) !important;
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.6),
+    0 0 120px rgba(56, 189, 248, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.settings-btn:hover {
-  background: rgba(56, 189, 248, 0.2) !important;
-  border-color: rgba(56, 189, 248, 0.3) !important;
-  color: #fff !important;
+.settings-dialog-new :deep(.el-dialog__header) {
+  padding: 0;
+  margin: 0;
+  border: none;
 }
 
-/* ===== Action Buttons ===== */
-.action-buttons {
+.settings-dialog-new :deep(.el-dialog__headerbtn) {
+  top: 24px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.settings-dialog-new :deep(.el-dialog__headerbtn:hover) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.settings-dialog-new :deep(.el-dialog__headerbtn .el-dialog__close) {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+}
+
+.settings-dialog-new :deep(.el-dialog__headerbtn:hover .el-dialog__close) {
+  color: #ef4444;
+}
+
+.settings-dialog-new :deep(.el-dialog__body) {
+  padding: 0;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 32px 32px 24px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.06), rgba(34, 211, 238, 0.03));
+  border-bottom: 1px solid rgba(56, 189, 248, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.settings-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.1), transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.settings-header-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(34, 211, 238, 0.1));
+  border: 1px solid rgba(56, 189, 248, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-@media (min-width: 640px) {
-  .action-buttons {
-    justify-content: flex-start;
-  }
-}
-
-.admin-btn {
-  background: rgba(251, 191, 36, 0.1) !important;
-  border: 1px solid rgba(251, 191, 36, 0.3) !important;
-  color: #fbbf24 !important;
-}
-
-.admin-btn:hover {
-  background: rgba(251, 191, 36, 0.2) !important;
-  border-color: rgba(251, 191, 36, 0.4) !important;
-}
-
-/* ===== Settings Dialog ===== */
-.settings-dialog :deep(.el-dialog) {
-  background: rgba(15, 23, 42, 0.95) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(56, 189, 248, 0.1);
-  border-radius: var(--radius-xl);
-}
-
-.settings-dialog :deep(.el-dialog__header) {
-  border-bottom: 1px solid rgba(56, 189, 248, 0.1);
-  padding: 20px 24px;
-}
-
-.settings-dialog :deep(.el-dialog__title) {
-  color: #fff;
-  font-weight: 600;
-}
-
-.settings-dialog :deep(.el-dialog__body) {
-  padding: 24px;
-}
-
-.settings-tabs :deep(.el-tabs__header) {
-  margin-bottom: 24px;
-}
-
-.settings-tabs :deep(.el-tabs__nav-wrap::after) {
-  background: rgba(56, 189, 248, 0.1);
-}
-
-.settings-tabs :deep(.el-tabs__item) {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.settings-tabs :deep(.el-tabs__item.is-active) {
   color: rgb(var(--ocean-surface));
+  flex-shrink: 0;
+  box-shadow: 0 8px 20px rgba(56, 189, 248, 0.15);
 }
 
-.settings-tabs :deep(.el-tabs__active-bar) {
-  background: rgb(var(--ocean-surface));
+.settings-header-text h3 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.02em;
 }
 
-.setting-form {
+.settings-header-text p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.settings-content {
+  padding: 0;
+}
+
+.settings-tabs-new :deep(.el-tabs__header) {
+  margin: 0;
+  padding: 0 24px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.08);
+}
+
+.settings-tabs-new :deep(.el-tabs__nav-wrap::after) {
+  display: none;
+}
+
+.settings-tabs-new :deep(.el-tabs__item) {
+  padding: 18px 24px;
+  height: auto;
+  color: rgba(255, 255, 255, 0.45);
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.settings-tabs-new :deep(.el-tabs__item:hover) {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.settings-tabs-new :deep(.el-tabs__item.is-active) {
+  color: rgb(var(--ocean-surface));
+  font-weight: 500;
+}
+
+.settings-tabs-new :deep(.el-tabs__active-bar) {
+  background: linear-gradient(90deg, rgb(var(--ocean-surface)), rgb(var(--aqua-glow)));
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+}
+
+.tab-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.setting-form-new {
+  padding: 32px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
-.setting-desc {
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 14px;
+.form-header {
+  margin-bottom: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.06);
+}
+
+.form-header h4 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.form-header p {
   margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.5;
 }
 
-.setting-form :deep(.el-input__wrapper) {
-  background: rgba(56, 189, 248, 0.05);
-  border: 1px solid rgba(56, 189, 248, 0.15);
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.setting-form-new :deep(.el-input__wrapper) {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+  border-radius: 12px;
   box-shadow: none;
+  padding: 6px 14px;
+  transition: all 0.3s ease;
 }
 
-.setting-form :deep(.el-input__wrapper:hover) {
-  border-color: rgba(56, 189, 248, 0.3);
+.setting-form-new :deep(.el-input__wrapper:hover) {
+  border-color: rgba(56, 189, 248, 0.25);
+  background: rgba(0, 0, 0, 0.3);
 }
 
-.setting-form :deep(.el-input__wrapper.is-focus) {
+.setting-form-new :deep(.el-input__wrapper.is-focus) {
   border-color: rgb(var(--ocean-surface));
+  background: rgba(56, 189, 248, 0.08);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.08);
 }
 
-.setting-form :deep(.el-input__inner) {
+.setting-form-new :deep(.el-input__inner) {
   color: #fff;
 }
 
-.setting-form :deep(.el-input__inner::placeholder) {
-  color: rgba(255, 255, 255, 0.4);
+.setting-form-new :deep(.el-input__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.35);
 }
 
-.setting-submit-btn {
-  margin-top: 8px;
+.setting-form-new :deep(.el-input__prefix) {
+  color: rgba(56, 189, 248, 0.5);
+}
+
+.setting-form-new :deep(.el-input__count-inner) {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.submit-btn-new {
+  margin-top: 12px;
+  width: 100%;
+  height: 48px;
   background: linear-gradient(135deg, rgb(var(--ocean-shallow)), rgb(var(--ocean-mid))) !important;
   border: none !important;
+  border-radius: 12px !important;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  transition: all 0.3s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-btn-new::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transition: left 0.5s ease;
+}
+
+.submit-btn-new:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(14, 165, 233, 0.35);
+}
+
+.submit-btn-new:hover::before {
+  left: 100%;
+}
+
+.submit-btn-new:active {
+  transform: translateY(0);
 }
 </style>

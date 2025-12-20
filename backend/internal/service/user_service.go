@@ -271,3 +271,38 @@ func (s *UserService) SetUserAdmin(userID uint, isAdmin bool) error {
 	user.IsAdmin = isAdmin
 	return s.userRepo.Update(user)
 }
+
+// UpdateUserStatsRequest 更新用户统计数据请求
+type UpdateUserStatsRequest struct {
+	Streak       *int    `json:"streak"`
+	MaxStreak    *int    `json:"max_streak"`
+	TotalCheckin *int    `json:"total_checkin"`
+	Title        *string `json:"title"`
+}
+
+// UpdateUserStats 更新用户统计数据（管理员功能）
+func (s *UserService) UpdateUserStats(userID uint, req *UpdateUserStatsRequest) (*model.User, error) {
+	user, err := s.userRepo.GetByID(userID)
+	if err != nil {
+		return nil, ErrUserNotFound
+	}
+
+	if req.Streak != nil {
+		user.Streak = *req.Streak
+	}
+	if req.MaxStreak != nil {
+		user.MaxStreak = *req.MaxStreak
+	}
+	if req.TotalCheckin != nil {
+		user.TotalCheckin = *req.TotalCheckin
+	}
+	if req.Title != nil {
+		user.Title = *req.Title
+	}
+
+	if err := s.userRepo.Update(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
