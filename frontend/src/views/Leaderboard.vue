@@ -9,6 +9,38 @@ const users = ref<LeaderboardUser[]>([])
 const loading = ref(true)
 const mounted = ref(false)
 
+// 称号配置 - 与 Dashboard 保持一致
+const titleConfig = [
+  { min: 1000, name: '海神降临', color: '#f472b6', bg: 'linear-gradient(135deg, rgba(244, 114, 182, 0.25), rgba(236, 72, 153, 0.1))', icon: '🔱', effect: 'effect-divine' },
+  { min: 730, name: '深渊霸主', color: '#a78bfa', bg: 'linear-gradient(135deg, rgba(167, 139, 250, 0.25), rgba(139, 92, 246, 0.1))', icon: '🦑', effect: 'effect-abyss' },
+  { min: 365, name: '深海传奇', color: '#fbbf24', bg: 'linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(245, 158, 11, 0.1))', icon: '🌊', effect: 'effect-legend' },
+  { min: 180, name: '海洋大师', color: '#38bdf8', bg: 'linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(14, 165, 233, 0.1))', icon: '🐋', effect: 'effect-master' },
+  { min: 90, name: '浪潮专家', color: '#22d3ee', bg: 'linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(6, 182, 212, 0.1))', icon: '🐬', effect: 'effect-expert' },
+  { min: 30, name: '潮汐进阶', color: '#34d399', bg: 'linear-gradient(135deg, rgba(52, 211, 153, 0.25), rgba(16, 185, 129, 0.1))', icon: '🐠', effect: 'effect-advanced' },
+  { min: 7, name: '入海新手', color: '#0ea5e9', bg: 'linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(2, 132, 199, 0.1))', icon: '🐟', effect: 'effect-beginner' },
+  { min: 0, name: '初探海域', color: 'rgba(255, 255, 255, 0.6)', bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))', icon: '🐚', effect: '' }
+]
+
+// 根据用户获取称号信息
+function getUserTitle(user: LeaderboardUser | undefined) {
+  if (!user) {
+    return titleConfig[titleConfig.length - 1]!
+  }
+  // 优先使用数据库中存储的称号
+  if (user.title) {
+    const customTitle = titleConfig.find(t => t.name === user.title)
+    if (customTitle) return customTitle
+  }
+  // 否则根据打卡次数自动计算
+  const total = user.total_checkin || 0
+  for (const title of titleConfig) {
+    if (total >= title.min) {
+      return title
+    }
+  }
+  return titleConfig[titleConfig.length - 1]!
+}
+
 onMounted(async () => {
   setTimeout(() => {
     mounted.value = true
@@ -92,7 +124,7 @@ const top3Users = computed(() => users.value.slice(0, 3))
         </p>
       </section>
 
-      <!-- Top 3 Podium (when data loaded) - 海洋主题 -->
+      <!-- Top 3 Podium (when data loaded) - 全新海洋主题设计 -->
       <section
         v-if="!loading && top3Users.length >= 3"
         class="podium-section"
@@ -101,48 +133,120 @@ const top3Users = computed(() => users.value.slice(0, 3))
         <div class="podium-wrapper">
           <!-- 2nd Place - 银色浪花 -->
           <div class="podium-item second">
-            <div class="podium-ring"></div>
-            <div class="podium-avatar silver">
-              {{ (top3Users[1]?.display_name || top3Users[1]?.username)?.[0]?.toUpperCase() || '?' }}
+            <div class="podium-card">
+              <div class="podium-rank-badge silver">2</div>
+              <div class="podium-glow silver"></div>
+              <div class="podium-avatar-wrapper">
+                <div class="podium-avatar silver">
+                  {{ (top3Users[1]?.display_name || top3Users[1]?.username)?.[0]?.toUpperCase() || '?' }}
+                </div>
+                <div class="podium-medal-icon silver">
+                  <el-icon :size="16"><Medal /></el-icon>
+                </div>
+              </div>
+              <div class="podium-info">
+                <div class="podium-name">{{ top3Users[1]?.display_name || top3Users[1]?.username }}</div>
+                <div class="podium-title" :class="getUserTitle(top3Users[1]).effect" :style="{ color: getUserTitle(top3Users[1]).color }">
+                  <span class="title-icon">{{ getUserTitle(top3Users[1]).icon }}</span>
+                  <span class="title-name">{{ getUserTitle(top3Users[1]).name }}</span>
+                </div>
+                <div class="podium-stats">
+                  <div class="stat-main">
+                    <span class="stat-num">{{ top3Users[1]?.streak }}</span>
+                    <span class="stat-unit">天连续</span>
+                  </div>
+                  <div class="stat-sub">
+                    <span>最高 {{ top3Users[1]?.max_streak }}</span>
+                    <span class="stat-dot">·</span>
+                    <span>累计 {{ top3Users[1]?.total_checkin }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="podium-medal silver">
-              <el-icon :size="18"><Medal /></el-icon>
+            <div class="podium-bar silver">
+              <div class="bar-wave"></div>
+              <div class="bar-rank">2</div>
             </div>
-            <div class="podium-name">{{ top3Users[1]?.display_name || top3Users[1]?.username }}</div>
-            <div class="podium-streak">{{ top3Users[1]?.streak }} 天</div>
-            <div class="podium-bar silver"></div>
           </div>
 
           <!-- 1st Place - 金色深海王者 -->
           <div class="podium-item first">
-            <div class="crown-wrapper">
-              <div class="crown-glow"></div>
-              <el-icon :size="28" color="#fbbf24"><Trophy /></el-icon>
+            <div class="podium-card champion">
+              <div class="podium-rank-badge gold">1</div>
+              <div class="podium-glow gold"></div>
+              <div class="champion-particles">
+                <span v-for="i in 6" :key="i" class="particle"></span>
+              </div>
+              <div class="podium-avatar-wrapper">
+                <div class="podium-avatar gold">
+                  {{ (top3Users[0]?.display_name || top3Users[0]?.username)?.[0]?.toUpperCase() || '?' }}
+                </div>
+                <div class="podium-medal-icon gold">
+                  <el-icon :size="18"><Trophy /></el-icon>
+                </div>
+              </div>
+              <div class="podium-info">
+                <div class="podium-name champion-name">{{ top3Users[0]?.display_name || top3Users[0]?.username }}</div>
+                <div class="podium-title champion-title" :class="getUserTitle(top3Users[0]).effect" :style="{ color: getUserTitle(top3Users[0]).color }">
+                  <span class="title-icon">{{ getUserTitle(top3Users[0]).icon }}</span>
+                  <span class="title-name">{{ getUserTitle(top3Users[0]).name }}</span>
+                </div>
+                <div class="podium-stats">
+                  <div class="stat-main champion-stat">
+                    <span class="stat-num">{{ top3Users[0]?.streak }}</span>
+                    <span class="stat-unit">天连续</span>
+                  </div>
+                  <div class="stat-sub">
+                    <span>最高 {{ top3Users[0]?.max_streak }}</span>
+                    <span class="stat-dot">·</span>
+                    <span>累计 {{ top3Users[0]?.total_checkin }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="podium-ring gold"></div>
-            <div class="podium-avatar gold">
-              {{ (top3Users[0]?.display_name || top3Users[0]?.username)?.[0]?.toUpperCase() || '?' }}
+            <div class="podium-bar gold">
+              <div class="bar-wave"></div>
+              <div class="bar-shine"></div>
+              <div class="bar-rank">1</div>
             </div>
-            <div class="podium-medal gold">
-              <el-icon :size="18"><Trophy /></el-icon>
-            </div>
-            <div class="podium-name gold">{{ top3Users[0]?.display_name || top3Users[0]?.username }}</div>
-            <div class="podium-streak gold">{{ top3Users[0]?.streak }} 天</div>
-            <div class="podium-bar gold"></div>
           </div>
 
           <!-- 3rd Place - 铜色珊瑚 -->
           <div class="podium-item third">
-            <div class="podium-ring"></div>
-            <div class="podium-avatar bronze">
-              {{ (top3Users[2]?.display_name || top3Users[2]?.username)?.[0]?.toUpperCase() || '?' }}
+            <div class="podium-card">
+              <div class="podium-rank-badge bronze">3</div>
+              <div class="podium-glow bronze"></div>
+              <div class="podium-avatar-wrapper">
+                <div class="podium-avatar bronze">
+                  {{ (top3Users[2]?.display_name || top3Users[2]?.username)?.[0]?.toUpperCase() || '?' }}
+                </div>
+                <div class="podium-medal-icon bronze">
+                  <el-icon :size="16"><Medal /></el-icon>
+                </div>
+              </div>
+              <div class="podium-info">
+                <div class="podium-name">{{ top3Users[2]?.display_name || top3Users[2]?.username }}</div>
+                <div class="podium-title" :class="getUserTitle(top3Users[2]).effect" :style="{ color: getUserTitle(top3Users[2]).color }">
+                  <span class="title-icon">{{ getUserTitle(top3Users[2]).icon }}</span>
+                  <span class="title-name">{{ getUserTitle(top3Users[2]).name }}</span>
+                </div>
+                <div class="podium-stats">
+                  <div class="stat-main">
+                    <span class="stat-num">{{ top3Users[2]?.streak }}</span>
+                    <span class="stat-unit">天连续</span>
+                  </div>
+                  <div class="stat-sub">
+                    <span>最高 {{ top3Users[2]?.max_streak }}</span>
+                    <span class="stat-dot">·</span>
+                    <span>累计 {{ top3Users[2]?.total_checkin }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="podium-medal bronze">
-              <el-icon :size="18"><Medal /></el-icon>
+            <div class="podium-bar bronze">
+              <div class="bar-wave"></div>
+              <div class="bar-rank">3</div>
             </div>
-            <div class="podium-name">{{ top3Users[2]?.display_name || top3Users[2]?.username }}</div>
-            <div class="podium-streak">{{ top3Users[2]?.streak }} 天</div>
-            <div class="podium-bar bronze"></div>
           </div>
         </div>
       </section>
@@ -457,7 +561,7 @@ const top3Users = computed(() => users.value.slice(0, 3))
   line-height: 1.7;
 }
 
-/* ===== Podium Section - 海洋主题 ===== */
+/* ===== Podium Section - 全新海洋主题设计 ===== */
 .podium-section {
   opacity: 0;
   transform: translateY(16px);
@@ -473,220 +577,449 @@ const top3Users = computed(() => users.value.slice(0, 3))
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 20px;
-  max-width: 550px;
+  gap: 16px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 0 16px;
 }
 
 @media (min-width: 768px) {
   .podium-wrapper {
-    gap: 36px;
+    gap: 24px;
   }
 }
 
 .podium-item {
   flex: 1;
-  text-align: center;
-  position: relative;
+  max-width: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .podium-item.first {
-  margin-top: -40px;
+  order: 2;
 }
 
-.crown-wrapper {
-  margin-bottom: 12px;
+.podium-item.second {
+  order: 1;
+}
+
+.podium-item.third {
+  order: 3;
+}
+
+/* Podium Card */
+.podium-card {
+  width: 100%;
+  padding: 20px 16px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   position: relative;
-  animation: float 2.5s ease-in-out infinite;
+  overflow: hidden;
+  transition: all 0.4s var(--ease-smooth);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.crown-glow {
+.podium-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* 第二名悬停效果 - 银色 */
+.podium-item.second .podium-card:hover {
+  border-color: rgba(148, 163, 184, 0.3);
+  box-shadow: 0 20px 50px rgba(148, 163, 184, 0.15);
+}
+
+/* 第三名悬停效果 - 铜色 */
+.podium-item.third .podium-card:hover {
+  border-color: rgba(217, 119, 6, 0.3);
+  box-shadow: 0 20px 50px rgba(217, 119, 6, 0.15);
+}
+
+.podium-card.champion {
+  padding: 28px 20px;
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.06), var(--glass-bg));
+  border-color: rgba(251, 191, 36, 0.15);
+}
+
+.podium-card.champion:hover {
+  border-color: rgba(251, 191, 36, 0.35);
+  box-shadow: 0 20px 50px rgba(251, 191, 36, 0.2);
+}
+
+/* Rank Badge */
+.podium-rank-badge {
   position: absolute;
-  inset: -10px;
-  background: radial-gradient(circle, rgba(251, 191, 36, 0.3), transparent 70%);
-  filter: blur(10px);
-}
-
-.podium-ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: 2px solid rgba(56, 189, 248, 0.2);
-  animation: ring-pulse 3s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.podium-ring.gold {
-  width: 100px;
-  height: 100px;
-  border-color: rgba(251, 191, 36, 0.3);
-}
-
-@keyframes ring-pulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-}
-
-.podium-avatar {
-  width: 68px;
-  height: 68px;
-  margin: 0 auto 10px;
-  border-radius: var(--radius-xl);
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: 14px;
+  font-weight: 700;
+  z-index: 2;
+}
+
+.podium-rank-badge.gold {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1a2e;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+}
+
+.podium-rank-badge.silver {
+  background: linear-gradient(135deg, #94a3b8, #64748b);
+  color: #1a1a2e;
+  box-shadow: 0 4px 12px rgba(148, 163, 184, 0.3);
+}
+
+.podium-rank-badge.bronze {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+}
+
+/* Podium Glow */
+.podium-glow {
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150%;
+  height: 100%;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.podium-glow.gold {
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.3), transparent 70%);
+}
+
+.podium-glow.silver {
+  background: radial-gradient(circle, rgba(148, 163, 184, 0.25), transparent 70%);
+}
+
+.podium-glow.bronze {
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.25), transparent 70%);
+}
+
+/* Champion Particles */
+.champion-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.champion-particles .particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #fbbf24;
+  border-radius: 50%;
+  opacity: 0;
+  animation: particle-rise 3s ease-out infinite;
+}
+
+.champion-particles .particle:nth-child(1) { left: 20%; animation-delay: 0s; }
+.champion-particles .particle:nth-child(2) { left: 40%; animation-delay: 0.5s; }
+.champion-particles .particle:nth-child(3) { left: 60%; animation-delay: 1s; }
+.champion-particles .particle:nth-child(4) { left: 80%; animation-delay: 1.5s; }
+.champion-particles .particle:nth-child(5) { left: 30%; animation-delay: 2s; }
+.champion-particles .particle:nth-child(6) { left: 70%; animation-delay: 2.5s; }
+
+@keyframes particle-rise {
+  0% {
+    bottom: 0;
+    opacity: 0;
+    transform: scale(0);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    bottom: 100%;
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+/* Avatar Wrapper */
+.podium-avatar-wrapper {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.podium-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
   font-weight: 700;
   color: #fff;
   position: relative;
-}
-
-@media (min-width: 768px) {
-  .podium-avatar {
-    width: 80px;
-    height: 80px;
-    font-size: 32px;
-  }
+  z-index: 1;
 }
 
 .podium-item.first .podium-avatar {
-  width: 88px;
-  height: 88px;
-  font-size: 36px;
-}
-
-@media (min-width: 768px) {
-  .podium-item.first .podium-avatar {
-    width: 100px;
-    height: 100px;
-    font-size: 42px;
-  }
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+  border-radius: 20px;
 }
 
 .podium-avatar.gold {
   background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  box-shadow:
-    0 15px 35px rgba(251, 191, 36, 0.35),
-    0 0 40px rgba(251, 191, 36, 0.2);
+  box-shadow: 0 12px 30px rgba(251, 191, 36, 0.4);
 }
 
 .podium-avatar.silver {
-  background: linear-gradient(135deg, rgb(var(--ocean-surface)), rgb(var(--ocean-shallow)));
-  box-shadow: 0 12px 28px rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, #c0c7d0, #94a3b8);
+  box-shadow: 0 10px 25px rgba(148, 163, 184, 0.35);
 }
 
 .podium-avatar.bronze {
   background: linear-gradient(135deg, #d97706, #b45309);
-  box-shadow: 0 12px 28px rgba(217, 119, 6, 0.3);
+  box-shadow: 0 10px 25px rgba(217, 119, 6, 0.35);
 }
 
-.podium-medal {
-  display: inline-flex;
+/* Medal Icon */
+.podium-medal-icon {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
+  border: 2px solid rgba(30, 30, 46, 0.8);
+}
+
+.podium-item.first .podium-medal-icon {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  margin-bottom: 8px;
+  bottom: -8px;
+  right: -8px;
 }
 
-.podium-medal.gold {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1));
-  color: #fbbf24;
+.podium-medal-icon.gold {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1a2e;
 }
 
-.podium-medal.silver {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.1));
-  color: rgb(var(--ocean-surface));
+.podium-medal-icon.silver {
+  background: linear-gradient(135deg, #94a3b8, #64748b);
+  color: #1a1a2e;
 }
 
-.podium-medal.bronze {
-  background: linear-gradient(135deg, rgba(217, 119, 6, 0.2), rgba(180, 83, 9, 0.1));
-  color: #d97706;
+.podium-medal-icon.bronze {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: #fff;
+}
+
+/* Podium Info */
+.podium-info {
+  text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .podium-name {
   font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 0 8px;
+  max-width: 100%;
 }
 
-.podium-name.gold {
+.podium-name.champion-name {
+  font-size: 16px;
   color: #fbbf24;
-  font-weight: 600;
 }
 
-.podium-streak {
+/* Podium Title (称号) */
+.podium-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.podium-title.champion-title {
+  background: rgba(251, 191, 36, 0.1);
+  padding: 5px 12px;
   font-size: 13px;
+}
+
+.podium-title .title-icon {
+  font-size: 14px;
+}
+
+.podium-title.champion-title .title-icon {
+  font-size: 16px;
+}
+
+/* Podium Stats */
+.podium-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.podium-stats .stat-main {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.podium-stats .stat-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.podium-item.first .podium-stats .stat-num {
+  font-size: 36px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.podium-stats .stat-unit {
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.5);
-  margin-top: 4px;
 }
 
-.podium-streak.gold {
-  color: #fbbf24;
-  font-weight: 600;
+.podium-stats .stat-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
 }
 
+.podium-stats .stat-dot {
+  opacity: 0.5;
+}
+
+/* Podium Bar */
 .podium-bar {
-  margin-top: 16px;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  width: 100%;
+  margin-top: 12px;
+  border-radius: 12px 12px 0 0;
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
-.podium-bar::before {
-  content: '';
+.podium-bar .bar-wave {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(0deg, transparent, rgba(255, 255, 255, 0.1));
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.05));
+  animation: bar-wave-move 3s ease-in-out infinite;
+}
+
+@keyframes bar-wave-move {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.podium-bar .bar-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: bar-shine-move 4s ease-in-out infinite;
+}
+
+@keyframes bar-shine-move {
+  0% { left: -100%; }
+  50%, 100% { left: 200%; }
+}
+
+.podium-bar .bar-rank {
+  position: relative;
+  font-size: 48px;
+  font-weight: 900;
+  opacity: 0.5;
+  line-height: 1;
+  padding-bottom: 8px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .podium-bar.gold {
-  height: 120px;
-  background: linear-gradient(to top, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.05));
-  border: 1px solid rgba(251, 191, 36, 0.2);
+  height: 100px;
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.66), rgba(251, 191, 36, 0.4));
+  border: 1px solid rgba(251, 191, 36, 0.5);
   border-bottom: none;
 }
 
-@media (min-width: 768px) {
-  .podium-bar.gold {
-    height: 140px;
-  }
+.podium-bar.gold .bar-rank {
+  color: #fbbf24;
 }
 
 .podium-bar.silver {
-  height: 88px;
-  background: linear-gradient(to top, rgba(56, 189, 248, 0.12), rgba(56, 189, 248, 0.04));
-  border: 1px solid rgba(56, 189, 248, 0.15);
+  height: 70px;
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.66), rgba(148, 163, 184, 0.4));
+  border: 1px solid rgba(148, 163, 184, 0.5);
   border-bottom: none;
 }
 
-@media (min-width: 768px) {
-  .podium-bar.silver {
-    height: 100px;
-  }
+.podium-bar.silver .bar-rank {
+  color: #94a3b8;
 }
 
 .podium-bar.bronze {
-  height: 68px;
-  background: linear-gradient(to top, rgba(217, 119, 6, 0.12), rgba(217, 119, 6, 0.04));
-  border: 1px solid rgba(217, 119, 6, 0.15);
+  height: 50px;
+  background: linear-gradient(180deg, rgba(217, 119, 6, 0.66), rgba(217, 119, 6, 0.4));
+  border: 1px solid rgba(217, 119, 6, 0.5);
   border-bottom: none;
 }
 
+.podium-bar.bronze .bar-rank {
+  color: #d97706;
+}
+
 @media (min-width: 768px) {
-  .podium-bar.bronze {
-    height: 80px;
-  }
+  .podium-bar.gold { height: 120px; }
+  .podium-bar.silver { height: 85px; }
+  .podium-bar.bronze { height: 60px; }
+  .podium-bar .bar-rank { font-size: 56px; }
 }
 
 /* ===== Stats Section - 海洋主题 ===== */
@@ -1036,5 +1369,187 @@ const top3Users = computed(() => users.value.slice(0, 3))
 
 .cta-btn-ocean:hover::after {
   box-shadow: 0 12px 40px rgba(14, 165, 233, 0.5);
+}
+
+/* ===== Podium Title Effects (称号特效) ===== */
+/* 海神降临 - 神圣光芒 + 彩虹流光 */
+.podium-title.effect-divine {
+  position: relative;
+  animation: divine-glow 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(244, 114, 182, 0.4), 0 0 20px rgba(244, 114, 182, 0.2);
+}
+
+.podium-title.effect-divine::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f472b6, #a78bfa, #38bdf8, #34d399, #fbbf24, #f472b6);
+  background-size: 300% 100%;
+  animation: rainbow-flow 3s linear infinite;
+  z-index: -1;
+  opacity: 0.7;
+}
+
+.podium-title.effect-divine .title-icon {
+  animation: divine-icon 1.5s ease-in-out infinite;
+}
+
+@keyframes divine-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(244, 114, 182, 0.4), 0 0 20px rgba(244, 114, 182, 0.2); }
+  50% { box-shadow: 0 0 15px rgba(244, 114, 182, 0.6), 0 0 30px rgba(244, 114, 182, 0.3); }
+}
+
+@keyframes rainbow-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+@keyframes divine-icon {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.15) rotate(8deg); }
+}
+
+/* 深渊霸主 - 暗紫脉动 */
+.podium-title.effect-abyss {
+  position: relative;
+  animation: abyss-pulse 2.5s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(167, 139, 250, 0.4), inset 0 0 6px rgba(139, 92, 246, 0.2);
+}
+
+.podium-title.effect-abyss .title-icon {
+  animation: abyss-icon 2s ease-in-out infinite;
+}
+
+@keyframes abyss-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(167, 139, 250, 0.4), inset 0 0 6px rgba(139, 92, 246, 0.2); }
+  50% { box-shadow: 0 0 15px rgba(167, 139, 250, 0.5), inset 0 0 10px rgba(139, 92, 246, 0.3); }
+}
+
+@keyframes abyss-icon {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.1) rotate(-5deg); }
+  75% { transform: scale(1.1) rotate(5deg); }
+}
+
+/* 深海传奇 - 金色闪耀 */
+.podium-title.effect-legend {
+  position: relative;
+  overflow: hidden;
+  animation: legend-shine 2s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+}
+
+.podium-title.effect-legend::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: legend-sweep 2.5s ease-in-out infinite;
+}
+
+.podium-title.effect-legend .title-icon {
+  animation: legend-wave 1.5s ease-in-out infinite;
+}
+
+@keyframes legend-shine {
+  0%, 100% { box-shadow: 0 0 8px rgba(251, 191, 36, 0.3); }
+  50% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.5), 0 0 25px rgba(251, 191, 36, 0.2); }
+}
+
+@keyframes legend-sweep {
+  0% { left: -100%; }
+  50%, 100% { left: 200%; }
+}
+
+@keyframes legend-wave {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+/* 海洋大师 - 水波纹扩散 */
+.podium-title.effect-master {
+  position: relative;
+  animation: master-glow 2s ease-in-out infinite;
+}
+
+.podium-title.effect-master::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  animation: master-ripple 2s ease-out infinite;
+  pointer-events: none;
+}
+
+.podium-title.effect-master .title-icon {
+  animation: master-swim 3s ease-in-out infinite;
+}
+
+@keyframes master-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(56, 189, 248, 0.3); }
+  50% { box-shadow: 0 0 12px rgba(56, 189, 248, 0.4); }
+}
+
+@keyframes master-ripple {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+@keyframes master-swim {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(2px); }
+}
+
+/* 浪潮专家 - 轻微波动 */
+.podium-title.effect-expert {
+  animation: expert-float 2.5s ease-in-out infinite;
+}
+
+.podium-title.effect-expert .title-icon {
+  animation: expert-jump 2s ease-in-out infinite;
+}
+
+@keyframes expert-float {
+  0%, 100% { transform: translateY(0); box-shadow: 0 0 5px rgba(34, 211, 238, 0.2); }
+  50% { transform: translateY(-1px); box-shadow: 0 0 10px rgba(34, 211, 238, 0.3); }
+}
+
+@keyframes expert-jump {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+
+/* 潮汐进阶 - 柔和呼吸 */
+.podium-title.effect-advanced {
+  animation: advanced-breathe 3s ease-in-out infinite;
+}
+
+.podium-title.effect-advanced .title-icon {
+  animation: advanced-swim 2.5s ease-in-out infinite;
+}
+
+@keyframes advanced-breathe {
+  0%, 100% { opacity: 0.9; box-shadow: 0 0 4px rgba(52, 211, 153, 0.2); }
+  50% { opacity: 1; box-shadow: 0 0 8px rgba(52, 211, 153, 0.3); }
+}
+
+@keyframes advanced-swim {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(1px); }
+}
+
+/* 入海新手 - 轻微闪烁 */
+.podium-title.effect-beginner {
+  animation: beginner-twinkle 3s ease-in-out infinite;
+}
+
+@keyframes beginner-twinkle {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
 }
 </style>
