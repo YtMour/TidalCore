@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import type { LeaderboardUser } from '@/api/checkin'
 import { Skeleton } from '@/components/ui'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 defineProps<{
   users: LeaderboardUser[]
@@ -48,15 +49,6 @@ function getUserTitle(user: LeaderboardUser) {
 function getMedalEmoji(index: number): string {
   const medals = ['🥇', '🥈', '🥉']
   return medals[index] || ''
-}
-
-function getMedalBg(index: number): string {
-  const bgs = [
-    'linear-gradient(135deg, #fbbf24, #f59e0b)',
-    'linear-gradient(135deg, #94a3b8, #64748b)',
-    'linear-gradient(135deg, #d97706, #b45309)'
-  ]
-  return bgs[index] || 'rgba(255, 255, 255, 0.08)'
 }
 
 // 获取显示名称（优先使用 display_name）
@@ -111,12 +103,14 @@ function getStreakColor(streak: number): string {
 
         <!-- User Avatar & Name -->
         <div class="user-info">
-          <div
+          <UserAvatar
+            :user-id="user.id"
+            :username="user.username"
+            :size="40"
+            :border-radius="10"
+            :variant="index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'default'"
             class="user-avatar"
-            :style="{ background: index < 3 ? getMedalBg(index) : undefined }"
-          >
-            {{ getDisplayName(user)?.[0]?.toUpperCase() || '?' }}
-          </div>
+          />
           <span class="user-name">{{ getDisplayName(user) }}</span>
           <span
             class="user-title-badge"

@@ -6,6 +6,7 @@ import { useUserStore } from '@/store/user'
 import { getHeatmap, getHistory, type CheckinRecord } from '@/api/checkin'
 import { updateProfile, updateUsername, updatePassword } from '@/api/auth'
 import { Timer, Calendar, Clock, CircleCheck, Pointer, Trophy, Aim, Edit, Lock, User, Setting } from '@element-plus/icons-vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
@@ -251,9 +252,13 @@ function getRelativeTime(dateStr: string): string {
                 <div class="avatar-ring avatar-ring-1"></div>
                 <div class="avatar-ring avatar-ring-2"></div>
               </div>
-              <div class="avatar">
-                {{ userStore.user?.username?.[0]?.toUpperCase() || '?' }}
-              </div>
+              <UserAvatar
+                :user-id="userStore.user?.id"
+                :username="userStore.user?.username"
+                :size="112"
+                :border-radius="28"
+                class="avatar"
+              />
             </div>
 
             <!-- User Info -->

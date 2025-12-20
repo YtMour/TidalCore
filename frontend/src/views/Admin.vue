@@ -7,6 +7,7 @@ import { getUsers, deleteUser, setUserAdmin, updateUserStats, type UsersResponse
 import type { UserInfo } from '@/api/auth'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, Key, ArrowLeft, Search, Refresh, Edit } from '@element-plus/icons-vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -259,9 +260,13 @@ const previewTitle = computed(() => {
           <el-table-column label="用户" min-width="200">
             <template #default="{ row }">
               <div class="user-cell">
-                <div class="user-avatar">
-                  {{ row.username?.[0]?.toUpperCase() || '?' }}
-                </div>
+                <UserAvatar
+                  :user-id="row.id"
+                  :username="row.username"
+                  :size="40"
+                  :border-radius="10"
+                  class="user-avatar"
+                />
                 <div class="user-info">
                   <div class="user-name">
                     {{ row.display_name || row.username }}
@@ -343,9 +348,13 @@ const previewTitle = computed(() => {
       <template #header>
         <div class="edit-dialog-header">
           <div class="edit-user-info" v-if="editingUser">
-            <div class="edit-user-avatar">
-              {{ editingUser.username?.[0]?.toUpperCase() || '?' }}
-            </div>
+            <UserAvatar
+              :user-id="editingUser.id"
+              :username="editingUser.username"
+              :size="48"
+              :border-radius="12"
+              class="edit-user-avatar"
+            />
             <div class="edit-user-text">
               <h3>编辑用户数据</h3>
               <p>{{ editingUser.display_name || editingUser.username }}</p>

@@ -4,6 +4,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import LeaderboardTable from '@/components/LeaderboardTable.vue'
 import { getLeaderboard, type LeaderboardUser } from '@/api/checkin'
 import { Trophy, Timer, TrendCharts, User, Medal, Pointer } from '@element-plus/icons-vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const users = ref<LeaderboardUser[]>([])
 const loading = ref(true)
@@ -137,9 +138,14 @@ const top3Users = computed(() => users.value.slice(0, 3))
               <div class="podium-rank-badge silver">2</div>
               <div class="podium-glow silver"></div>
               <div class="podium-avatar-wrapper">
-                <div class="podium-avatar silver">
-                  {{ (top3Users[1]?.display_name || top3Users[1]?.username)?.[0]?.toUpperCase() || '?' }}
-                </div>
+                <UserAvatar
+                  :user-id="top3Users[1]?.id"
+                  :username="top3Users[1]?.username"
+                  :size="64"
+                  :border-radius="16"
+                  variant="silver"
+                  class="podium-avatar silver"
+                />
                 <div class="podium-medal-icon silver">
                   <el-icon :size="16"><Medal /></el-icon>
                 </div>
@@ -178,9 +184,14 @@ const top3Users = computed(() => users.value.slice(0, 3))
                 <span v-for="i in 6" :key="i" class="particle"></span>
               </div>
               <div class="podium-avatar-wrapper">
-                <div class="podium-avatar gold">
-                  {{ (top3Users[0]?.display_name || top3Users[0]?.username)?.[0]?.toUpperCase() || '?' }}
-                </div>
+                <UserAvatar
+                  :user-id="top3Users[0]?.id"
+                  :username="top3Users[0]?.username"
+                  :size="80"
+                  :border-radius="20"
+                  variant="gold"
+                  class="podium-avatar gold"
+                />
                 <div class="podium-medal-icon gold">
                   <el-icon :size="18"><Trophy /></el-icon>
                 </div>
@@ -217,9 +228,14 @@ const top3Users = computed(() => users.value.slice(0, 3))
               <div class="podium-rank-badge bronze">3</div>
               <div class="podium-glow bronze"></div>
               <div class="podium-avatar-wrapper">
-                <div class="podium-avatar bronze">
-                  {{ (top3Users[2]?.display_name || top3Users[2]?.username)?.[0]?.toUpperCase() || '?' }}
-                </div>
+                <UserAvatar
+                  :user-id="top3Users[2]?.id"
+                  :username="top3Users[2]?.username"
+                  :size="64"
+                  :border-radius="16"
+                  variant="bronze"
+                  class="podium-avatar bronze"
+                />
                 <div class="podium-medal-icon bronze">
                   <el-icon :size="16"><Medal /></el-icon>
                 </div>

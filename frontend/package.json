@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dicebear/collection": "^9.2.4",
+    "@dicebear/core": "^9.2.4",
     "@element-plus/icons-vue": "^2.3.2",
     "@floating-ui/vue": "^1.1.9",
     "@headlessui/vue": "^1.7.23",
