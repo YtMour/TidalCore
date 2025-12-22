@@ -48,9 +48,38 @@ const router = createRouter({
     },
     {
       path: '/admin',
-      name: 'admin',
-      component: () => import('@/views/Admin.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: '管理后台 - TidalCore' }
+      component: () => import('@/views/admin/AdminLayout.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+      children: [
+        {
+          path: '',
+          redirect: '/admin/dashboard'
+        },
+        {
+          path: 'dashboard',
+          name: 'admin-dashboard',
+          component: () => import('@/views/admin/Dashboard.vue'),
+          meta: { title: '仪表盘 - 管理后台 - TidalCore' }
+        },
+        {
+          path: 'users',
+          name: 'admin-users',
+          component: () => import('@/views/admin/Users.vue'),
+          meta: { title: '用户管理 - 管理后台 - TidalCore' }
+        },
+        {
+          path: 'checkins',
+          name: 'admin-checkins',
+          component: () => import('@/views/admin/Checkins.vue'),
+          meta: { title: '打卡数据 - 管理后台 - TidalCore' }
+        },
+        {
+          path: 'settings',
+          name: 'admin-settings',
+          component: () => import('@/views/admin/Settings.vue'),
+          meta: { title: '系统设置 - 管理后台 - TidalCore' }
+        }
+      ]
     },
     {
       path: '/:pathMatch(.*)*',

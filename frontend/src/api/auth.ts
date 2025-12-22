@@ -20,6 +20,7 @@ export interface UserInfo {
   max_streak: number
   total_checkin: number
   is_admin: boolean
+  created_at: string
 }
 
 export interface UpdateProfileRequest {

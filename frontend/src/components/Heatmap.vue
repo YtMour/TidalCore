@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   data: Record<string, number>
   days?: number
-}>()
+  label?: string
+}>(), {
+  days: 365,
+  label: '打卡'
+})
 
 interface DayData {
   date: string
@@ -234,7 +238,7 @@ const totalWeeks = computed(() => weeks.value.length)
       >
         <div class="tip-date">{{ formatDisplayDate(hoveredDay.date) }}</div>
         <div class="tip-count" :class="{ active: hoveredDay.count > 0 }">
-          {{ hoveredDay.count > 0 ? `${hoveredDay.count} 次打卡` : '无打卡记录' }}
+          {{ hoveredDay.count > 0 ? `${hoveredDay.count} 次${props.label}` : `无${props.label}记录` }}
         </div>
       </div>
     </Transition>

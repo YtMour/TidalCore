@@ -310,7 +310,7 @@ onUnmounted(() => {
             <div v-if="loading" class="heatmap-loading">
               <el-skeleton :rows="3" animated />
             </div>
-            <Heatmap v-else :data="heatmapData || {}" :days="365" />
+            <Heatmap v-else :data="heatmapData || {}" :days="365" :label="heatmapType === 'checkin' ? '打卡' : '访问'" />
           </div>
         </div>
       </section>
