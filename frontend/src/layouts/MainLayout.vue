@@ -3,7 +3,7 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { useScrollLock } from '@vueuse/core'
-import { HomeFilled, Timer, Trophy, User, SwitchButton, Fold, Expand } from '@element-plus/icons-vue'
+import { HomeFilled, Timer, Trophy, User, SwitchButton, Fold, Expand, InfoFilled } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
 const route = useRoute()
@@ -70,7 +70,8 @@ function handleLogout() {
 const navLinks = [
   { to: '/', label: '首页', icon: HomeFilled },
   { to: '/train', label: '训练', icon: Timer },
-  { to: '/leaderboard', label: '排行榜', icon: Trophy }
+  { to: '/leaderboard', label: '排行榜', icon: Trophy },
+  { to: '/about', label: '关于', icon: InfoFilled }
 ]
 </script>
 

@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Heatmap from '@/components/Heatmap.vue'
 import { getGlobalHeatmap, getLeaderboard, recordVisit, getVisitStats, getVisitHeatmap } from '@/api/checkin'
-import { Timer, Pointer, Trophy, Lock, Lightning, StarFilled, User, View } from '@element-plus/icons-vue'
+import { Timer, Pointer, Trophy, Lock, Lightning, StarFilled, User, View, InfoFilled } from '@element-plus/icons-vue'
 
 const checkinHeatmapData = ref<Record<string, number>>()
 const visitHeatmapData = ref<Record<string, number>>()
@@ -208,6 +208,10 @@ onUnmounted(() => {
             <RouterLink to="/leaderboard" class="cta-secondary">
               <el-icon :style="{ color: '#fbbf24' }"><Trophy /></el-icon>
               <span>查看排行</span>
+            </RouterLink>
+            <RouterLink to="/about" class="cta-secondary">
+              <el-icon :style="{ color: '#22d3ee' }"><InfoFilled /></el-icon>
+              <span>关于凯格尔运动</span>
             </RouterLink>
           </div>
 
@@ -797,10 +801,24 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 16px 24px;
-  background: rgba(56, 189, 248, 0.05);
-  border: 1px solid rgba(56, 189, 248, 0.1);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(34, 211, 238, 0.08) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.25);
   border-radius: var(--radius-lg);
   min-width: 100px;
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 4px 20px rgba(56, 189, 248, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.3s var(--ease-smooth);
+}
+
+.stat-item:hover {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.18) 0%, rgba(34, 211, 238, 0.12) 100%);
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 30px rgba(56, 189, 248, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .stat-icon {

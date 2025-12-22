@@ -47,6 +47,12 @@ const router = createRouter({
       meta: { title: '排行榜 - TidalCore' }
     },
     {
+      path: '/about',
+      name: 'about',
+      component: () => import('@/views/About.vue'),
+      meta: { title: '关于凯格尔运动 - TidalCore' }
+    },
+    {
       path: '/admin',
       component: () => import('@/views/admin/AdminLayout.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
