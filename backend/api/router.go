@@ -17,6 +17,7 @@ func SetupRouter(mode string) *gin.Engine {
 	userHandler := NewUserHandler()
 	checkinHandler := NewCheckinHandler()
 	visitHandler := NewVisitHandler()
+	backupHandler := NewBackupHandler()
 
 	// 健康检查
 	r.GET("/health", func(c *gin.Context) {
@@ -67,6 +68,14 @@ func SetupRouter(mode string) *gin.Engine {
 			admin.DELETE("/users/:id", userHandler.DeleteUser)
 			admin.PUT("/users/:id/admin", userHandler.SetUserAdmin)
 			admin.PUT("/users/:id/stats", userHandler.UpdateUserStats)
+
+			// 备份相关
+			admin.POST("/backup", backupHandler.CreateBackup)
+			admin.GET("/backups", backupHandler.ListBackups)
+			admin.GET("/backup/:filename", backupHandler.DownloadBackup)
+			admin.POST("/backup/restore/:filename", backupHandler.RestoreBackup)
+			admin.POST("/backup/upload", backupHandler.UploadAndRestore)
+			admin.DELETE("/backup/:filename", backupHandler.DeleteBackup)
 		}
 	}
 

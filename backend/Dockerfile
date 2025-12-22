@@ -29,8 +29,10 @@ RUN apk add --no-cache ca-certificates tzdata
 # 从构建阶段复制二进制文件
 COPY --from=builder /tidalcore .
 
-# 创建非 root 用户
-RUN adduser -D -g '' appuser
+# 创建非 root 用户和备份目录
+RUN adduser -D -g '' appuser && \
+    mkdir -p /app/backups && \
+    chown -R appuser:appuser /app
 USER appuser
 
 # 暴露端口

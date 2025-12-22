@@ -244,11 +244,11 @@ const navLinks = [
         </div>
 
         <div class="footer-links">
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+          <a href="https://github.com/YtMour/TidalCore" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
           <span class="footer-dot">·</span>
           <span class="footer-license">MIT License</span>
           <span class="footer-dot">·</span>
-          <span class="footer-copyright">© 2024</span>
+          <span class="footer-copyright">© 2025</span>
         </div>
       </div>
     </footer>

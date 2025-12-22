@@ -6,7 +6,8 @@ import {
   Calendar,
   Setting,
   Close,
-  Back
+  Back,
+  FolderChecked
 } from '@element-plus/icons-vue'
 
 defineProps<{
@@ -23,6 +24,7 @@ const menuItems = [
   { name: 'admin-dashboard', path: '/admin/dashboard', icon: DataAnalysis, label: '仪表盘', desc: '数据概览' },
   { name: 'admin-users', path: '/admin/users', icon: User, label: '用户管理', desc: '管理用户' },
   { name: 'admin-checkins', path: '/admin/checkins', icon: Calendar, label: '打卡数据', desc: '热力图统计' },
+  { name: 'admin-backup', path: '/admin/backup', icon: FolderChecked, label: '数据备份', desc: '备份恢复' },
   { name: 'admin-settings', path: '/admin/settings', icon: Setting, label: '系统设置', desc: '配置信息' }
 ]
 

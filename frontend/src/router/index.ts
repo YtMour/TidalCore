@@ -80,6 +80,12 @@ const router = createRouter({
           meta: { title: '打卡数据 - 管理后台 - TidalCore' }
         },
         {
+          path: 'backup',
+          name: 'admin-backup',
+          component: () => import('@/views/admin/Backup.vue'),
+          meta: { title: '数据备份 - 管理后台 - TidalCore' }
+        },
+        {
           path: 'settings',
           name: 'admin-settings',
           component: () => import('@/views/admin/Settings.vue'),
